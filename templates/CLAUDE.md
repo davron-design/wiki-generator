@@ -9,8 +9,9 @@
 You are the librarian of the wiki/ folder. You write and maintain everything in it.
 
 ### Structure
-- wiki/_master-index.md is the entry point — lists every topic with a one-line description.
-- Each topic gets its own subfolder with its own _index.md listing all articles.
+- wiki/_master-index.md is the entry point — a `| Topic | Description |` table, one row per topic, with descriptions rich enough to navigate by.
+- Each topic gets its own subfolder with its own _index.md — a `| Article | Description |` table (or multiple tables grouped under `##` section headings once the topic exceeds ~5 articles).
+- Index rows use the piped wiki-link form (`[[topic-slug/_index|topic-slug]]`, `[[article-slug]]`) so links are clean and resolvable.
 
 ### Querying
 When answering questions against the knowledge base:
@@ -30,4 +31,5 @@ When the user says "audit" or "lint", use the `audit-wiki` skill.
 - Always use [[wiki links]] when referencing other notes
 - File names: lowercase with hyphens (e.g., ai-agent-overview.md)
 - Keep articles concise — bullet points over paragraphs
+- Indexes (`_master-index.md` and every topic `_index.md`) are markdown tables, not bullet lists — group large topic indexes into `##` sections
 - Always include a ## Key Takeaways section in wiki articles

@@ -31,8 +31,10 @@ For each file currently in `raw/` (skip any `_<date>-complied/` archive folders;
    - Bullet points over paragraphs — keep it concise.
    - Use `[[wiki links]]` whenever you mention another concept that has (or should have) its own article.
    - **Always** include a `## Key Takeaways` section.
-4. **Update the topic's `_index.md`** with a one-line entry pointing to the new article. If the topic folder is new, create `_index.md` first.
-5. **Update `wiki/_master-index.md`** if you created a new topic or if the master index's description for that topic is now stale.
+4. **Update the topic's `_index.md`** — entries live in a markdown table (`| Article | Description |`), not a bullet list. Add a row with `[[article-slug]]` and a description rich enough to navigate by. If the topic folder is new, create `_index.md` first with:
+   - A `# <Topic> — Index` heading and a one- or two-line topic summary.
+   - At least one section heading (e.g. `## Core`) above the table. Once a topic exceeds ~5 articles, split into multiple sections (e.g. `## People`, `## Programmes & Events`) — each section gets its own table. Section grouping is what makes a large topic browsable.
+5. **Update `wiki/_master-index.md`** — also a markdown table (`| Topic | Description |`), one row per topic. Use the piped wiki-link form `[[topic-slug/_index|topic-slug]]` so the row links to the topic's index while showing a clean label. Add or update the row when you create a new topic or when the existing description has gone stale. Descriptions should be navigable — pack in signature sub-areas and key entities, not just a category name.
 6. **Archive the source.** Once all raw files for this run are compiled, create `raw/_<YYYY-MM-DD>-complied/` (use today's date) and move every raw file you just compiled into it. Files that pre-existed inside an older `_*-complied/` folder stay where they are.
 
 ## Output to the user
@@ -50,9 +52,10 @@ After compiling, report:
 - **NEVER move a raw file into `_<date>-complied/` until its article is written AND the topic index is updated.** Partial archives sever the source-to-article provenance trail.
 - **NEVER overwrite an existing wiki article during compile.** If new raw material conflicts with or supersedes an existing article, flag it for the user. Updating existing content is an audit-time decision (run `audit-wiki`), not an ingest-time one.
 - **NEVER skip the `## Key Takeaways` section.** It is the article's TL;DR — queries depend on it.
+- **NEVER write `_master-index.md` or a topic `_index.md` as a bullet list.** Indexes are markdown tables — the extra structure is what makes the wiki navigable at a glance. If you find an existing index in bullet form, convert it to a table when you touch it.
 
 ## Conventions reminder
 - `[[wiki links]]` for every cross-reference — a link to an article that doesn't exist yet is fine; it flags a future write.
 - Lowercase-hyphenated filenames.
-- Bullets, not paragraphs.
+- Bullets, not paragraphs — inside articles. **Indexes use tables**, not bullets: `_master-index.md` is `| Topic | Description |`; each topic `_index.md` is `| Article | Description |`, grouped under `##` section headings once a topic has more than ~5 articles.
 - Every article ends with `## Key Takeaways`.

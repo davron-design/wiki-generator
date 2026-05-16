@@ -35,6 +35,7 @@ Round numbering is **per topic, not global**. The whole-wiki audit has its own r
    - **Missing cross-links** — concepts mentioned in prose that have (or should have) their own article but aren't linked with `[[wiki links]]`.
    - **Gaps in coverage** — topics referenced but never articled; obvious sibling concepts missing from a topic folder.
    - **Stale or structural issues** — outdated indexes, orphaned articles, broken `[[links]]`.
+   - **Index format drift** — `_master-index.md` and every topic `_index.md` must be markdown tables (`| Topic | Description |` / `| Article | Description |`), with `##` section groupings once a topic exceeds ~5 articles. Flag any index still in bullet-list form, missing descriptions, or with a description so thin it doesn't help navigation.
 5. **Suggest 3–5 new articles** that would strengthen the knowledge base. These are forward-looking proposals (not gap-fills for things already mentioned in prose — those go under Gaps in Coverage). Rank each by value-add impact:
    - **High** — closes a load-bearing gap; multiple existing articles would link inward; directly supports a current goal/decision in the wiki
    - **Mid** — useful consolidation or sibling coverage; would be referenced occasionally; nice-to-have rather than load-bearing
