@@ -5,10 +5,6 @@
 - /wiki — LLM-compiled knowledge base (see Wiki System below)
 - /output — query results and generated reports
 
-## Ignored Files
-The following files must NOT be read, compiled, audited, or otherwise processed by any skill (including `raw-compile`, `audit-wiki`, and any querying workflow). Skip them entirely:
-- README.md (root) — user-facing setup guide, not vault content
-
 ## Wiki System
 You are the librarian of the wiki/ folder. You write and maintain everything in it.
 
