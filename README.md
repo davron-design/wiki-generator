@@ -41,6 +41,11 @@ Copy and paste the following prompt into Claude Code and send it:
 
 > Please download the repo at **https://github.com/davron-design/wiki-generator** and install it as a **project-scoped skill** in this folder. Put the skill files under `.claude/skills/wiki-generator/` so the skill only applies to this project. Once it's installed, list the skills so I can confirm it's ready to use.
 
+
+#### If Claude asks for permission, just **Always Allow**. 
+<img width="824" height="222" alt="Screenshot 2026-05-27 at 15 18 46" src="https://github.com/user-attachments/assets/b41f5cd3-b481-45fb-8d38-4ec73f8349e5" />
+
+
 Claude will:
 - Fetch the skill files from the repo
 - Place them in the right spot inside your folder
