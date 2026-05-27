@@ -1,0 +1,1558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wiki Generator</title>
+  <meta name="description" content="A knowledge base that grows with every project. Set up an AI-powered wiki with Claude Code — no terminal, no coding." />
+  <meta property="og:title" content="Building the Agentic Mind" />
+  <meta property="og:description" content="A knowledge base that grows with every project. Set up an AI-powered wiki with Claude Code — no terminal, no coding." />
+  <meta property="og:type" content="website" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='10' fill='%23a100ff'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- Apply saved theme before render to avoid flash -->
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('theme');
+        var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        var theme = saved || (prefersDark ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (e) {}
+    })();
+  </script>
+
+  <style>
+    :root {
+      --bg: #ffffff;
+      --bg-soft: #fafafa;
+      --ink: #0f0f10;
+      --ink-soft: #4a4a4d;
+      --ink-muted: #8a8a8e;
+      --line: #ececec;
+      --line-soft: #f4f4f4;
+      --accent: #a100ff;
+      --accent-soft: #f5ecff;
+      --accent-deep: #6e00b3;
+      --code-bg: #f5ecff;
+      --code-ink: #6e00b3;
+      --avatar-bg: #ffffff;
+    }
+
+    [data-theme="dark"] {
+      --bg: #0a0a0c;
+      --bg-soft: #15151a;
+      --ink: #f5f5f7;
+      --ink-soft: #b8b8bf;
+      --ink-muted: #7a7a82;
+      --line: #232328;
+      --line-soft: #1a1a1f;
+      --accent: #c269ff;
+      --accent-soft: rgba(194, 105, 255, 0.14);
+      --accent-deep: #d49eff;
+      --code-bg: rgba(194, 105, 255, 0.14);
+      --code-ink: #d49eff;
+      --avatar-bg: #ffffff;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      font-size: 17px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-wrap: pretty;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    ::selection { background: var(--accent-soft); color: var(--accent-deep); }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+    a:hover { color: var(--accent-deep); }
+
+    strong { color: var(--ink); font-weight: 600; }
+    em { font-style: italic; }
+    .punct { color: var(--accent); }
+
+    /* ───── Reading progress ───── */
+    .progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 2px;
+      width: 100%;
+      background: var(--accent);
+      transform-origin: left center;
+      transform: scaleX(0);
+      z-index: 100;
+      transition: transform 0.08s linear;
+    }
+
+    /* ───── Nav ───── */
+    nav {
+      position: sticky;
+      top: 0;
+      backdrop-filter: saturate(180%) blur(14px);
+      -webkit-backdrop-filter: saturate(180%) blur(14px);
+      background: color-mix(in srgb, var(--bg) 82%, transparent);
+      border-bottom: 1px solid var(--line);
+      z-index: 50;
+      transition: background 0.3s ease, border-color 0.3s ease;
+    }
+    .nav-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+    .nav-logo {
+      font-weight: 600;
+      font-size: 15px;
+      letter-spacing: -0.01em;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .nav-logo .dot {
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 14%, transparent);
+    }
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+    }
+    .nav-links {
+      display: flex;
+      gap: 28px;
+      font-size: 14px;
+    }
+    .nav-links a {
+      color: var(--ink-soft);
+      position: relative;
+      display: inline-flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+    .nav-links a:hover { color: var(--accent); }
+    .nav-num {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 11px;
+      color: var(--ink-muted);
+      font-weight: 500;
+      letter-spacing: 0;
+      transition: color 0.15s ease;
+    }
+    .nav-links a:hover .nav-num { color: var(--accent); }
+    .nav-links a::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -4px;
+      height: 1.5px;
+      background: var(--accent);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.25s ease;
+    }
+    .nav-links a:hover::after { transform: scaleX(1); }
+
+    /* Theme toggle */
+    .theme-toggle {
+      background: none;
+      border: 1px solid var(--line);
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--ink-soft);
+      transition: all 0.2s ease;
+      padding: 0;
+    }
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: rotate(20deg);
+    }
+    .theme-toggle svg {
+      width: 15px;
+      height: 15px;
+    }
+    .theme-toggle .moon { display: none; }
+    [data-theme="dark"] .theme-toggle .sun { display: none; }
+    [data-theme="dark"] .theme-toggle .moon { display: block; }
+
+    /* ───── Hero ───── */
+    .hero {
+      position: relative;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 128px 32px 96px;
+      overflow: visible;
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: -120px calc(50% - 50vw) -40px calc(50% - 50vw);
+      pointer-events: none;
+      background:
+        radial-gradient(780px 560px ellipse at 76% 24%,
+          color-mix(in srgb, var(--accent) 11%, transparent), transparent 60%);
+      z-index: -1;
+      -webkit-mask-image: linear-gradient(to bottom, black 0%, black 70%, transparent 100%);
+              mask-image: linear-gradient(to bottom, black 0%, black 70%, transparent 100%);
+      transition: opacity 0.3s ease;
+    }
+    [data-theme="dark"] .hero::before {
+      background:
+        radial-gradient(780px 560px ellipse at 76% 24%,
+          color-mix(in srgb, var(--accent) 18%, transparent), transparent 60%);
+    }
+    .hero-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      margin-bottom: 32px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .hero-label::before {
+      content: "";
+      width: 24px;
+      height: 1.5px;
+      background: var(--accent);
+      display: inline-block;
+    }
+    .hero h1 {
+      font-size: clamp(46px, 7.4vw, 92px);
+      font-weight: 600;
+      letter-spacing: -0.04em;
+      line-height: 1.0;
+      max-width: 920px;
+      margin-bottom: 28px;
+    }
+    .hero h1 .punch {
+      color: var(--accent);
+    }
+    .hero .subtitle {
+      font-weight: 500;
+      font-size: clamp(20px, 2.2vw, 26px);
+      color: var(--ink);
+      letter-spacing: -0.02em;
+      line-height: 1.3;
+      max-width: 680px;
+      margin-bottom: 28px;
+    }
+    .hero-sub {
+      font-size: clamp(17px, 1.6vw, 19px);
+      color: var(--ink-soft);
+      max-width: 600px;
+      line-height: 1.55;
+      margin-bottom: 48px;
+    }
+    .hero-ctas {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 13px 22px;
+      border-radius: 100px;
+      font-weight: 500;
+      font-size: 14.5px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-primary {
+      background: var(--ink);
+      color: var(--bg);
+    }
+    .btn-primary:hover {
+      background: var(--accent);
+      color: white;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px color-mix(in srgb, var(--accent) 28%, transparent);
+    }
+    .btn-secondary {
+      background: var(--bg);
+      color: var(--ink);
+      border-color: var(--line);
+    }
+    .btn-secondary:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    /* ───── Section ───── */
+    section {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 112px 32px;
+      position: relative;
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+    }
+    /* Full-width alternating bands — box-shadow trick stays reliable across browsers */
+    section:nth-of-type(odd) {
+      background: var(--bg-soft);
+      box-shadow: 0 0 0 100vmax var(--bg-soft);
+      clip-path: inset(0 -100vmax);
+    }
+    .section-marker {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: clamp(72px, 9vw, 112px);
+      font-weight: 200;
+      line-height: 0.85;
+      letter-spacing: -0.04em;
+      color: var(--accent);
+      margin-bottom: 24px;
+      display: block;
+      opacity: 0.92;
+    }
+    .section-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+      padding-top: 20px;
+      border-top: 1.5px solid var(--ink);
+      display: inline-block;
+    }
+    [data-theme="dark"] .section-label {
+      border-top-color: var(--ink);
+    }
+    .section-label .num {
+      display: none;
+    }
+    section h2 {
+      font-size: clamp(36px, 4.4vw, 56px);
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+      margin-bottom: 28px;
+      max-width: 760px;
+    }
+    .section-intro {
+      font-size: 18px;
+      color: var(--ink-soft);
+      line-height: 1.6;
+      max-width: 620px;
+      margin-bottom: 72px;
+    }
+
+    /* ───── Reveal animation ───── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+                  transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .reveal.in-view {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .reveal { opacity: 1; transform: none; transition: none; }
+    }
+
+    /* ───── Steps ───── */
+    .steps { display: flex; flex-direction: column; }
+    .step {
+      display: grid;
+      grid-template-columns: 96px 1fr;
+      gap: 32px;
+      padding: 48px 8px;
+      border-top: 1px solid var(--line-soft);
+      align-items: start;
+      border-radius: 6px;
+      transition: background 0.25s ease;
+    }
+    .step:first-child { border-top: none; padding-top: 8px; }
+    .step:hover { background: color-mix(in srgb, var(--accent) 3%, transparent); }
+    [data-theme="dark"] .step:hover {
+      background: color-mix(in srgb, var(--accent) 7%, transparent);
+    }
+    .step-num {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 44px;
+      font-weight: 400;
+      color: var(--accent);
+      letter-spacing: -0.02em;
+      line-height: 1;
+      transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .step:hover .step-num {
+      transform: translateX(-4px);
+    }
+    .step-content h3 {
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -0.015em;
+      margin-bottom: 16px;
+      color: var(--ink);
+    }
+    .step-content p,
+    .step-content ul,
+    .step-content ol {
+      color: var(--ink-soft);
+      margin-bottom: 16px;
+      max-width: 620px;
+    }
+    .step-content p:last-child,
+    .step-content ul:last-child,
+    .step-content ol:last-child {
+      margin-bottom: 0;
+    }
+    .step-content ul,
+    .step-content ol { padding-left: 22px; }
+    .step-content li { margin-bottom: 8px; }
+    .step-content li::marker { color: var(--ink-muted); }
+
+    /* ───── Code ───── */
+    code {
+      background: var(--code-bg);
+      color: var(--code-ink);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+      font-size: 0.86em;
+      font-weight: 500;
+      white-space: nowrap;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+    pre {
+      background: var(--bg-soft);
+      border: 1px solid var(--line);
+      padding: 16px 20px;
+      border-radius: 10px;
+      overflow-x: auto;
+      margin: 16px 0;
+      max-width: 620px;
+      transition: background 0.3s ease, border-color 0.3s ease;
+    }
+    pre code {
+      background: none;
+      padding: 0;
+      color: var(--ink);
+      font-size: 14px;
+      font-weight: 400;
+    }
+
+    /* ───── Callouts ───── */
+    .quote {
+      background: var(--bg-soft);
+      border-left: 2px solid var(--accent);
+      padding: 18px 24px;
+      margin: 20px 0;
+      color: var(--ink-soft);
+      max-width: 620px;
+      font-size: 15.5px;
+      line-height: 1.6;
+      border-radius: 2px;
+      transition: background 0.3s ease;
+    }
+
+    /* ───── Tables ───── */
+    .table-wrap { max-width: 760px; overflow-x: auto; }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 8px 0 16px;
+      font-size: 15px;
+    }
+    th, td {
+      text-align: left;
+      padding: 14px 20px 14px 0;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+      transition: border-color 0.3s ease;
+    }
+    th {
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink-muted);
+      padding-bottom: 12px;
+    }
+    td { color: var(--ink-soft); }
+    td:first-child {
+      color: var(--ink);
+      font-weight: 500;
+      white-space: nowrap;
+      padding-right: 32px;
+    }
+
+    /* ───── Sub-blocks ───── */
+    .block {
+      padding: 40px 0;
+      border-top: 1px solid var(--line-soft);
+      transition: border-color 0.3s ease;
+    }
+    .block:first-of-type { border-top: none; padding-top: 0; }
+    .block h3 {
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -0.015em;
+      margin-bottom: 8px;
+      color: var(--ink);
+    }
+    .block-kicker {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+    }
+    .block p,
+    .block ul,
+    .block ol {
+      color: var(--ink-soft);
+      margin-bottom: 14px;
+      max-width: 620px;
+    }
+    .block ul, .block ol { padding-left: 22px; }
+    .block li { margin-bottom: 8px; }
+    .block li::marker { color: var(--ink-muted); }
+
+    .label-eyebrow {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin: 64px 0 20px;
+    }
+
+    /* ───── Obsidian logo + shimmer ───── */
+    .obsidian-head {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 56px;
+      align-items: start;
+      margin-bottom: 24px;
+    }
+    .obsidian-head > .obsidian-head-text > * { display: block; }
+    .obsidian-mark {
+      position: relative;
+      width: clamp(96px, 11vw, 132px);
+      aspect-ratio: 1 / 1;
+      border-radius: 26%;
+      overflow: hidden;
+      isolation: isolate;
+      filter: drop-shadow(0 12px 36px color-mix(in srgb, #6c31e3 28%, transparent));
+      flex-shrink: 0;
+      align-self: end;
+      margin-top: 12px;
+    }
+    .obsidian-mark svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+    .obsidian-mark::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        115deg,
+        transparent 38%,
+        rgba(255, 255, 255, 0.7) 50%,
+        transparent 62%
+      );
+      background-size: 280% 100%;
+      background-position: 130% 0;
+      mix-blend-mode: overlay;
+      pointer-events: none;
+    }
+    .obsidian-mark:hover::after {
+      animation: logo-shimmer-hover 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+    @keyframes logo-shimmer-hover {
+      0%   { background-position: 130% 0; }
+      45%  { background-position: -50% 0; }
+      100% { background-position: -50% 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .obsidian-mark:hover::after { animation: none; }
+    }
+    @media (max-width: 720px) {
+      .obsidian-head {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+      .obsidian-mark {
+        order: -1;
+        margin-top: 0;
+        align-self: start;
+      }
+    }
+
+    /* ───── Graph demo (Obsidian preview) ───── */
+    .graph-demo {
+      position: relative;
+      background: var(--bg-soft);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      margin: 24px 0 12px;
+      max-width: 620px;
+      overflow: hidden;
+      aspect-ratio: 2 / 1;
+      transition: background 0.3s ease, border-color 0.3s ease;
+    }
+    .graph-demo::after {
+      content: "Graph view";
+      position: absolute;
+      top: 14px;
+      right: 16px;
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      pointer-events: none;
+    }
+    .graph-demo svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    .graph-edge {
+      stroke: var(--ink-muted);
+      stroke-width: 0.7;
+      opacity: 0.28;
+      stroke-linecap: round;
+      fill: none;
+      transition: opacity 0.3s ease;
+    }
+    [data-theme="dark"] .graph-edge { opacity: 0.32; }
+    .graph-node {
+      fill: var(--ink-soft);
+      cursor: pointer;
+      transition: fill 0.25s ease, transform 0.25s ease;
+      transform-box: fill-box;
+      transform-origin: center;
+    }
+    .graph-node.accent { fill: var(--accent); }
+    .graph-node:hover {
+      fill: var(--accent);
+      transform: scale(1.3);
+    }
+    .graph-halo {
+      fill: var(--accent);
+      opacity: 0;
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: graph-halo 3.6s ease-in-out infinite;
+      pointer-events: none;
+    }
+    .graph-halo.h2 { animation-delay: -1.2s; }
+    .graph-halo.h3 { animation-delay: -2.4s; }
+    @keyframes graph-halo {
+      0%, 100% { opacity: 0; transform: scale(0.6); }
+      50% { opacity: 0.32; transform: scale(2.0); }
+    }
+    .graph-caption {
+      font-size: 13px;
+      color: var(--ink-muted);
+      max-width: 620px;
+      margin-top: 4px;
+      margin-bottom: 16px;
+    }
+
+    /* ───── Inline step images ───── */
+    .step-image {
+      display: block;
+      max-width: 620px;
+      width: 100%;
+      height: auto;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      box-shadow: 0 6px 28px color-mix(in srgb, var(--ink) 8%, transparent);
+      margin: 20px 0 8px;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    [data-theme="dark"] .step-image {
+      box-shadow: 0 6px 28px rgba(0, 0, 0, 0.6);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .graph-halo { animation: none; opacity: 0.15; }
+    }
+
+    /* ───── About / Contact section ───── */
+    .about {
+      position: relative;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 96px 32px;
+      border-top: 1px solid var(--line);
+      transition: border-color 0.3s ease;
+    }
+    .about::before {
+      content: "";
+      position: absolute;
+      inset: 0 calc(50% - 50vw) -60px calc(50% - 50vw);
+      pointer-events: none;
+      background:
+        radial-gradient(680px 480px ellipse at 22% 38%,
+          color-mix(in srgb, var(--accent) 9%, transparent), transparent 62%);
+      z-index: -1;
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 18%, black 78%, transparent 100%);
+              mask-image: linear-gradient(to bottom, transparent 0%, black 18%, black 78%, transparent 100%);
+    }
+    [data-theme="dark"] .about::before {
+      background:
+        radial-gradient(680px 480px ellipse at 22% 38%,
+          color-mix(in srgb, var(--accent) 16%, transparent), transparent 62%);
+    }
+    .about-inner {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 40px;
+      align-items: start;
+      max-width: 720px;
+    }
+    .avatar {
+      position: relative;
+      width: 104px;
+      height: 104px;
+      border-radius: 50%;
+      background: #ffffff;
+      color: #0f0f10;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+      border: 1px solid var(--line);
+      box-shadow: 0 8px 32px color-mix(in srgb, var(--accent) 14%, transparent);
+      transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+                  box-shadow 0.3s ease;
+    }
+    .avatar:hover {
+      transform: translateY(-3px) rotate(-3deg);
+      box-shadow: 0 16px 40px color-mix(in srgb, var(--accent) 24%, transparent);
+    }
+    .avatar svg {
+      width: 88%;
+      height: 88%;
+      display: block;
+    }
+    .about-content h3 {
+      font-weight: 600;
+      font-size: clamp(26px, 2.8vw, 34px);
+      letter-spacing: -0.025em;
+      color: var(--ink);
+      margin-bottom: 16px;
+      line-height: 1.2;
+    }
+    .about-content h3 em {
+      color: var(--accent);
+      font-style: normal;
+    }
+    .about-content p {
+      color: var(--ink-soft);
+      font-size: 16px;
+      max-width: 500px;
+      margin-bottom: 8px;
+      line-height: 1.6;
+    }
+    .about-cta {
+      margin-top: 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .about-cta .email {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 13px;
+      color: var(--ink-muted);
+    }
+
+    /* ───── Footer ───── */
+    footer {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 48px 32px 72px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--ink-muted);
+      font-size: 13px;
+      flex-wrap: wrap;
+      gap: 16px;
+      transition: border-color 0.3s ease;
+    }
+    .foot-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--ink-soft);
+      font-weight: 500;
+    }
+    .foot-logo .dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+    }
+    footer a { color: var(--ink-soft); }
+    footer a:hover { color: var(--accent); }
+
+    /* ───── Responsive ───── */
+    @media (max-width: 720px) {
+      .nav-inner { padding: 14px 20px; }
+      .nav-links { gap: 18px; font-size: 13px; }
+      .nav-links a:nth-child(2),
+      .nav-links a:nth-child(3),
+      .nav-links a:nth-child(4) { display: none; }
+      .nav-right { gap: 16px; }
+      .hero { padding: 72px 24px 48px; }
+      section { padding: 64px 24px; }
+      .about { padding: 64px 24px; }
+      footer { padding: 32px 24px 56px; }
+      .step { grid-template-columns: 1fr; gap: 12px; padding: 36px 8px; }
+      .step-num { font-size: 28px; }
+      .step:hover .step-num { transform: none; }
+      .hero-sub { font-size: 17px; }
+      .hero h1 { line-height: 1.04; }
+      td:first-child { white-space: normal; }
+      .about-inner { grid-template-columns: 1fr; gap: 24px; }
+      .avatar { width: 80px; height: 80px; font-size: 40px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="#top" class="nav-logo"><span class="dot"></span>Wiki Generator</a>
+    <div class="nav-right">
+      <div class="nav-links">
+        <a href="#start"><span class="nav-num">01</span>Get Started</a>
+        <a href="#together"><span class="nav-num">02</span>Work Together</a>
+        <a href="#advanced"><span class="nav-num">03</span>Advanced</a>
+        <a href="#obsidian"><span class="nav-num">04</span>Obsidian</a>
+        <a href="https://github.com/davron-design/wiki-generator" target="_blank" rel="noopener">GitHub ↗</a>
+      </div>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+        <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+        </svg>
+        <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="hero-label">Beginner's Guide</div>
+  <h1>Building the <span class="punch">Agentic Mind<span class="punct">.</span></span></h1>
+  <p class="subtitle">A knowledge base that grows with every project<span class="punct">.</span></p>
+  <p class="hero-sub">A friendly walkthrough for setting up an AI-powered knowledge base with Claude Code — and collaborating on it with your team. No terminal. No coding.</p>
+  <div class="hero-ctas">
+    <a href="#start" class="btn btn-primary">Get Started →</a>
+    <a href="https://github.com/davron-design/wiki-generator" target="_blank" rel="noopener" class="btn btn-secondary">View on GitHub</a>
+  </div>
+</header>
+
+<!-- ════════ SECTION 01 — GET STARTED ════════ -->
+<section id="start" class="reveal">
+  <span class="section-marker">01</span>
+  <div class="section-label">Get Started</div>
+  <h2>Set it up in 10 minutes<span class="punct">.</span></h2>
+  <p class="section-intro">You'll need the <strong>Claude Code desktop app</strong> and about <strong>10 minutes</strong>. That's it.</p>
+
+  <div class="steps">
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <h3>Create a folder for your wiki</h3>
+        <p>Pick a spot on your computer — your Desktop is fine. Create a new folder and name it whatever you want: <em>My Wiki</em>, <em>Gardening Notes</em>, <em>Work Knowledge Base</em>.</p>
+        <p>That folder is the home of your wiki. Everything will live inside it.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <h3>Open the folder in Claude Code</h3>
+        <p>Launch the Claude Code desktop app and open the folder you just created. You should now see an empty project with a chat box ready to go.</p>
+        <img src="assets/claude-code-empty.png" alt="The empty Claude Code project view, ready for your first prompt" class="step-image" loading="lazy" />
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <h3>Install the wiki generator skill</h3>
+        <p>Paste this prompt into Claude Code:</p>
+        <div class="quote">Please download the repo at <strong>https://github.com/davron-design/wiki-generator</strong> and install it as a project-scoped skill in this folder. Put the skill files under <code>.claude/skills/wiki-generator/</code> so the skill only applies to this project. Once it's installed, list the skills so I can confirm it's ready to use.</div>
+        <p>If Claude asks for permission, just <strong>Always Allow</strong>. You only need to do this once per wiki.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <h3>Build your wiki project</h3>
+        <p>In Claude Code, type:</p>
+        <pre><code>/wiki-generator</code></pre>
+        <p>Claude will create three folders for you:</p>
+        <ul>
+          <li><code>raw/</code> — where you drop source material (articles, notes, research)</li>
+          <li><code>wiki/</code> — where the polished knowledge base lives</li>
+          <li><code>output/</code> — where reports and query results show up</li>
+        </ul>
+        <p>It also installs two companion skills — <code>raw-compile</code> and <code>audit-wiki</code> — automatically.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <h3>Add material to <code>raw/</code></h3>
+        <p>This is where you feed your wiki. Open the <code>raw/</code> folder and drop in any material you want included — articles, notes, research clippings, transcripts.</p>
+        <p>Add as many files as you want. Don't worry about organizing them — that's Claude's job.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-content">
+        <h3>Compile the raw material</h3>
+        <p>In Claude Code, simply say:</p>
+        <pre><code>compile</code></pre>
+        <p>Claude will read every file in <code>raw/</code>, group the material by topic, write clean wiki articles into <code>wiki/</code>, link them together with <code>[[wiki links]]</code>, and archive the compiled raw files so you know what's been processed.</p>
+        <p>Sit back — this part is automatic.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">7</div>
+      <div class="step-content">
+        <h3>Audit your wiki</h3>
+        <p>Once your wiki is built, check it for gaps or inconsistencies. In Claude Code, say:</p>
+        <pre><code>audit</code></pre>
+        <p>Claude will scan the wiki and produce a numbered audit report in <code>output/_audits/</code>. The report points out missing cross-links, thin topics, and inconsistencies between articles.</p>
+        <p>The audit is <strong>report-only</strong> by default — it won't change anything until you say so.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="label-eyebrow">Quick Reference</div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Action</th><th>What to say</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Set up a new wiki</td><td><code>/wiki-generator</code></td></tr>
+        <tr><td>Compile new material</td><td><code>compile</code></td></tr>
+        <tr><td>Audit the wiki</td><td><code>audit</code></td></tr>
+        <tr><td>Ask a question</td><td>Just ask in plain English</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ════════ SECTION 02 — WORK TOGETHER ════════ -->
+<section id="together" class="reveal">
+  <span class="section-marker">02</span>
+  <div class="section-label">Work Together</div>
+  <h2>Collaborate with your team<span class="punct">.</span></h2>
+  <p class="section-intro">Want a small team to build the same wiki together? Use <strong>GitHub Desktop</strong> as the syncing layer. No terminal, no coding.</p>
+
+  <div class="label-eyebrow">What You'll Need (per person)</div>
+  <ul style="color: var(--ink-soft); padding-left: 22px; max-width: 620px; margin-bottom: 8px;">
+    <li>The <strong>Claude Code desktop app</strong> — you already have this</li>
+    <li>The <strong>GitHub Desktop app</strong> — <a href="https://desktop.github.com" target="_blank" rel="noopener">desktop.github.com</a></li>
+    <li>A free <strong>GitHub account</strong> — <a href="https://github.com/signup" target="_blank" rel="noopener">github.com/signup</a></li>
+  </ul>
+
+  <div style="margin-top: 64px;">
+
+    <div class="block">
+      <div class="block-kicker">One-Time / Team Lead</div>
+      <h3>Set up the shared repo</h3>
+      <ol>
+        <li>Go to <a href="https://github.com/new" target="_blank" rel="noopener">github.com/new</a> and create a new repository (e.g. <code>team-wiki</code>). Keep it <strong>Private</strong> if your material is sensitive.</li>
+        <li>Open the wiki folder in GitHub Desktop → <strong>File → Add Local Repository</strong> → pick the folder → click <strong>Publish repository</strong>.</li>
+        <li>In the repo's <strong>Settings → Collaborators</strong> on github.com, invite your teammates by username or email.</li>
+      </ol>
+    </div>
+
+    <div class="block">
+      <div class="block-kicker">One-Time / Each Teammate</div>
+      <h3>Get a synced copy</h3>
+      <ol>
+        <li>Install <strong>GitHub Desktop</strong> from <a href="https://desktop.github.com" target="_blank" rel="noopener">desktop.github.com</a> and sign in.</li>
+        <li>Accept the email invitation from the team lead.</li>
+        <li>In GitHub Desktop, click <strong>Clone a repository</strong> → pick your team's wiki → choose where to save it.</li>
+      </ol>
+      <p>You now have a synced copy of the wiki on your machine.</p>
+    </div>
+
+    <div class="block">
+      <div class="block-kicker">Daily / Everyone</div>
+      <h3>Pull, work, push</h3>
+      <p><strong>Before you start working:</strong></p>
+      <ol>
+        <li>Open <strong>GitHub Desktop</strong> → <strong>Fetch origin</strong> → <strong>Pull origin</strong> to grab the latest changes.</li>
+        <li>Open the wiki folder in <strong>Claude Code</strong> and work as usual — drop files into <code>raw/</code>, say <code>compile</code>, ask the wiki questions.</li>
+      </ol>
+      <p><strong>When you've made changes you want to share:</strong></p>
+      <ol>
+        <li>In <strong>GitHub Desktop</strong>, you'll see all your changed files on the left.</li>
+        <li>Type a short summary at the bottom (e.g. <em>"Added gardening notes"</em>).</li>
+        <li>Click <strong>Commit to main</strong>, then <strong>Push origin</strong>.</li>
+      </ol>
+      <p>Your teammates can now <strong>Fetch → Pull</strong> to receive your changes.</p>
+    </div>
+
+    <div class="block">
+      <div class="block-kicker">Tips</div>
+      <h3>Habits that prevent conflicts</h3>
+      <ul>
+        <li><strong>Pull before you start. Push when you finish.</strong> That habit prevents most conflicts.</li>
+        <li>If two people edited the same article at the same time, GitHub Desktop will guide you through merging.</li>
+        <li>Everything is version-controlled — you can roll back any change from GitHub Desktop's <strong>History</strong> tab.</li>
+      </ul>
+    </div>
+
+  </div>
+</section>
+
+<!-- ════════ SECTION 03 — ADVANCED ════════ -->
+<section id="advanced" class="reveal">
+  <span class="section-marker">03</span>
+  <div class="section-label">Advanced Collaboration</div>
+  <h2>Pull Requests for bigger teams<span class="punct">.</span></h2>
+  <p class="section-intro">The "everyone pushes to <code>main</code>" flow above works for small, trusted teams. As your group grows — or when changes need a second pair of eyes before going live — switch to <strong>Pull Requests</strong>.</p>
+
+  <div class="block">
+    <h3>What's a Pull Request?</h3>
+    <p>Think of a Pull Request (PR) as a <strong>draft change proposal</strong>. Instead of pushing your edits straight into the shared wiki, you save them on a personal "side track" (a <strong>branch</strong>) and ask a teammate to review them. Once approved, the change is <strong>merged</strong> into the main wiki — and everyone else pulls it down as normal.</p>
+    <p>It's the digital equivalent of <em>"let me show you this before I publish it."</em></p>
+  </div>
+
+  <div class="block">
+    <h3>Two roles — Maintainers and Contributors</h3>
+    <p>PRs introduce a split between two roles:</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Role</th><th>Who</th><th>What they do</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Maintainer</td><td>Team lead (1–2 people)</td><td>Reviews PRs, approves or requests changes, merges into <code>main</code>, manages access</td></tr>
+          <tr><td>Contributor</td><td>Everyone else</td><td>Edits the wiki on their own branch, opens a PR, responds to review feedback</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The maintainer is <strong>not</strong> the only one who can edit the wiki — contributors do all the writing. The maintainer's job is to be the <strong>gatekeeper of <code>main</code></strong>, making sure nothing inconsistent or accidental lands in the shared copy.</p>
+  </div>
+
+  <div class="block">
+    <div class="block-kicker">One-Time / Maintainer</div>
+    <h3>Turn on branch protection</h3>
+    <p>To require PRs (instead of letting anyone push directly to <code>main</code>):</p>
+    <ol>
+      <li>Go to your repo on github.com.</li>
+      <li>Click <strong>Settings → Branches</strong>.</li>
+      <li>Under <strong>Branch protection rules</strong>, click <strong>Add rule</strong>.</li>
+      <li>Branch name pattern: <code>main</code></li>
+      <li>Check <strong>Require a pull request before merging</strong>.</li>
+      <li>Click <strong>Create</strong>.</li>
+    </ol>
+    <p>From now on, every change — even the maintainer's own — flows through a PR.</p>
+  </div>
+
+  <div class="block">
+    <div class="block-kicker">Daily / Contributor</div>
+    <h3>The PR workflow</h3>
+    <p><strong>1. Start a branch before editing.</strong> In GitHub Desktop, click the <strong>Current Branch</strong> dropdown → <strong>New Branch</strong> → name it after your change (e.g. <code>add-gardening-notes</code>) → <strong>Create branch</strong>.</p>
+    <p><strong>2. Edit as usual.</strong> Open the folder in Claude Code, drop files into <code>raw/</code>, say <code>compile</code>. Your changes are isolated to your branch — <code>main</code> is untouched.</p>
+    <p><strong>3. Commit and push your branch.</strong> Write a commit message → <strong>Commit to &lt;your-branch&gt;</strong> → <strong>Publish branch</strong> (first time) or <strong>Push origin</strong> (after that).</p>
+    <p><strong>4. Open the Pull Request.</strong> GitHub Desktop shows a <strong>Create Pull Request</strong> banner — click it. A browser tab opens on github.com. Add a short description of what changed and why → <strong>Create pull request</strong>.</p>
+    <p><strong>5. Wait for review.</strong> Your maintainer gets notified. They'll either:</p>
+    <ul>
+      <li><strong>Approve and merge</strong> — your change goes live, and everyone else can pull it.</li>
+      <li><strong>Request changes</strong> — they leave comments; you edit on the same branch, commit, and push. The PR updates automatically.</li>
+    </ul>
+  </div>
+
+  <div class="block">
+    <div class="block-kicker">Daily / Maintainer</div>
+    <h3>Reviewing a PR</h3>
+    <ol>
+      <li>Open the PR on github.com (you'll get an email notification).</li>
+      <li>Read the description and click the <strong>Files changed</strong> tab to see exactly what changed.</li>
+      <li>Leave comments on specific lines if needed, or approve the PR.</li>
+      <li>When ready, click <strong>Merge pull request</strong> → <strong>Confirm merge</strong>.</li>
+      <li>Click <strong>Delete branch</strong> (the button appears after merge) — keeps the repo tidy.</li>
+    </ol>
+  </div>
+
+  <div class="block">
+    <div class="block-kicker">Tips</div>
+    <h3>Keep PRs healthy</h3>
+    <ul>
+      <li><strong>Keep branches short-lived.</strong> Open a PR, get it merged, delete the branch. Long-running branches drift from <code>main</code> and become painful to merge.</li>
+      <li><strong>One PR per topic.</strong> Don't bundle <em>"added gardening notes + fixed typos + restructured wiki"</em> into one PR — split them. Smaller PRs review faster and are easier to revert.</li>
+      <li><strong>Write clear PR descriptions.</strong> A one-line title plus 2–3 sentences explaining <em>what</em> and <em>why</em> makes review much faster.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ════════ SECTION 04 — OBSIDIAN ════════ -->
+<section id="obsidian" class="reveal">
+  <div class="obsidian-head">
+    <div class="obsidian-head-text">
+      <span class="section-marker">04</span>
+      <div class="section-label">Viewing in Obsidian</div>
+      <h2>Browse your wiki visually<span class="punct">.</span></h2>
+    </div>
+    <a href="https://obsidian.md" target="_blank" rel="noopener" class="obsidian-mark" aria-label="Obsidian">
+      <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <radialGradient id="obs-bl" cx="0" cy="0" gradientTransform="matrix(-59 -225 150 -39 161.4 470)" gradientUnits="userSpaceOnUse" r="1">
+          <stop offset="0" stop-color="#fff" stop-opacity=".4"/>
+          <stop offset="1" stop-opacity=".1"/>
+        </radialGradient>
+        <radialGradient id="obs-tr" cx="0" cy="0" gradientTransform="matrix(50 -379 280 37 360 374.2)" gradientUnits="userSpaceOnUse" r="1">
+          <stop offset="0" stop-color="#fff" stop-opacity=".6"/>
+          <stop offset="1" stop-color="#fff" stop-opacity=".1"/>
+        </radialGradient>
+        <radialGradient id="obs-tl" cx="0" cy="0" gradientTransform="matrix(69 -319 218 47 175.4 307)" gradientUnits="userSpaceOnUse" r="1">
+          <stop offset="0" stop-color="#fff" stop-opacity=".8"/>
+          <stop offset="1" stop-color="#fff" stop-opacity=".4"/>
+        </radialGradient>
+        <radialGradient id="obs-br" cx="0" cy="0" gradientTransform="matrix(-96 -163 187 -111 335.3 512.2)" gradientUnits="userSpaceOnUse" r="1">
+          <stop offset="0" stop-color="#fff" stop-opacity=".3"/>
+          <stop offset="1" stop-opacity=".3"/>
+        </radialGradient>
+        <radialGradient id="obs-te" cx="0" cy="0" gradientTransform="matrix(-36 166 -112 -24 310 128.2)" gradientUnits="userSpaceOnUse" r="1">
+          <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+          <stop offset="1" stop-color="#fff" stop-opacity=".2"/>
+        </radialGradient>
+        <radialGradient id="obs-le" cx="0" cy="0" gradientTransform="matrix(88 89 -190 187 111 220.2)" gradientUnits="userSpaceOnUse" r="1">
+          <stop offset="0" stop-color="#fff" stop-opacity=".2"/>
+          <stop offset="1" stop-color="#fff" stop-opacity=".4"/>
+        </radialGradient>
+        <radialGradient id="obs-be" cx="0" cy="0" gradientTransform="matrix(9 130 -276 20 215 284)" gradientUnits="userSpaceOnUse" r="1">
+          <stop offset="0" stop-color="#fff" stop-opacity=".2"/>
+          <stop offset="1" stop-color="#fff" stop-opacity=".3"/>
+        </radialGradient>
+        <radialGradient id="obs-me" cx="0" cy="0" gradientTransform="matrix(-198 -104 327 -623 400 399.2)" gradientUnits="userSpaceOnUse" r="1">
+          <stop offset="0" stop-color="#fff" stop-opacity=".2"/>
+          <stop offset=".5" stop-color="#fff" stop-opacity=".2"/>
+          <stop offset="1" stop-color="#fff" stop-opacity=".3"/>
+        </radialGradient>
+        <clipPath id="obs-clip"><path d="M.2.2h512v512H.2z"/></clipPath>
+        <g clip-path="url(#obs-clip)">
+          <path d="M382.3 475.6c-3.1 23.4-26 41.6-48.7 35.3-32.4-8.9-69.9-22.8-103.6-25.4l-51.7-4a34 34 0 0 1-22-10.2l-89-91.7a34 34 0 0 1-6.7-37.7s55-121 57.1-127.3c2-6.3 9.6-61.2 14-90.6 1.2-7.9 5-15 11-20.3L248 8.9a34.1 34.1 0 0 1 49.6 4.3L386 125.6a37 37 0 0 1 7.6 22.4c0 21.3 1.8 65 13.6 93.2 11.5 27.3 32.5 57 43.5 71.5a17.3 17.3 0 0 1 1.3 19.2 1494 1494 0 0 1-44.8 70.6c-15 22.3-21.9 49.9-25 73.1z" fill="#6c31e3"/>
+          <path d="M165.9 478.3c41.4-84 40.2-144.2 22.6-187-16.2-39.6-46.3-64.5-70-80-.6 2.3-1.3 4.4-2.2 6.5L60.6 342a34 34 0 0 0 6.6 37.7l89.1 91.7a34 34 0 0 0 9.6 7z" fill="url(#obs-bl)"/>
+          <path d="M278.4 307.8c11.2 1.2 22.2 3.6 32.8 7.6 34 12.7 65 41.2 90.5 96.3 1.8-3.1 3.6-6.2 5.6-9.2a1536 1536 0 0 0 44.8-70.6 17 17 0 0 0-1.3-19.2c-11-14.6-32-44.2-43.5-71.5-11.8-28.2-13.5-72-13.6-93.2 0-8.1-2.6-16-7.6-22.4L297.6 13.2a34 34 0 0 0-1.5-1.7 96 96 0 0 1 2 54 198.3 198.3 0 0 1-17.6 41.3l-7.2 14.2a171 171 0 0 0-19.4 71c-1.2 29.4 4.8 66.4 24.5 115.8z" fill="url(#obs-tr)"/>
+          <path d="M278.4 307.8c-19.7-49.4-25.8-86.4-24.5-115.9a171 171 0 0 1 19.4-71c2.3-4.8 4.8-9.5 7.2-14.1 7.1-13.9 14-27 17.6-41.4a96 96 0 0 0-2-54A34.1 34.1 0 0 0 248 9l-105.4 94.8a34.1 34.1 0 0 0-10.9 20.3l-12.8 85-.5 2.3c23.8 15.5 54 40.4 70.1 80a147 147 0 0 1 7.8 24.8c28-6.8 55.7-11 82.1-8.3z" fill="url(#obs-tl)"/>
+          <path d="M333.6 511c22.7 6.2 45.6-12 48.7-35.4a187 187 0 0 1 19.4-63.9c-25.6-55-56.5-83.6-90.4-96.3-36-13.4-75.2-9-115 .7 8.9 40.4 3.6 93.3-30.4 162.2 4 1.8 8.1 3 12.5 3.3 0 0 24.4 2 53.6 4.1 29 2 72.4 17.1 101.6 25.2z" fill="url(#obs-br)"/>
+          <g clip-rule="evenodd" fill-rule="evenodd">
+            <path d="M254.1 190c-1.3 29.2 2.4 62.8 22.1 112.1l-6.2-.5c-17.7-51.5-21.5-78-20.2-107.6a174.7 174.7 0 0 1 20.4-72c2.4-4.9 8-14.1 10.5-18.8 7.1-13.7 11.9-21 16-33.6 5.7-17.5 4.5-25.9 3.8-34.1 4.6 29.9-12.7 56-25.7 82.4a177.1 177.1 0 0 0-20.7 72z" fill="url(#obs-te)"/>
+            <path d="M194.3 293.4c2.4 5.4 4.6 9.8 6 16.5L195 311c-2.1-7.8-3.8-13.4-6.8-20-17.8-42-46.3-63.6-69.7-79.5 28.2 15.2 57.2 39 75.7 81.9z" fill="url(#obs-le)"/>
+            <path d="M200.6 315.1c9.8 46-1.2 104.2-33.6 160.9 27.1-56.2 40.2-110.1 29.3-160z" fill="url(#obs-be)"/>
+            <path d="M312.5 311c53.1 19.9 73.6 63.6 88.9 100-19-38.1-45.2-80.3-90.8-96-34.8-11.8-64.1-10.4-114.3 1l-1.1-5c53.2-12.1 81-13.5 117.3 0z" fill="url(#obs-me)"/>
+          </g>
+        </g>
+      </svg>
+    </a>
+  </div>
+  <p class="section-intro">Claude builds the wiki. <strong>Obsidian</strong> — a free markdown app — gives you a clickable, searchable, visual way to read it. Same folder. No sync needed.</p>
+
+  <div class="block">
+    <h3>What's Obsidian, and why use it?</h3>
+    <p>Claude Code is great for <strong>building</strong> the wiki — compiling raw material, writing articles, running audits. But it's not designed for <strong>browsing</strong> what you've built.</p>
+    <p>Obsidian fills that gap. It's a free markdown reader that natively understands <code>[[wiki links]]</code> — the same link style Claude already writes into every article. That means:</p>
+    <ul>
+      <li>Click any <code>[[link]]</code> in an article and jump to it.</li>
+      <li>Search across the whole wiki instantly.</li>
+      <li>See a <strong>graph view</strong> showing how topics connect.</li>
+      <li>Read your wiki on your phone or tablet too (optional).</li>
+    </ul>
+    <p>Obsidian doesn't change your files. It just reads the same folder Claude is writing to.</p>
+  </div>
+
+  <div class="steps">
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <h3>Download Obsidian</h3>
+        <ol>
+          <li>Go to <a href="https://obsidian.md" target="_blank" rel="noopener">obsidian.md</a>.</li>
+          <li>Click the big <strong>Get Obsidian</strong> button.</li>
+          <li>Pick the installer for your computer (Mac, Windows, or Linux) and install it like any other app.</li>
+        </ol>
+        <p>Obsidian is <strong>free for personal use</strong> — no account or sign-up required.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <h3>Open your wiki folder as a vault</h3>
+        <p>In Obsidian, a "vault" is just a folder full of markdown files. Your wiki folder is already exactly that.</p>
+        <ol>
+          <li>Launch <strong>Obsidian</strong>.</li>
+          <li>On the welcome screen, click <strong>Open folder as vault</strong>.</li>
+          <li>Pick the <strong>wiki folder</strong> you created earlier (the one Claude Code is working in).</li>
+          <li>Click <strong>Open</strong>.</li>
+        </ol>
+        <p>Obsidian scans the folder and shows every markdown file in the left sidebar.</p>
+        <div class="quote"><strong>Tip:</strong> You can point Obsidian at the <strong>whole project folder</strong> (so you also see <code>CLAUDE.md</code>, <code>raw/</code>, etc.), or <strong>just the <code>wiki/</code> subfolder</strong> if you only want to browse the polished knowledge base. Either works — pick whichever feels less cluttered.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <h3>Start at the master index</h3>
+        <p>Your wiki has a built-in entry point.</p>
+        <ol>
+          <li>In the left sidebar, open <code>wiki/_master-index.md</code>.</li>
+          <li>You'll see a table of every topic in your wiki.</li>
+          <li>Click any <code>[[link]]</code> in the table to jump to that topic's index.</li>
+          <li>From there, click into any article.</li>
+        </ol>
+        <p>This is the same path Claude follows when answering questions — now you can walk it yourself.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <h3>Try the Graph View</h3>
+        <p>This is the fun part.</p>
+
+        <div class="graph-demo" aria-label="Animated illustration of a wiki graph view">
+          <svg viewBox="0 0 600 300" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+            <g class="graph-edges">
+              <line class="graph-edge" data-edge="0,1"/>
+              <line class="graph-edge" data-edge="0,2"/>
+              <line class="graph-edge" data-edge="0,3"/>
+              <line class="graph-edge" data-edge="0,4"/>
+              <line class="graph-edge" data-edge="0,5"/>
+              <line class="graph-edge" data-edge="1,5"/>
+              <line class="graph-edge" data-edge="1,6"/>
+              <line class="graph-edge" data-edge="1,3"/>
+              <line class="graph-edge" data-edge="2,5"/>
+              <line class="graph-edge" data-edge="2,7"/>
+              <line class="graph-edge" data-edge="2,8"/>
+              <line class="graph-edge" data-edge="3,9"/>
+              <line class="graph-edge" data-edge="3,10"/>
+              <line class="graph-edge" data-edge="4,8"/>
+              <line class="graph-edge" data-edge="4,10"/>
+              <line class="graph-edge" data-edge="4,12"/>
+              <line class="graph-edge" data-edge="5,13"/>
+              <line class="graph-edge" data-edge="6,11"/>
+              <line class="graph-edge" data-edge="7,13"/>
+              <line class="graph-edge" data-edge="9,14"/>
+              <line class="graph-edge" data-edge="10,14"/>
+            </g>
+            <g class="graph-nodes">
+              <circle class="graph-halo h1" data-halo="0" r="12"/>
+              <circle class="graph-halo h2" data-halo="5" r="8"/>
+              <circle class="graph-halo h3" data-halo="13" r="6"/>
+
+              <circle class="graph-node accent" data-node="0" r="10"/>
+              <circle class="graph-node" data-node="1" r="7"/>
+              <circle class="graph-node" data-node="2" r="7"/>
+              <circle class="graph-node" data-node="3" r="7"/>
+              <circle class="graph-node" data-node="4" r="7"/>
+              <circle class="graph-node accent" data-node="5" r="6"/>
+              <circle class="graph-node" data-node="6" r="6"/>
+              <circle class="graph-node" data-node="7" r="6"/>
+              <circle class="graph-node" data-node="8" r="6"/>
+              <circle class="graph-node" data-node="9" r="6"/>
+              <circle class="graph-node" data-node="10" r="6"/>
+              <circle class="graph-node" data-node="11" r="5"/>
+              <circle class="graph-node" data-node="12" r="5"/>
+              <circle class="graph-node accent" data-node="13" r="5"/>
+              <circle class="graph-node" data-node="14" r="5"/>
+            </g>
+          </svg>
+        </div>
+        <p class="graph-caption">Every article is a node. Every <code>[[link]]</code> between articles becomes an edge. Hover any dot.</p>
+
+        <ol>
+          <li>Click the <strong>graph icon</strong> in the left sidebar (it looks like three connected dots), or press <strong>Ctrl/Cmd + G</strong>.</li>
+          <li>You'll see every article in your wiki as a node, with lines connecting articles that link to each other.</li>
+          <li>Click any node to jump straight to that article.</li>
+        </ol>
+        <p>The graph is a quick way to spot <strong>orphaned articles</strong> (nothing links to them) and <strong>clusters</strong> (topics that are tightly connected). It's also a nice visual gut-check on how your wiki is growing.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <h3>Use search</h3>
+        <p>Press <strong>Ctrl/Cmd + Shift + F</strong> to open the search panel. Type anything — Obsidian searches across every article instantly.</p>
+        <p>For quick file-name lookups, press <strong>Ctrl/Cmd + O</strong> and start typing an article name.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="label-eyebrow">How Obsidian and Claude Code Work Together</div>
+  <p style="color: var(--ink-soft); max-width: 620px; margin-bottom: 20px;">You don't have to pick one. They share the same folder.</p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Task</th><th>Use</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Drop new material into <code>raw/</code></td><td>Either (Obsidian or Finder)</td></tr>
+        <tr><td>Compile / audit / ask the wiki questions</td><td><strong>Claude Code</strong></td></tr>
+        <tr><td>Browse, search, follow links, read articles</td><td><strong>Obsidian</strong></td></tr>
+        <tr><td>Edit an article by hand</td><td>Either</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p style="color: var(--ink-soft); max-width: 620px; margin: 20px 0 12px;">A common rhythm:</p>
+  <ol style="color: var(--ink-soft); padding-left: 22px; max-width: 620px;">
+    <li>In <strong>Claude Code</strong>, say <code>compile</code> to bring new material into the wiki.</li>
+    <li>Switch to <strong>Obsidian</strong> to read what Claude wrote, follow the links, and check the graph.</li>
+    <li>Spot something thin or missing? Back to <strong>Claude Code</strong> and say <code>audit</code>.</li>
+  </ol>
+</section>
+
+<!-- ════════ ABOUT / CONTACT ════════ -->
+<aside class="about reveal">
+  <div class="about-inner">
+    <div class="avatar" aria-label="Davron">
+      <svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <g transform="translate(0,600) scale(0.1,-0.1)" fill="currentColor">
+          <path d="M2700 4814 c-99 -17 -147 -32 -230 -72 -193 -94 -310 -263 -310 -449 l0 -53 -27 7 c-16 4 -59 8 -98 7 -57 -1 -83 -7 -140 -34 -89 -42 -188 -140 -233 -231 -65 -131 -90 -315 -70 -509 7 -74 52 -249 75 -293 16 -32 7 -47 -28 -47 -49 0 -169 -68 -169 -95 0 -3 -6 -13 -14 -21 -8 -8 -24 -40 -36 -71 -43 -111 -22 -286 45 -393 82 -130 246 -243 269 -185 9 23 -2 39 -38 59 -55 29 -135 116 -166 180 -79 162 -49 358 63 414 63 31 191 33 172 2 -7 -11 -7 -323 0 -380 42 -336 111 -583 227 -809 70 -138 138 -229 252 -339 102 -98 164 -139 339 -225 153 -76 241 -97 401 -97 237 1 397 52 615 198 118 79 310 256 347 320 10 17 22 32 26 32 4 0 8 6 8 14 0 8 4 16 8 18 41 17 242 443 242 512 0 20 10 30 51 50 62 32 156 103 225 172 64 65 118 170 141 277 14 67 15 89 5 150 -16 92 -54 165 -120 234 -29 31 -49 60 -46 66 4 7 24 35 44 62 81 109 138 239 161 369 11 66 8 287 -5 346 -56 255 -121 366 -291 503 -69 55 -244 139 -315 151 -3 1 -11 5 -18 10 -7 4 -16 5 -19 2 -3 -3 -12 -1 -18 4 -7 6 -66 22 -131 36 -132 27 -279 46 -674 85 -58 6 -125 12 -150 15 -71 7 -342 13 -370 8z m-160 -658 c183 -119 391 -235 495 -276 11 -5 41 -18 66 -29 26 -12 51 -21 55 -20 5 2 20 -2 34 -8 48 -21 168 -54 246 -67 105 -19 321 -19 409 -2 39 8 73 11 77 7 4 -3 0 -26 -9 -51 -23 -64 -22 -309 1 -362 18 -42 19 -48 8 -48 -4 0 -12 10 -17 23 -14 30 -104 74 -193 92 -87 18 -275 21 -350 5 -84 -18 -170 -56 -228 -100 -43 -33 -54 -46 -54 -69 0 -16 7 -31 15 -35 8 -3 15 -14 15 -24 0 -10 6 -27 14 -37 15 -21 28 -19 143 29 124 52 216 70 363 70 136 0 221 -15 296 -50 27 -13 32 -21 32 -52 0 -20 0 -103 2 -183 2 -161 -7 -209 -52 -275 -97 -145 -388 -235 -576 -179 -79 24 -164 100 -194 172 -21 53 -23 74 -23 238 l-1 180 -29 3 c-17 1 -64 5 -106 8 -75 6 -77 7 -97 43 -54 95 -152 178 -262 221 -48 19 -80 25 -175 32 -84 7 -325 -63 -325 -94 0 -4 -6 -8 -14 -8 -8 0 -28 -11 -44 -25 -17 -14 -35 -25 -40 -25 -20 0 -71 -51 -66 -65 7 -17 59 -45 84 -45 9 0 30 11 46 25 16 14 40 29 54 33 41 12 280 7 345 -7 118 -25 281 -85 302 -111 20 -24 13 -145 -14 -239 -45 -159 -115 -252 -229 -306 -138 -66 -382 -10 -494 111 -90 98 -125 224 -115 417 l5 109 -31 29 -31 29 17 77 c59 276 208 581 375 770 81 91 149 144 169 133 9 -5 54 -34 101 -64z m-93 -862 c-3 -3 -12 -4 -19 -1 -8 3 -5 6 6 6 11 1 17 -2 13 -5z m89 -16 c3 -5 -6 -6 -23 -2 -40 9 -50 22 -13 16 17 -2 33 -8 36 -14z m51 -14 c-3 -3 -12 -4 -19 -1 -8 3 -5 6 6 6 11 1 17 -2 13 -5z m1803 -104 c48 -24 59 -33 106 -95 54 -71 68 -112 68 -201 0 -74 -7 -106 -37 -174 -22 -50 -113 -147 -174 -185 -34 -22 -63 -43 -63 -46 0 -4 -9 -9 -20 -12 -19 -5 -20 0 -20 151 0 196 -21 386 -52 479 -25 73 -22 91 12 106 30 13 136 0 180 -23z m-1378 -162 l27 -10 0 -112 c-1 -171 26 -259 109 -342 89 -90 234 -135 382 -117 47 6 94 13 105 16 11 3 34 8 50 12 17 4 54 18 83 31 29 14 57 22 61 19 5 -2 11 -45 15 -95 4 -50 9 -97 12 -105 4 -9 -3 -16 -22 -21 -15 -4 -39 -13 -53 -20 -14 -8 -31 -14 -37 -14 -12 0 -87 -52 -126 -89 l-28 -25 -42 31 c-130 92 -343 147 -463 118 -43 -11 -154 -63 -192 -91 l-31 -24 -44 22 c-64 31 -78 36 -138 48 -117 22 -254 -12 -376 -95 l-36 -25 -40 55 c-39 54 -183 185 -204 185 -6 0 -18 8 -26 18 -12 13 -14 40 -13 122 2 58 3 107 4 110 0 2 8 -6 17 -18 8 -12 21 -22 29 -22 7 0 15 -4 17 -8 6 -14 66 -52 81 -52 9 0 17 -4 19 -9 7 -18 126 -52 197 -58 155 -10 293 37 376 129 83 92 152 266 157 391 1 39 5 51 22 57 23 10 65 5 108 -12z m375 -957 c74 -29 89 -40 114 -85 34 -60 32 -140 -4 -195 -32 -48 -125 -112 -199 -137 -72 -24 -179 -15 -292 24 l-88 31 -67 -42 -66 -42 -100 1 c-104 0 -188 14 -226 36 -36 21 -78 69 -105 121 -30 59 -27 117 10 181 40 68 141 105 283 102 70 -1 87 -6 167 -45 l90 -44 35 22 c157 97 319 123 448 72z"/>
+          <path d="M3383 3146 c-16 -14 -43 -53 -59 -88 -95 -196 -70 -448 45 -448 96 0 210 319 167 465 -28 93 -92 122 -153 71z"/>
+          <path d="M2455 3097 c-75 -79 -111 -190 -102 -317 6 -96 34 -156 82 -176 24 -10 41 -11 59 -4 61 23 124 182 133 336 7 107 2 132 -33 173 -40 48 -85 44 -139 -12z"/>
+          <path d="M2848 2610 c-7 -16 -16 -30 -19 -30 -3 0 -23 -36 -44 -81 -48 -102 -46 -153 6 -205 45 -44 119 -65 157 -43 40 22 34 42 -18 57 -84 25 -100 34 -106 59 -9 34 10 94 55 178 41 76 42 95 6 95 -16 0 -27 -9 -37 -30z"/>
+          <path d="M3080 1909 c-94 -49 -184 -71 -269 -67 -71 3 -76 2 -79 -18 -5 -33 23 -47 108 -52 97 -6 192 16 276 62 60 33 79 65 55 89 -18 18 -34 16 -91 -14z"/>
+        </g>
+      </svg>
+    </div>
+    <div class="about-content">
+      <h3>Hi, I'm <em>Davron</em>…</h3>
+      <p>…and I built this with <strong>Claude Code</strong>, based on <a href="https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f" target="_blank" rel="noopener">Andrej Karpathy's LLM Wiki Pattern</a>.</p>
+      <p>If you have any questions, ping me <span class="emoji" aria-hidden="true">✌️😊</span></p>
+      <div class="about-cta">
+        <a href="mailto:davron.marx@accenture.com" class="btn btn-primary">Ping me ↗</a>
+        <span class="email">davron.marx@accenture.com</span>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<footer>
+  <div class="foot-logo"><span class="dot"></span>Wiki Generator</div>
+  <div><a href="https://github.com/davron-design/wiki-generator" target="_blank" rel="noopener">GitHub ↗</a></div>
+</footer>
+
+<script>
+  // ───── Theme toggle ─────
+  (function () {
+    var toggle = document.getElementById('themeToggle');
+    if (!toggle) return;
+    toggle.addEventListener('click', function () {
+      var current = document.documentElement.getAttribute('data-theme');
+      var next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      try { localStorage.setItem('theme', next); } catch (e) {}
+    });
+  })();
+
+  // ───── Reading progress ─────
+  (function () {
+    var bar = document.getElementById('progress');
+    if (!bar) return;
+    var raf;
+    function update() {
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      var pct = max > 0 ? (window.scrollY / max) : 0;
+      bar.style.transform = 'scaleX(' + Math.min(1, Math.max(0, pct)) + ')';
+      raf = null;
+    }
+    window.addEventListener('scroll', function () {
+      if (!raf) raf = requestAnimationFrame(update);
+    }, { passive: true });
+    update();
+  })();
+
+  // ───── Scroll reveal ─────
+  (function () {
+    if (!('IntersectionObserver' in window)) {
+      document.querySelectorAll('.reveal').forEach(function (el) {
+        el.classList.add('in-view');
+      });
+      return;
+    }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in-view');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -60px 0px' });
+    document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
+  })();
+
+  // ───── Graph demo animation ─────
+  (function () {
+    var root = document.querySelector('.graph-demo');
+    if (!root) return;
+
+    // Base layout — id -> {x, y}
+    var basePos = {
+      '0':  { x: 300, y: 155 },
+      '1':  { x: 215, y: 95  },
+      '2':  { x: 385, y: 105 },
+      '3':  { x: 235, y: 215 },
+      '4':  { x: 380, y: 215 },
+      '5':  { x: 305, y: 65  },
+      '6':  { x: 135, y: 85  },
+      '7':  { x: 470, y: 70  },
+      '8':  { x: 495, y: 175 },
+      '9':  { x: 145, y: 230 },
+      '10': { x: 305, y: 255 },
+      '11': { x: 60,  y: 155 },
+      '12': { x: 545, y: 250 },
+      '13': { x: 420, y: 50  },
+      '14': { x: 180, y: 275 }
+    };
+
+    // Assign a stable phase per node
+    var i = 0;
+    for (var id in basePos) {
+      basePos[id].phase = (i++) * 0.7;
+    }
+
+    // Set initial positions (so the graph looks right before RAF tick)
+    function setInitial() {
+      Array.prototype.forEach.call(
+        root.querySelectorAll('[data-node], [data-halo]'),
+        function (el) {
+          var k = el.dataset.node || el.dataset.halo;
+          var p = basePos[k];
+          if (p) { el.setAttribute('cx', p.x); el.setAttribute('cy', p.y); }
+        }
+      );
+      Array.prototype.forEach.call(
+        root.querySelectorAll('[data-edge]'),
+        function (el) {
+          var pair = el.dataset.edge.split(',');
+          var a = basePos[pair[0]];
+          var b = basePos[pair[1]];
+          if (a && b) {
+            el.setAttribute('x1', a.x); el.setAttribute('y1', a.y);
+            el.setAttribute('x2', b.x); el.setAttribute('y2', b.y);
+          }
+        }
+      );
+    }
+    setInitial();
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    var circleEls = Array.prototype.map.call(
+      root.querySelectorAll('[data-node], [data-halo]'),
+      function (el) { return { el: el, id: el.dataset.node || el.dataset.halo }; }
+    );
+    var edgeEls = Array.prototype.map.call(
+      root.querySelectorAll('[data-edge]'),
+      function (el) {
+        var pair = el.dataset.edge.split(',');
+        return { el: el, from: pair[0], to: pair[1] };
+      }
+    );
+
+    function tick(t) {
+      var cur = {};
+      for (var id in basePos) {
+        var n = basePos[id];
+        cur[id] = {
+          x: n.x + Math.sin(t * 0.00055 + n.phase) * 3.6,
+          y: n.y + Math.cos(t * 0.00045 + n.phase * 1.3) * 2.8
+        };
+      }
+      circleEls.forEach(function (c) {
+        var p = cur[c.id];
+        if (!p) return;
+        c.el.setAttribute('cx', p.x.toFixed(2));
+        c.el.setAttribute('cy', p.y.toFixed(2));
+      });
+      edgeEls.forEach(function (e) {
+        var a = cur[e.from], b = cur[e.to];
+        if (!a || !b) return;
+        e.el.setAttribute('x1', a.x.toFixed(2));
+        e.el.setAttribute('y1', a.y.toFixed(2));
+        e.el.setAttribute('x2', b.x.toFixed(2));
+        e.el.setAttribute('y2', b.y.toFixed(2));
+      });
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  })();
+</script>
+
+</body>
+</html>
