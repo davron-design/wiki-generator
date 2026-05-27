@@ -757,8 +757,9 @@
     [data-theme="dark"] .graph-edge { opacity: 0.32; }
     .graph-node {
       fill: var(--ink-soft);
-      cursor: pointer;
-      transition: fill 0.25s ease, transform 0.25s ease;
+      cursor: grab;
+      touch-action: none;
+      transition: fill 0.25s ease, transform 0.25s ease, filter 0.25s ease;
       transform-box: fill-box;
       transform-origin: center;
     }
@@ -766,6 +767,34 @@
     .graph-node:hover {
       fill: var(--accent);
       transform: scale(1.3);
+    }
+    .graph-demo.is-dragging { cursor: grabbing; }
+    .graph-demo.is-dragging .graph-node { cursor: grabbing; }
+    .graph-demo.is-dragging .graph-edge { opacity: 0.55; }
+    .graph-node.is-grabbed {
+      fill: var(--accent);
+      transform: scale(1.5);
+      filter: drop-shadow(0 4px 10px color-mix(in srgb, var(--accent) 45%, transparent));
+    }
+    /* Hover-focus: highlight node + direct neighbors + connecting edges */
+    .graph-demo.has-focus .graph-node,
+    .graph-demo.has-focus .graph-edge {
+      transition: opacity 0.18s ease, stroke 0.18s ease,
+                  stroke-width 0.18s ease, fill 0.18s ease;
+    }
+    .graph-demo.has-focus .graph-node:not(.is-active):not(.is-neighbor) {
+      opacity: 0.18;
+    }
+    .graph-demo.has-focus .graph-edge:not(.is-neighbor) { opacity: 0.07; }
+    .graph-demo.has-focus .graph-node.is-active { fill: var(--accent); }
+    .graph-demo.has-focus .graph-node.is-neighbor {
+      fill: var(--accent);
+      opacity: 1;
+    }
+    .graph-demo.has-focus .graph-edge.is-neighbor {
+      stroke: var(--accent);
+      opacity: 0.9;
+      stroke-width: 1.1;
     }
     .graph-halo {
       fill: var(--accent);
@@ -779,7 +808,7 @@
     .graph-halo.h3 { animation-delay: -2.4s; }
     @keyframes graph-halo {
       0%, 100% { opacity: 0; transform: scale(0.6); }
-      50% { opacity: 0.32; transform: scale(2.0); }
+      50% { opacity: 0.32; transform: scale(1.7); }
     }
     .graph-caption {
       font-size: 13px;
@@ -1408,6 +1437,31 @@
               <line class="graph-edge" data-edge="7,13"/>
               <line class="graph-edge" data-edge="9,14"/>
               <line class="graph-edge" data-edge="10,14"/>
+              <line class="graph-edge" data-edge="11,15"/>
+              <line class="graph-edge" data-edge="9,15"/>
+              <line class="graph-edge" data-edge="6,16"/>
+              <line class="graph-edge" data-edge="1,16"/>
+              <line class="graph-edge" data-edge="5,17"/>
+              <line class="graph-edge" data-edge="1,17"/>
+              <line class="graph-edge" data-edge="2,18"/>
+              <line class="graph-edge" data-edge="7,18"/>
+              <line class="graph-edge" data-edge="13,19"/>
+              <line class="graph-edge" data-edge="19,20"/>
+              <line class="graph-edge" data-edge="8,20"/>
+              <line class="graph-edge" data-edge="12,20"/>
+              <line class="graph-edge" data-edge="14,21"/>
+              <line class="graph-edge" data-edge="10,21"/>
+              <line class="graph-edge" data-edge="10,22"/>
+              <line class="graph-edge" data-edge="12,22"/>
+              <line class="graph-edge" data-edge="22,23"/>
+              <line class="graph-edge" data-edge="12,23"/>
+              <line class="graph-edge" data-edge="3,24"/>
+              <line class="graph-edge" data-edge="9,24"/>
+              <line class="graph-edge" data-edge="4,25"/>
+              <line class="graph-edge" data-edge="2,25"/>
+              <line class="graph-edge" data-edge="0,26"/>
+              <line class="graph-edge" data-edge="3,26"/>
+              <line class="graph-edge" data-edge="24,26"/>
             </g>
             <g class="graph-nodes">
               <circle class="graph-halo h1" data-halo="0" r="12"/>
@@ -1429,10 +1483,22 @@
               <circle class="graph-node" data-node="12" r="5"/>
               <circle class="graph-node accent" data-node="13" r="5"/>
               <circle class="graph-node" data-node="14" r="5"/>
+              <circle class="graph-node" data-node="15" r="5"/>
+              <circle class="graph-node" data-node="16" r="5"/>
+              <circle class="graph-node accent" data-node="17" r="6"/>
+              <circle class="graph-node" data-node="18" r="6"/>
+              <circle class="graph-node" data-node="19" r="5"/>
+              <circle class="graph-node" data-node="20" r="5"/>
+              <circle class="graph-node" data-node="21" r="5"/>
+              <circle class="graph-node accent" data-node="22" r="6"/>
+              <circle class="graph-node" data-node="23" r="5"/>
+              <circle class="graph-node" data-node="24" r="6"/>
+              <circle class="graph-node" data-node="25" r="5"/>
+              <circle class="graph-node" data-node="26" r="6"/>
             </g>
           </svg>
         </div>
-        <p class="graph-caption">Every article is a node. Every <code>[[link]]</code> between articles becomes an edge. Hover any dot.</p>
+        <p class="graph-caption">Every article is a node. Every <code>[[link]]</code> between articles becomes an edge. Drag any dot to pull the graph around.</p>
 
         <ol>
           <li>Click the <strong>graph icon</strong> in the left sidebar (it looks like three connected dots), or press <strong>Ctrl/Cmd + G</strong>.</li>
@@ -1591,101 +1657,281 @@
     document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
   })();
 
-  // ───── Graph demo animation ─────
+  // ───── Graph demo: force-directed + draggable nodes ─────
   (function () {
     var root = document.querySelector('.graph-demo');
     if (!root) return;
+    var svg = root.querySelector('svg');
+    if (!svg) return;
 
-    // Base layout — id -> {x, y}
+    var W = 600, H = 300;
+
+    // Home (rest) positions — y-range trimmed to [90, 210] for symmetric top/bottom margin
     var basePos = {
-      '0':  { x: 300, y: 155 },
-      '1':  { x: 215, y: 95  },
-      '2':  { x: 385, y: 105 },
-      '3':  { x: 235, y: 215 },
-      '4':  { x: 380, y: 215 },
-      '5':  { x: 305, y: 65  },
-      '6':  { x: 135, y: 85  },
-      '7':  { x: 470, y: 70  },
-      '8':  { x: 495, y: 175 },
-      '9':  { x: 145, y: 230 },
-      '10': { x: 305, y: 255 },
-      '11': { x: 60,  y: 155 },
-      '12': { x: 545, y: 250 },
-      '13': { x: 420, y: 50  },
-      '14': { x: 180, y: 275 }
+      '0':  { x: 300, y: 143 },
+      '1':  { x: 230, y: 110 },
+      '2':  { x: 370, y: 115 },
+      '3':  { x: 247, y: 176 },
+      '4':  { x: 366, y: 176 },
+      '5':  { x: 304, y: 99  },
+      '6':  { x: 165, y: 105 },
+      '7':  { x: 439, y: 99  },
+      '8':  { x: 460, y: 154 },
+      '9':  { x: 173, y: 186 },
+      '10': { x: 304, y: 199 },
+      '11': { x: 103, y: 143 },
+      '12': { x: 501, y: 196 },
+      '13': { x: 398, y: 95  },
+      '14': { x: 202, y: 210 },
+      '15': { x: 87,  y: 179 },
+      '16': { x: 116, y: 118 },
+      '17': { x: 275, y: 90  },
+      '18': { x: 427, y: 130 },
+      '19': { x: 513, y: 113 },
+      '20': { x: 513, y: 168 },
+      '21': { x: 263, y: 210 },
+      '22': { x: 362, y: 210 },
+      '23': { x: 443, y: 208 },
+      '24': { x: 193, y: 151 },
+      '25': { x: 341, y: 148 },
+      '26': { x: 251, y: 154 }
     };
 
-    // Assign a stable phase per node
-    var i = 0;
+    // Per-node state: position, velocity, home, phase, radius
+    var state = {};
+    var idx = 0;
     for (var id in basePos) {
-      basePos[id].phase = (i++) * 0.7;
+      var b = basePos[id];
+      state[id] = {
+        x: b.x, y: b.y, vx: 0, vy: 0,
+        hx: b.x, hy: b.y,
+        phase: (idx++) * 0.7,
+        r: 6
+      };
     }
 
-    // Set initial positions (so the graph looks right before RAF tick)
-    function setInitial() {
-      Array.prototype.forEach.call(
-        root.querySelectorAll('[data-node], [data-halo]'),
-        function (el) {
-          var k = el.dataset.node || el.dataset.halo;
-          var p = basePos[k];
-          if (p) { el.setAttribute('cx', p.x); el.setAttribute('cy', p.y); }
-        }
-      );
-      Array.prototype.forEach.call(
-        root.querySelectorAll('[data-edge]'),
-        function (el) {
-          var pair = el.dataset.edge.split(',');
-          var a = basePos[pair[0]];
-          var b = basePos[pair[1]];
-          if (a && b) {
-            el.setAttribute('x1', a.x); el.setAttribute('y1', a.y);
-            el.setAttribute('x2', b.x); el.setAttribute('y2', b.y);
-          }
-        }
-      );
-    }
-    setInitial();
-
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-    var circleEls = Array.prototype.map.call(
-      root.querySelectorAll('[data-node], [data-halo]'),
-      function (el) { return { el: el, id: el.dataset.node || el.dataset.halo }; }
+    // Collect node / halo / edge elements
+    var nodeEls = Array.prototype.map.call(
+      root.querySelectorAll('[data-node]'),
+      function (el) {
+        var nid = el.dataset.node;
+        var r = parseFloat(el.getAttribute('r'));
+        if (!isNaN(r)) state[nid].r = r;
+        return { el: el, id: nid };
+      }
+    );
+    var haloEls = Array.prototype.map.call(
+      root.querySelectorAll('[data-halo]'),
+      function (el) { return { el: el, id: el.dataset.halo }; }
     );
     var edgeEls = Array.prototype.map.call(
       root.querySelectorAll('[data-edge]'),
       function (el) {
         var pair = el.dataset.edge.split(',');
-        return { el: el, from: pair[0], to: pair[1] };
+        var a = basePos[pair[0]], c = basePos[pair[1]];
+        var dx = a.x - c.x, dy = a.y - c.y;
+        return { el: el, from: pair[0], to: pair[1], rest: Math.sqrt(dx * dx + dy * dy) };
       }
     );
 
-    function tick(t) {
-      var cur = {};
-      for (var id in basePos) {
-        var n = basePos[id];
-        cur[id] = {
-          x: n.x + Math.sin(t * 0.00055 + n.phase) * 3.6,
-          y: n.y + Math.cos(t * 0.00045 + n.phase * 1.3) * 2.8
-        };
-      }
-      circleEls.forEach(function (c) {
-        var p = cur[c.id];
-        if (!p) return;
-        c.el.setAttribute('cx', p.x.toFixed(2));
-        c.el.setAttribute('cy', p.y.toFixed(2));
+    function render() {
+      nodeEls.forEach(function (n) {
+        var s = state[n.id];
+        n.el.setAttribute('cx', s.x.toFixed(2));
+        n.el.setAttribute('cy', s.y.toFixed(2));
+      });
+      haloEls.forEach(function (h) {
+        var s = state[h.id];
+        if (!s) return;
+        h.el.setAttribute('cx', s.x.toFixed(2));
+        h.el.setAttribute('cy', s.y.toFixed(2));
       });
       edgeEls.forEach(function (e) {
-        var a = cur[e.from], b = cur[e.to];
-        if (!a || !b) return;
+        var a = state[e.from], c = state[e.to];
+        if (!a || !c) return;
         e.el.setAttribute('x1', a.x.toFixed(2));
         e.el.setAttribute('y1', a.y.toFixed(2));
-        e.el.setAttribute('x2', b.x.toFixed(2));
-        e.el.setAttribute('y2', b.y.toFixed(2));
+        e.el.setAttribute('x2', c.x.toFixed(2));
+        e.el.setAttribute('y2', c.y.toFixed(2));
       });
-      requestAnimationFrame(tick);
     }
-    requestAnimationFrame(tick);
+    render();
+
+    // ── Adjacency for hover-focus ────────────────────────────
+    var adjacency = {};
+    var nodeElById = {};
+    nodeEls.forEach(function (n) {
+      adjacency[n.id] = { neighbors: [], edges: [] };
+      nodeElById[n.id] = n.el;
+    });
+    edgeEls.forEach(function (e) {
+      if (adjacency[e.from]) {
+        adjacency[e.from].neighbors.push(e.to);
+        adjacency[e.from].edges.push(e.el);
+      }
+      if (adjacency[e.to]) {
+        adjacency[e.to].neighbors.push(e.from);
+        adjacency[e.to].edges.push(e.el);
+      }
+    });
+
+    function applyFocus(focusId) {
+      clearFocus(true);
+      var adj = adjacency[focusId];
+      if (!adj) return;
+      root.classList.add('has-focus');
+      var centerEl = nodeElById[focusId];
+      if (centerEl) centerEl.classList.add('is-active');
+      adj.neighbors.forEach(function (nid) {
+        var el = nodeElById[nid];
+        if (el) el.classList.add('is-neighbor');
+      });
+      adj.edges.forEach(function (el) { el.classList.add('is-neighbor'); });
+    }
+
+    function clearFocus(keepClass) {
+      if (!keepClass) root.classList.remove('has-focus');
+      nodeEls.forEach(function (n) {
+        n.el.classList.remove('is-active', 'is-neighbor');
+      });
+      edgeEls.forEach(function (e) {
+        e.el.classList.remove('is-neighbor');
+      });
+    }
+
+    // ── Drag + hover handling (mouse + touch via pointer events) ─────
+    var dragId = null;
+    var dragOffset = { x: 0, y: 0 };
+
+    function clientToSvg(clientX, clientY) {
+      var pt = svg.createSVGPoint();
+      pt.x = clientX; pt.y = clientY;
+      var ctm = svg.getScreenCTM();
+      if (!ctm) return { x: clientX, y: clientY };
+      return pt.matrixTransform(ctm.inverse());
+    }
+
+    nodeEls.forEach(function (n) {
+      n.el.addEventListener('pointerenter', function (e) {
+        if (e.pointerType === 'touch') return;
+        if (dragId && dragId !== n.id) return;
+        applyFocus(n.id);
+      });
+      n.el.addEventListener('pointerleave', function (e) {
+        if (e.pointerType === 'touch') return;
+        if (dragId === n.id) return;
+        clearFocus();
+      });
+      n.el.addEventListener('pointerdown', function (e) {
+        e.preventDefault();
+        dragId = n.id;
+        var p = clientToSvg(e.clientX, e.clientY);
+        var s = state[n.id];
+        dragOffset.x = s.x - p.x;
+        dragOffset.y = s.y - p.y;
+        s.vx = 0; s.vy = 0;
+        try { n.el.setPointerCapture(e.pointerId); } catch (err) {}
+        n.el.classList.add('is-grabbed');
+        root.classList.add('is-dragging');
+        applyFocus(n.id);
+      });
+      n.el.addEventListener('pointermove', function (e) {
+        if (dragId !== n.id) return;
+        var p = clientToSvg(e.clientX, e.clientY);
+        var s = state[dragId];
+        s.x = p.x + dragOffset.x;
+        s.y = p.y + dragOffset.y;
+        s.vx = 0; s.vy = 0;
+      });
+      function endDrag(e) {
+        if (dragId !== n.id) return;
+        try { n.el.releasePointerCapture(e.pointerId); } catch (err) {}
+        n.el.classList.remove('is-grabbed');
+        root.classList.remove('is-dragging');
+        dragId = null;
+        if (e.pointerType === 'touch') clearFocus();
+      }
+      n.el.addEventListener('pointerup', endDrag);
+      n.el.addEventListener('pointercancel', endDrag);
+    });
+
+    // ── Physics ──────────────────────────────────────────────
+    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var kEdge  = 0.012;   // edge spring stiffness
+    var kHome  = 0.0035;  // pull toward rest position
+    var kRepel = 380;     // node-node coulomb-like repulsion
+    var damp   = 0.86;
+    var maxV   = 9;
+    var keys   = Object.keys(state);
+
+    function step(t) {
+      var ax = {}, ay = {};
+      for (var i = 0; i < keys.length; i++) { ax[keys[i]] = 0; ay[keys[i]] = 0; }
+
+      // Edge springs
+      for (var ei = 0; ei < edgeEls.length; ei++) {
+        var e = edgeEls[ei];
+        var a = state[e.from], b = state[e.to];
+        var dx = b.x - a.x, dy = b.y - a.y;
+        var d = Math.sqrt(dx * dx + dy * dy) || 0.001;
+        var diff = d - e.rest;
+        var fx = (dx / d) * diff * kEdge;
+        var fy = (dy / d) * diff * kEdge;
+        ax[e.from] += fx; ay[e.from] += fy;
+        ax[e.to]   -= fx; ay[e.to]   -= fy;
+      }
+
+      // Home springs + idle wind
+      for (var ki = 0; ki < keys.length; ki++) {
+        var sid = keys[ki];
+        var s = state[sid];
+        ax[sid] += (s.hx - s.x) * kHome;
+        ay[sid] += (s.hy - s.y) * kHome;
+        if (!reduceMotion) {
+          ax[sid] += Math.sin(t * 0.00055 + s.phase) * 0.012;
+          ay[sid] += Math.cos(t * 0.00045 + s.phase * 1.3) * 0.010;
+        }
+      }
+
+      // Pairwise repulsion (n=15 → fine)
+      for (var i2 = 0; i2 < keys.length; i2++) {
+        for (var j = i2 + 1; j < keys.length; j++) {
+          var A = state[keys[i2]], B = state[keys[j]];
+          var rdx = B.x - A.x, rdy = B.y - A.y;
+          var d2 = rdx * rdx + rdy * rdy;
+          if (d2 < 9) d2 = 9;
+          var dist = Math.sqrt(d2);
+          var f = kRepel / d2;
+          var rfx = (rdx / dist) * f, rfy = (rdy / dist) * f;
+          ax[keys[i2]] -= rfx; ay[keys[i2]] -= rfy;
+          ax[keys[j]]  += rfx; ay[keys[j]]  += rfy;
+        }
+      }
+
+      // Integrate (skip the dragged node — it's pinned to cursor)
+      for (var ii = 0; ii < keys.length; ii++) {
+        var nid = keys[ii];
+        if (nid === dragId) continue;
+        var ns = state[nid];
+        ns.vx = (ns.vx + ax[nid]) * damp;
+        ns.vy = (ns.vy + ay[nid]) * damp;
+        if (ns.vx >  maxV) ns.vx =  maxV;
+        if (ns.vx < -maxV) ns.vx = -maxV;
+        if (ns.vy >  maxV) ns.vy =  maxV;
+        if (ns.vy < -maxV) ns.vy = -maxV;
+        ns.x += ns.vx;
+        ns.y += ns.vy;
+        var r = ns.r;
+        if (ns.x < r)       { ns.x = r;       ns.vx = 0; }
+        if (ns.x > W - r)   { ns.x = W - r;   ns.vx = 0; }
+        if (ns.y < r)       { ns.y = r;       ns.vy = 0; }
+        if (ns.y > H - r)   { ns.y = H - r;   ns.vy = 0; }
+      }
+
+      render();
+      requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
   })();
 </script>
 
