@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Wiki Generator</title>
+  <title>wiki-generator.md</title>
   <meta name="description" content="A knowledge base that grows with every project. Set up an AI-powered wiki with Claude Code — no terminal, no coding." />
   <meta property="og:title" content="Building the Agentic Mind" />
   <meta property="og:description" content="A knowledge base that grows with every project. Set up an AI-powered wiki with Claude Code — no terminal, no coding." />
@@ -113,7 +113,7 @@
       transition: background 0.3s ease, border-color 0.3s ease;
     }
     .nav-inner {
-      max-width: 1280px;
+      max-width: 920px;
       margin: 0 auto;
       padding: 16px 32px;
       display: flex;
@@ -129,6 +129,7 @@
       display: flex;
       align-items: center;
       gap: 10px;
+      white-space: nowrap;
     }
     .nav-logo .dot {
       display: inline-block;
@@ -154,6 +155,7 @@
       display: inline-flex;
       align-items: baseline;
       gap: 8px;
+      white-space: nowrap;
     }
     .nav-links a:hover { color: var(--accent); }
     .nav-num {
@@ -207,10 +209,88 @@
     [data-theme="dark"] .theme-toggle .sun { display: none; }
     [data-theme="dark"] .theme-toggle .moon { display: block; }
 
+    /* GitHub link (split out of nav-links) */
+    .nav-github {
+      color: var(--ink-soft);
+      font-size: 14px;
+    }
+    .nav-github:hover { color: var(--accent); }
+
+    /* Burger button */
+    .burger {
+      display: none;
+      background: none;
+      border: 1px solid var(--line);
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      color: var(--ink-soft);
+      transition: all 0.2s ease;
+      padding: 0;
+    }
+    .burger:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .burger svg { width: 16px; height: 16px; }
+    .burger-line {
+      transform-box: view-box;
+      transform-origin: 12px 12px;
+      transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+                  opacity 0.18s ease;
+    }
+    .burger.open .burger-line-1 { transform: translateY(5px); opacity: 0; }
+    .burger.open .burger-line-3 { transform: translateY(-5px); opacity: 0; }
+
+    /* Mobile menu (drops below nav-inner when burger is open) */
+    /* Lives OUTSIDE <nav> so its backdrop-filter isn't trapped inside
+       the nav's backdrop root (which would null the blur). */
+    .mobile-menu {
+      display: none;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 40;
+      background: color-mix(in srgb, var(--bg) 82%, transparent);
+      backdrop-filter: saturate(180%) blur(14px);
+      -webkit-backdrop-filter: saturate(180%) blur(14px);
+      border-bottom: 1px solid var(--line);
+      padding: 74px 32px 24px;
+      gap: 4px;
+    }
+    .mobile-menu.open { display: flex; }
+    .mobile-menu a {
+      color: var(--ink-soft);
+      font-size: 15px;
+      display: inline-flex;
+      align-items: baseline;
+      gap: 14px;
+      padding: 14px 4px;
+      border-bottom: 1px solid var(--line-soft);
+      transition: color 0.15s ease, padding-left 0.2s ease;
+    }
+    .mobile-menu a:last-child { border-bottom: none; }
+    .mobile-menu a:hover {
+      color: var(--accent);
+      padding-left: 8px;
+    }
+    .mobile-menu a:hover .nav-num { color: var(--accent); }
+
+    /* Switch to burger before the nav can wrap */
+    @media (max-width: 960px) {
+      .nav-sections { display: none; }
+      .burger { display: inline-flex; }
+    }
+
     /* ───── Hero ───── */
     .hero {
       position: relative;
-      max-width: 1280px;
+      max-width: 920px;
       margin: 0 auto;
       padding: 128px 32px 96px;
       overflow: visible;
@@ -322,7 +402,7 @@
 
     /* ───── Section ───── */
     section {
-      max-width: 1280px;
+      max-width: 920px;
       margin: 0 auto;
       padding: 112px 32px;
       position: relative;
@@ -722,7 +802,7 @@
     /* ───── About / Contact section ───── */
     .about {
       position: relative;
-      max-width: 1280px;
+      max-width: 920px;
       margin: 0 auto;
       padding: 96px 32px;
       border-top: 1px solid var(--line);
@@ -731,19 +811,19 @@
     .about::before {
       content: "";
       position: absolute;
-      inset: 0 calc(50% - 50vw) -60px calc(50% - 50vw);
+      inset: 0 -300px -220px -300px;
       pointer-events: none;
       background:
-        radial-gradient(680px 480px ellipse at 22% 38%,
-          color-mix(in srgb, var(--accent) 9%, transparent), transparent 62%);
+        radial-gradient(900px 700px ellipse at 50% 42%,
+          color-mix(in srgb, var(--accent) 9%, transparent), transparent 70%);
       z-index: -1;
-      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 18%, black 78%, transparent 100%);
-              mask-image: linear-gradient(to bottom, transparent 0%, black 18%, black 78%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 14%, black 92%, transparent 100%);
+              mask-image: linear-gradient(to bottom, transparent 0%, black 14%, black 92%, transparent 100%);
     }
     [data-theme="dark"] .about::before {
       background:
-        radial-gradient(680px 480px ellipse at 22% 38%,
-          color-mix(in srgb, var(--accent) 16%, transparent), transparent 62%);
+        radial-gradient(900px 700px ellipse at 50% 42%,
+          color-mix(in srgb, var(--accent) 16%, transparent), transparent 70%);
     }
     .about-inner {
       display: grid;
@@ -751,6 +831,7 @@
       gap: 40px;
       align-items: start;
       max-width: 720px;
+      margin: 0 auto;
     }
     .avatar {
       position: relative;
@@ -812,7 +893,7 @@
 
     /* ───── Footer ───── */
     footer {
-      max-width: 1280px;
+      max-width: 920px;
       margin: 0 auto;
       padding: 48px 32px 72px;
       border-top: 1px solid var(--line);
@@ -845,11 +926,9 @@
     /* ───── Responsive ───── */
     @media (max-width: 720px) {
       .nav-inner { padding: 14px 20px; }
-      .nav-links { gap: 18px; font-size: 13px; }
-      .nav-links a:nth-child(2),
-      .nav-links a:nth-child(3),
-      .nav-links a:nth-child(4) { display: none; }
-      .nav-right { gap: 16px; }
+      .nav-right { gap: 14px; }
+      .nav-github { font-size: 13px; }
+      .mobile-menu { padding: 70px 20px 20px; }
       .hero { padding: 72px 24px 48px; }
       section { padding: 64px 24px; }
       .about { padding: 64px 24px; }
@@ -871,15 +950,15 @@
 
 <nav>
   <div class="nav-inner">
-    <a href="#top" class="nav-logo"><span class="dot"></span>Wiki Generator</a>
+    <a href="#top" class="nav-logo"><span class="dot"></span>wiki-generator.md</a>
     <div class="nav-right">
-      <div class="nav-links">
+      <div class="nav-links nav-sections">
         <a href="#start"><span class="nav-num">01</span>Get Started</a>
         <a href="#together"><span class="nav-num">02</span>Work Together</a>
         <a href="#advanced"><span class="nav-num">03</span>Advanced</a>
         <a href="#obsidian"><span class="nav-num">04</span>Obsidian</a>
-        <a href="https://github.com/davron-design/wiki-generator" target="_blank" rel="noopener">GitHub ↗</a>
       </div>
+      <a href="https://github.com/davron-design/wiki-generator" target="_blank" rel="noopener" class="nav-github">GitHub ↗</a>
       <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">
         <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="4"/>
@@ -889,9 +968,23 @@
           <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
         </svg>
       </button>
+      <button class="burger" id="burger" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line class="burger-line burger-line-1" x1="4" y1="7"  x2="20" y2="7"/>
+          <line class="burger-line burger-line-2" x1="4" y1="12" x2="20" y2="12"/>
+          <line class="burger-line burger-line-3" x1="4" y1="17" x2="20" y2="17"/>
+        </svg>
+      </button>
     </div>
   </div>
 </nav>
+
+<div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+  <a href="#start"><span class="nav-num">01</span>Get Started</a>
+  <a href="#together"><span class="nav-num">02</span>Work Together</a>
+  <a href="#advanced"><span class="nav-num">03</span>Advanced</a>
+  <a href="#obsidian"><span class="nav-num">04</span>Obsidian</a>
+</div>
 
 <header class="hero" id="top">
   <div class="hero-label">Beginner's Guide</div>
@@ -1403,7 +1496,7 @@
 </aside>
 
 <footer>
-  <div class="foot-logo"><span class="dot"></span>Wiki Generator</div>
+  <div class="foot-logo"><span class="dot"></span>wiki-generator.md</div>
   <div><a href="https://github.com/davron-design/wiki-generator" target="_blank" rel="noopener">GitHub ↗</a></div>
 </footer>
 
@@ -1417,6 +1510,39 @@
       var next = current === 'dark' ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', next);
       try { localStorage.setItem('theme', next); } catch (e) {}
+    });
+  })();
+
+  // ───── Burger menu ─────
+  (function () {
+    var burger = document.getElementById('burger');
+    var menu = document.getElementById('mobileMenu');
+    if (!burger || !menu) return;
+    function close() {
+      burger.classList.remove('open');
+      menu.classList.remove('open');
+      burger.setAttribute('aria-expanded', 'false');
+      menu.setAttribute('aria-hidden', 'true');
+      burger.setAttribute('aria-label', 'Open menu');
+    }
+    function open() {
+      burger.classList.add('open');
+      menu.classList.add('open');
+      burger.setAttribute('aria-expanded', 'true');
+      menu.setAttribute('aria-hidden', 'false');
+      burger.setAttribute('aria-label', 'Close menu');
+    }
+    burger.addEventListener('click', function () {
+      burger.classList.contains('open') ? close() : open();
+    });
+    menu.querySelectorAll('a').forEach(function (a) {
+      a.addEventListener('click', close);
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') close();
+    });
+    window.addEventListener('resize', function () {
+      if (window.innerWidth > 960) close();
     });
   })();
 
