@@ -40,14 +40,18 @@
       --bg-soft: #fafafa;
       --ink: #0f0f10;
       --ink-soft: #4a4a4d;
-      --ink-muted: #8a8a8e;
+      --ink-muted: #6a6a6e;
       --line: #ececec;
       --line-soft: #f4f4f4;
       --accent: #a100ff;
       --accent-soft: #f5ecff;
       --accent-deep: #6e00b3;
-      --code-bg: #f5ecff;
-      --code-ink: #6e00b3;
+      --code-bg: rgba(0, 128, 128, 0.12);
+      --code-ink: #008080;
+      --code-skill-ink: #b85638;
+      --code-skill-bg: rgba(222, 115, 86, 0.14);
+      --code-literal-ink: #6e00b3;
+      --code-literal-bg: #f5ecff;
       --avatar-bg: #ffffff;
     }
 
@@ -62,14 +66,19 @@
       --accent: #c269ff;
       --accent-soft: rgba(194, 105, 255, 0.14);
       --accent-deep: #d49eff;
-      --code-bg: rgba(194, 105, 255, 0.14);
-      --code-ink: #d49eff;
+      --code-bg: rgba(0, 128, 128, 0.18);
+      --code-ink: #48d1cc;
+      --code-skill-ink: #ff9577;
+      --code-skill-bg: rgba(222, 115, 86, 0.18);
+      --code-literal-ink: #d49eff;
+      --code-literal-bg: rgba(194, 105, 255, 0.14);
       --avatar-bg: #ffffff;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    html { scroll-behavior: smooth; }
+    html { scroll-behavior: smooth; overflow-x: clip; }
+    body { overflow-x: clip; }
 
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -95,20 +104,6 @@
     strong { color: var(--ink); font-weight: 600; }
     em { font-style: italic; }
     .punct { color: var(--accent); }
-
-    /* ───── Reading progress ───── */
-    .progress {
-      position: fixed;
-      top: 0;
-      left: 0;
-      height: 2px;
-      width: 100%;
-      background: var(--accent);
-      transform-origin: left center;
-      transform: scaleX(0);
-      z-index: 100;
-      transition: transform 0.08s linear;
-    }
 
     /* ───── Nav ───── */
     nav {
@@ -258,7 +253,7 @@
     /* Lives OUTSIDE <nav> so its backdrop-filter isn't trapped inside
        the nav's backdrop root (which would null the blur). */
     .mobile-menu {
-      display: none;
+      display: flex;
       flex-direction: column;
       position: fixed;
       top: 0;
@@ -271,8 +266,27 @@
       border-bottom: 1px solid var(--line);
       padding: 74px 32px 24px;
       gap: 4px;
+      transform: translateY(-12px);
+      opacity: 0;
+      pointer-events: none;
+      visibility: hidden;
+      transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1),
+                  opacity 0.2s ease,
+                  visibility 0s linear 0.24s;
     }
-    .mobile-menu.open { display: flex; }
+    .mobile-menu.open {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+      visibility: visible;
+      transition: transform 0.26s cubic-bezier(0.22, 1, 0.36, 1),
+                  opacity 0.22s ease,
+                  visibility 0s linear 0s;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .mobile-menu { transition: opacity 0.15s ease, visibility 0s linear 0.15s; transform: none; }
+      .mobile-menu.open { transition: opacity 0.15s ease, visibility 0s linear 0s; transform: none; }
+    }
     .mobile-menu a {
       color: var(--ink-soft);
       font-size: 15px;
@@ -341,7 +355,7 @@
       display: inline-block;
     }
     .hero h1 {
-      font-size: clamp(46px, 7.4vw, 92px);
+      font-size: clamp(46px, 7.4vw, 72px);
       font-weight: 600;
       letter-spacing: -0.04em;
       line-height: 1.0;
@@ -351,19 +365,10 @@
     .hero h1 .punch {
       color: var(--accent);
     }
-    .hero .subtitle {
-      font-weight: 500;
-      font-size: clamp(20px, 2.2vw, 26px);
-      color: var(--ink);
-      letter-spacing: -0.02em;
-      line-height: 1.3;
-      max-width: 680px;
-      margin-bottom: 28px;
-    }
     .hero-sub {
       font-size: clamp(17px, 1.6vw, 19px);
       color: var(--ink-soft);
-      max-width: 600px;
+      max-width: 760px;
       line-height: 1.55;
       margin-bottom: 48px;
     }
@@ -564,19 +569,41 @@
       font-size: 14px;
       font-weight: 400;
     }
+    code.skill {
+      background: var(--code-skill-bg);
+      color: var(--code-skill-ink);
+    }
+    code.cmd {
+      background: none;
+      color: var(--code-skill-ink);
+    }
+    code.literal {
+      background: var(--code-literal-bg);
+      color: var(--code-literal-ink);
+    }
+    pre code.skill,
+    pre code.literal {
+      background: none;
+    }
+    pre code.cmd {
+      color: var(--code-skill-ink);
+    }
 
     /* ───── Callouts ───── */
     .quote {
-      background: var(--bg-soft);
-      border-left: 2px solid var(--accent);
+      background: var(--accent-soft);
       padding: 18px 24px;
       margin: 20px 0;
-      color: var(--ink-soft);
+      color: var(--ink);
       max-width: 620px;
       font-size: 15.5px;
       line-height: 1.6;
-      border-radius: 2px;
-      transition: background 0.3s ease;
+      border-radius: 10px;
+      border: 1px solid color-mix(in srgb, var(--accent) 14%, transparent);
+      transition: background 0.3s ease, border-color 0.3s ease;
+    }
+    [data-theme="dark"] .quote {
+      color: var(--ink-soft);
     }
 
     /* ───── Tables ───── */
@@ -651,6 +678,136 @@
       text-transform: uppercase;
       letter-spacing: 0.1em;
       margin: 64px 0 20px;
+    }
+
+    /* ───── Sub-section eyebrow (group dividers inside a section) ───── */
+    .subsection-eyebrow {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      margin: 56px 0 20px;
+      padding-top: 16px;
+      border-top: 1.5px solid var(--accent);
+      display: inline-block;
+    }
+    .subsection-eyebrow:first-child { margin-top: 0; }
+    /* The subsection eyebrow is itself the divider — drop the .block's
+       top hairline when one immediately follows. */
+    .subsection-eyebrow + .block {
+      border-top: none;
+      padding-top: 0;
+    }
+
+    /* ───── Role toggles ───── */
+    .role-toggle {
+      border-top: 1px solid var(--line-soft);
+      transition: border-color 0.3s ease;
+    }
+    .role-toggle:first-child { border-top: none; }
+    /* When role-toggles precede a .block, restore the block's top border that
+       .block:first-of-type would otherwise strip. */
+    .role-toggle ~ .block:first-of-type {
+      border-top: 1px solid var(--line-soft);
+      padding-top: 40px;
+    }
+    .role-toggle > summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 40px 16px;
+      display: flex;
+      align-items: baseline;
+      gap: 18px;
+      user-select: none;
+      transition: background 0.25s ease;
+      border-radius: 6px;
+    }
+    .role-toggle:first-child > summary { padding-top: 0; }
+    .role-toggle > summary::-webkit-details-marker { display: none; }
+    .role-toggle > summary::marker { content: ""; }
+    .role-toggle > summary:hover {
+      background: color-mix(in srgb, var(--accent) 3%, transparent);
+    }
+    [data-theme="dark"] .role-toggle > summary:hover {
+      background: color-mix(in srgb, var(--accent) 7%, transparent);
+    }
+    .role-toggle > summary:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 4px;
+    }
+    .role-toggle > summary:hover .role-name { color: var(--accent); }
+    .role-toggle .role-kicker {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+    .role-toggle .role-name {
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -0.015em;
+      color: var(--ink);
+      flex-grow: 1;
+      transition: color 0.2s ease;
+    }
+    .role-toggle .role-chevron {
+      width: 14px;
+      height: 14px;
+      color: var(--accent);
+      transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+      flex-shrink: 0;
+    }
+    .role-toggle[open] > summary .role-chevron { transform: rotate(90deg); }
+    .role-toggle-body {
+      padding: 0 16px 40px;
+      color: var(--ink-soft);
+      max-width: 652px;
+    }
+    .role-toggle-body > h4 {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin: 56px 0 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line-soft);
+    }
+    .role-toggle-body > h4:first-child {
+      margin-top: 0;
+      padding-top: 0;
+      border-top: none;
+    }
+    .role-toggle-body > h5 {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      margin: 0 0 14px;
+      color: var(--ink);
+    }
+    .role-toggle-body p,
+    .role-toggle-body ol,
+    .role-toggle-body ul {
+      margin-bottom: 14px;
+      max-width: 620px;
+    }
+    .role-toggle-body p:last-child,
+    .role-toggle-body ol:last-child,
+    .role-toggle-body ul:last-child { margin-bottom: 0; }
+    .role-toggle-body ol,
+    .role-toggle-body ul { padding-left: 22px; }
+    .role-toggle-body li { margin-bottom: 8px; }
+    .role-toggle-body li::marker { color: var(--ink-muted); }
+    @media (prefers-reduced-motion: reduce) {
+      .role-toggle > summary,
+      .role-toggle .role-chevron,
+      .role-toggle .role-name { transition: none; }
     }
 
     /* ───── Obsidian logo + shimmer ───── */
@@ -810,7 +967,7 @@
       0%, 100% { opacity: 0; transform: scale(0.6); }
       50% { opacity: 0.32; transform: scale(1.7); }
     }
-    .graph-caption {
+    .caption {
       font-size: 13px;
       color: var(--ink-muted);
       max-width: 620px;
@@ -961,6 +1118,114 @@
     footer a { color: var(--ink-soft); }
     footer a:hover { color: var(--accent); }
 
+    /* ───── Hero glossary disclosure ───── */
+    .glossary {
+      max-width: 540px;
+      margin: 0 0 36px;
+      border-radius: 12px;
+      background: var(--bg-soft);
+      border: 1px solid var(--line);
+      transition: background 0.3s ease, border-color 0.3s ease;
+    }
+    .glossary > summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      color: var(--ink-soft);
+      border-radius: 12px;
+      transition: color 0.15s ease;
+    }
+    .glossary > summary::-webkit-details-marker { display: none; }
+    .glossary > summary::marker { content: ''; }
+    .glossary > summary:hover { color: var(--accent); }
+    .glossary > summary strong { color: var(--ink); font-weight: 600; }
+    .glossary:hover { border-color: color-mix(in srgb, var(--accent) 24%, var(--line)); }
+    .glossary .glossary-chevron {
+      width: 14px;
+      height: 14px;
+      margin-left: auto;
+      stroke: currentColor;
+      flex-shrink: 0;
+      transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .glossary[open] .glossary-chevron { transform: rotate(90deg); }
+    .glossary-body {
+      padding: 4px 22px 20px;
+      font-size: 14.5px;
+      line-height: 1.6;
+      color: var(--ink-soft);
+    }
+    .glossary-body dt {
+      font-weight: 600;
+      color: var(--ink);
+      margin-top: 14px;
+      margin-bottom: 4px;
+    }
+    .glossary-body dt:first-of-type { margin-top: 0; }
+    .glossary-body dd {
+      margin: 0 0 4px;
+      max-width: 500px;
+      text-align: justify;
+      hyphens: auto;
+      -webkit-hyphens: auto;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .glossary .glossary-chevron { transition: none; }
+    }
+
+    /* ───── Skip-guard callout (advanced section) ───── */
+    .skip-guard {
+      background: var(--bg-soft);
+      border: 1px solid var(--line);
+      padding: 18px 22px;
+      border-radius: 12px;
+      margin: 0 0 56px;
+      max-width: 720px;
+      color: var(--ink-soft);
+      font-size: 15.5px;
+      line-height: 1.6;
+      transition: background 0.3s ease, border-color 0.3s ease;
+    }
+    .skip-guard strong { color: var(--ink); }
+    .skip-guard em { color: var(--accent); font-style: normal; font-weight: 500; }
+
+    /* ───── Step celebration (end of section 1) ───── */
+    .step-celebration {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      padding: 24px 24px;
+      margin-top: 28px;
+      background: color-mix(in srgb, var(--accent) 6%, var(--bg-soft));
+      border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--line));
+      border-radius: 14px;
+      color: var(--ink);
+      transition: background 0.3s ease, border-color 0.3s ease;
+    }
+    [data-theme="dark"] .step-celebration {
+      background: color-mix(in srgb, var(--accent) 14%, var(--bg-soft));
+      border-color: color-mix(in srgb, var(--accent) 26%, var(--line));
+    }
+    .step-celebration-emoji {
+      font-size: 30px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .step-celebration-text {
+      font-size: 16px;
+      line-height: 1.6;
+      color: var(--ink);
+      flex: 1;
+    }
+    .step-celebration-text strong { color: var(--ink); }
+    .step-celebration-text code {
+      font-size: 0.82em;
+    }
+
     /* ───── Responsive ───── */
     @media (max-width: 720px) {
       .nav-inner { padding: 14px 20px; }
@@ -979,12 +1244,14 @@
       td:first-child { white-space: normal; }
       .about-inner { grid-template-columns: 1fr; gap: 24px; }
       .avatar { width: 80px; height: 80px; font-size: 40px; }
+      .step-celebration { padding: 20px; gap: 14px; }
+      .step-celebration-emoji { font-size: 26px; }
+      .step-celebration-text { font-size: 15px; }
+      .glossary { max-width: none; }
     }
   </style>
 </head>
 <body>
-
-<div class="progress" id="progress"></div>
 
 <nav>
   <div class="nav-inner">
@@ -992,9 +1259,9 @@
     <div class="nav-right">
       <div class="nav-links nav-sections">
         <a href="#start"><span class="nav-num">01</span>Get Started</a>
-        <a href="#together"><span class="nav-num">02</span>Work Together</a>
-        <a href="#advanced"><span class="nav-num">03</span>Advanced</a>
-        <a href="#obsidian"><span class="nav-num">04</span>Obsidian</a>
+        <a href="#obsidian"><span class="nav-num">02</span>Obsidian</a>
+        <a href="#together"><span class="nav-num">03</span>Work Together</a>
+        <a href="#advanced"><span class="nav-num">04</span>Advanced</a>
       </div>
       <a href="https://github.com/davron-design/wiki-generator" target="_blank" rel="noopener" class="nav-github">GitHub ↗</a>
       <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">
@@ -1019,16 +1286,31 @@
 
 <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
   <a href="#start"><span class="nav-num">01</span>Get Started</a>
-  <a href="#together"><span class="nav-num">02</span>Work Together</a>
-  <a href="#advanced"><span class="nav-num">03</span>Advanced</a>
-  <a href="#obsidian"><span class="nav-num">04</span>Obsidian</a>
+  <a href="#obsidian"><span class="nav-num">02</span>Obsidian</a>
+  <a href="#together"><span class="nav-num">03</span>Work Together</a>
+  <a href="#advanced"><span class="nav-num">04</span>Advanced</a>
 </div>
 
 <header class="hero" id="top">
   <div class="hero-label">Beginner's Guide</div>
   <h1>Building the <span class="punch">Agentic Mind<span class="punct">.</span></span></h1>
-  <p class="subtitle">A knowledge base that grows with every project<span class="punct">.</span></p>
   <p class="hero-sub">A friendly walkthrough for setting up an AI-powered knowledge base with Claude Code — and collaborating on it with your team. No terminal. No coding.</p>
+
+  <details class="glossary">
+    <summary>
+      <span>New to <strong>GitHub</strong>, <strong>repositories</strong>, or <strong>push</strong> / <strong>pull</strong>?</span>
+      <svg class="glossary-chevron" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg>
+    </summary>
+    <dl class="glossary-body">
+      <dt>GitHub</dt>
+      <dd>A free website where teams keep folders of files in sync, with a complete history of every change. Owned by Microsoft, used by millions of people. Think of it as the cloud home of your wiki.</dd>
+      <dt>Repository (or "repo")</dt>
+      <dd>The shared folder on GitHub itself — your wiki, but in the cloud. Like a Google Drive folder, except every edit is tracked and you can roll back to any earlier version.</dd>
+      <dt>Push and Pull</dt>
+      <dd><strong>Pull</strong> = grab the latest changes from GitHub onto your computer. <strong>Push</strong> = send your own changes back up so the rest of the team can see them. You'll do both with one-click buttons in GitHub Desktop.</dd>
+    </dl>
+  </details>
+
   <div class="hero-ctas">
     <a href="#start" class="btn btn-primary">Get Started →</a>
     <a href="https://github.com/davron-design/wiki-generator" target="_blank" rel="noopener" class="btn btn-secondary">View on GitHub</a>
@@ -1040,9 +1322,18 @@
   <span class="section-marker">01</span>
   <div class="section-label">Get Started</div>
   <h2>Set it up in 10 minutes<span class="punct">.</span></h2>
-  <p class="section-intro">You'll need the <strong>Claude Code desktop app</strong> and about <strong>10 minutes</strong>. That's it.</p>
+  <p class="section-intro">In about ten minutes you'll have an AI-powered wiki running on your computer — even if you've never installed a developer tool before.</p>
 
   <div class="steps">
+
+    <div class="step">
+      <div class="step-num">0</div>
+      <div class="step-content">
+        <h3>Install Claude Code</h3>
+        <p>If you don't already have it, download the <strong>Claude Code desktop app</strong> from <a href="https://claude.com/claude-code" target="_blank" rel="noopener">claude.com/claude-code</a>. It's free, installs in under a minute, and works on Mac and Windows.</p>
+        <p>Sign in once you've launched it — that's the only account you need for this whole section.</p>
+      </div>
+    </div>
 
     <div class="step">
       <div class="step-num">1</div>
@@ -1067,7 +1358,8 @@
       <div class="step-content">
         <h3>Install the wiki generator skill</h3>
         <p>Paste this prompt into Claude Code:</p>
-        <div class="quote">Please download the repo at <strong>https://github.com/davron-design/wiki-generator</strong> and install it as a project-scoped skill in this folder. Put the skill files under <code>.claude/skills/wiki-generator/</code> so the skill only applies to this project. Once it's installed, list the skills so I can confirm it's ready to use.</div>
+        <div class="quote">Please download the repo at <strong>https://github.com/davron-design/wiki-generator</strong> and install it as a project-scoped skill in this folder. Put the skill files under <code class="folder">.claude/skills/wiki-generator/</code> so the skill only applies to this project. Once it's installed, list the skills so I can confirm it's ready to use.</div>
+        <p class="caption">Don't worry about the technical words inside — just paste the whole block as-is. Claude handles the rest.</p>
         <p>If Claude asks for permission, just <strong>Always Allow</strong>. You only need to do this once per wiki.</p>
       </div>
     </div>
@@ -1077,22 +1369,22 @@
       <div class="step-content">
         <h3>Build your wiki project</h3>
         <p>In Claude Code, type:</p>
-        <pre><code>/wiki-generator</code></pre>
+        <pre><code class="skill">/wiki-generator</code></pre>
         <p>Claude will create three folders for you:</p>
         <ul>
-          <li><code>raw/</code> — where you drop source material (articles, notes, research)</li>
-          <li><code>wiki/</code> — where the polished knowledge base lives</li>
-          <li><code>output/</code> — where reports and query results show up</li>
+          <li><code class="folder">raw/</code> — where you drop source files (articles, notes, research)</li>
+          <li><code class="folder">wiki/</code> — where the polished knowledge base lives</li>
+          <li><code class="folder">output/</code> — where reports and query results show up</li>
         </ul>
-        <p>It also installs two companion skills — <code>raw-compile</code> and <code>audit-wiki</code> — automatically.</p>
+        <p>It also installs two companion skills — <code class="skill">/raw-compile</code> and <code class="skill">/audit-wiki</code> — automatically.</p>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">5</div>
       <div class="step-content">
-        <h3>Add material to <code>raw/</code></h3>
-        <p>This is where you feed your wiki. Open the <code>raw/</code> folder and drop in any material you want included — articles, notes, research clippings, transcripts.</p>
+        <h3>Add files to <code class="folder">raw/</code></h3>
+        <p>This is where you feed your wiki. Open the <code class="folder">raw/</code> folder and drop in any files you want included — articles, notes, research clippings, transcripts.</p>
         <p>Add as many files as you want. Don't worry about organizing them — that's Claude's job.</p>
       </div>
     </div>
@@ -1100,10 +1392,10 @@
     <div class="step">
       <div class="step-num">6</div>
       <div class="step-content">
-        <h3>Compile the raw material</h3>
+        <h3>Compile the raw files</h3>
         <p>In Claude Code, simply say:</p>
-        <pre><code>compile</code></pre>
-        <p>Claude will read every file in <code>raw/</code>, group the material by topic, write clean wiki articles into <code>wiki/</code>, link them together with <code>[[wiki links]]</code>, and archive the compiled raw files so you know what's been processed.</p>
+        <pre><code class="cmd">compile</code></pre>
+        <p>Claude will read every file in <code class="folder">raw/</code>, group the files by topic, write clean wiki articles into <code class="folder">wiki/</code>, link them together with <code class="literal">[[wiki links]]</code>, and archive the compiled raw files so you know what's been processed.</p>
         <p>Sit back — this part is automatic.</p>
       </div>
     </div>
@@ -1113,9 +1405,16 @@
       <div class="step-content">
         <h3>Audit your wiki</h3>
         <p>Once your wiki is built, check it for gaps or inconsistencies. In Claude Code, say:</p>
-        <pre><code>audit</code></pre>
-        <p>Claude will scan the wiki and produce a numbered audit report in <code>output/_audits/</code>. The report points out missing cross-links, thin topics, and inconsistencies between articles.</p>
+        <pre><code class="cmd">audit</code></pre>
+        <p>Claude will scan the wiki and produce a numbered audit report in <code class="folder">output/_audits/</code>. The report points out missing cross-links, thin topics, and inconsistencies between articles.</p>
         <p>The audit is <strong>report-only</strong> by default — it won't change anything until you say so.</p>
+      </div>
+    </div>
+
+    <div class="step-celebration">
+      <div class="step-celebration-emoji" aria-hidden="true">🎉</div>
+      <div class="step-celebration-text">
+        <strong>You now have a working wiki.</strong> Drop more files into <code class="folder">raw/</code> whenever you have it, run <code class="cmd">compile</code> to pull it in, and <code class="cmd">audit</code> when you want a sanity check on what you've built.
       </div>
     </div>
 
@@ -1128,169 +1427,20 @@
         <tr><th>Action</th><th>What to say</th></tr>
       </thead>
       <tbody>
-        <tr><td>Set up a new wiki</td><td><code>/wiki-generator</code></td></tr>
-        <tr><td>Compile new material</td><td><code>compile</code></td></tr>
-        <tr><td>Audit the wiki</td><td><code>audit</code></td></tr>
+        <tr><td>Set up a new wiki</td><td><code class="skill">/wiki-generator</code></td></tr>
+        <tr><td>Compile new files</td><td><code class="cmd">compile</code></td></tr>
+        <tr><td>Audit the wiki</td><td><code class="cmd">audit</code></td></tr>
         <tr><td>Ask a question</td><td>Just ask in plain English</td></tr>
       </tbody>
     </table>
   </div>
 </section>
 
-<!-- ════════ SECTION 02 — WORK TOGETHER ════════ -->
-<section id="together" class="reveal">
-  <span class="section-marker">02</span>
-  <div class="section-label">Work Together</div>
-  <h2>Collaborate with your team<span class="punct">.</span></h2>
-  <p class="section-intro">Want a small team to build the same wiki together? Use <strong>GitHub Desktop</strong> as the syncing layer. No terminal, no coding.</p>
-
-  <div class="label-eyebrow">What You'll Need (per person)</div>
-  <ul style="color: var(--ink-soft); padding-left: 22px; max-width: 620px; margin-bottom: 8px;">
-    <li>The <strong>Claude Code desktop app</strong> — you already have this</li>
-    <li>The <strong>GitHub Desktop app</strong> — <a href="https://desktop.github.com" target="_blank" rel="noopener">desktop.github.com</a></li>
-    <li>A free <strong>GitHub account</strong> — <a href="https://github.com/signup" target="_blank" rel="noopener">github.com/signup</a></li>
-  </ul>
-
-  <div style="margin-top: 64px;">
-
-    <div class="block">
-      <div class="block-kicker">One-Time / Team Lead</div>
-      <h3>Set up the shared repo</h3>
-      <ol>
-        <li>Go to <a href="https://github.com/new" target="_blank" rel="noopener">github.com/new</a> and create a new repository (e.g. <code>team-wiki</code>). Keep it <strong>Private</strong> if your material is sensitive.</li>
-        <li>Open the wiki folder in GitHub Desktop → <strong>File → Add Local Repository</strong> → pick the folder → click <strong>Publish repository</strong>.</li>
-        <li>In the repo's <strong>Settings → Collaborators</strong> on github.com, invite your teammates by username or email.</li>
-      </ol>
-    </div>
-
-    <div class="block">
-      <div class="block-kicker">One-Time / Each Teammate</div>
-      <h3>Get a synced copy</h3>
-      <ol>
-        <li>Install <strong>GitHub Desktop</strong> from <a href="https://desktop.github.com" target="_blank" rel="noopener">desktop.github.com</a> and sign in.</li>
-        <li>Accept the email invitation from the team lead.</li>
-        <li>In GitHub Desktop, click <strong>Clone a repository</strong> → pick your team's wiki → choose where to save it.</li>
-      </ol>
-      <p>You now have a synced copy of the wiki on your machine.</p>
-    </div>
-
-    <div class="block">
-      <div class="block-kicker">Daily / Everyone</div>
-      <h3>Pull, work, push</h3>
-      <p><strong>Before you start working:</strong></p>
-      <ol>
-        <li>Open <strong>GitHub Desktop</strong> → <strong>Fetch origin</strong> → <strong>Pull origin</strong> to grab the latest changes.</li>
-        <li>Open the wiki folder in <strong>Claude Code</strong> and work as usual — drop files into <code>raw/</code>, say <code>compile</code>, ask the wiki questions.</li>
-      </ol>
-      <p><strong>When you've made changes you want to share:</strong></p>
-      <ol>
-        <li>In <strong>GitHub Desktop</strong>, you'll see all your changed files on the left.</li>
-        <li>Type a short summary at the bottom (e.g. <em>"Added gardening notes"</em>).</li>
-        <li>Click <strong>Commit to main</strong>, then <strong>Push origin</strong>.</li>
-      </ol>
-      <p>Your teammates can now <strong>Fetch → Pull</strong> to receive your changes.</p>
-    </div>
-
-    <div class="block">
-      <div class="block-kicker">Tips</div>
-      <h3>Habits that prevent conflicts</h3>
-      <ul>
-        <li><strong>Pull before you start. Push when you finish.</strong> That habit prevents most conflicts.</li>
-        <li>If two people edited the same article at the same time, GitHub Desktop will guide you through merging.</li>
-        <li>Everything is version-controlled — you can roll back any change from GitHub Desktop's <strong>History</strong> tab.</li>
-      </ul>
-    </div>
-
-  </div>
-</section>
-
-<!-- ════════ SECTION 03 — ADVANCED ════════ -->
-<section id="advanced" class="reveal">
-  <span class="section-marker">03</span>
-  <div class="section-label">Advanced Collaboration</div>
-  <h2>Pull Requests for bigger teams<span class="punct">.</span></h2>
-  <p class="section-intro">The "everyone pushes to <code>main</code>" flow above works for small, trusted teams. As your group grows — or when changes need a second pair of eyes before going live — switch to <strong>Pull Requests</strong>.</p>
-
-  <div class="block">
-    <h3>What's a Pull Request?</h3>
-    <p>Think of a Pull Request (PR) as a <strong>draft change proposal</strong>. Instead of pushing your edits straight into the shared wiki, you save them on a personal "side track" (a <strong>branch</strong>) and ask a teammate to review them. Once approved, the change is <strong>merged</strong> into the main wiki — and everyone else pulls it down as normal.</p>
-    <p>It's the digital equivalent of <em>"let me show you this before I publish it."</em></p>
-  </div>
-
-  <div class="block">
-    <h3>Two roles — Maintainers and Contributors</h3>
-    <p>PRs introduce a split between two roles:</p>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr><th>Role</th><th>Who</th><th>What they do</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>Maintainer</td><td>Team lead (1–2 people)</td><td>Reviews PRs, approves or requests changes, merges into <code>main</code>, manages access</td></tr>
-          <tr><td>Contributor</td><td>Everyone else</td><td>Edits the wiki on their own branch, opens a PR, responds to review feedback</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p>The maintainer is <strong>not</strong> the only one who can edit the wiki — contributors do all the writing. The maintainer's job is to be the <strong>gatekeeper of <code>main</code></strong>, making sure nothing inconsistent or accidental lands in the shared copy.</p>
-  </div>
-
-  <div class="block">
-    <div class="block-kicker">One-Time / Maintainer</div>
-    <h3>Turn on branch protection</h3>
-    <p>To require PRs (instead of letting anyone push directly to <code>main</code>):</p>
-    <ol>
-      <li>Go to your repo on github.com.</li>
-      <li>Click <strong>Settings → Branches</strong>.</li>
-      <li>Under <strong>Branch protection rules</strong>, click <strong>Add rule</strong>.</li>
-      <li>Branch name pattern: <code>main</code></li>
-      <li>Check <strong>Require a pull request before merging</strong>.</li>
-      <li>Click <strong>Create</strong>.</li>
-    </ol>
-    <p>From now on, every change — even the maintainer's own — flows through a PR.</p>
-  </div>
-
-  <div class="block">
-    <div class="block-kicker">Daily / Contributor</div>
-    <h3>The PR workflow</h3>
-    <p><strong>1. Start a branch before editing.</strong> In GitHub Desktop, click the <strong>Current Branch</strong> dropdown → <strong>New Branch</strong> → name it after your change (e.g. <code>add-gardening-notes</code>) → <strong>Create branch</strong>.</p>
-    <p><strong>2. Edit as usual.</strong> Open the folder in Claude Code, drop files into <code>raw/</code>, say <code>compile</code>. Your changes are isolated to your branch — <code>main</code> is untouched.</p>
-    <p><strong>3. Commit and push your branch.</strong> Write a commit message → <strong>Commit to &lt;your-branch&gt;</strong> → <strong>Publish branch</strong> (first time) or <strong>Push origin</strong> (after that).</p>
-    <p><strong>4. Open the Pull Request.</strong> GitHub Desktop shows a <strong>Create Pull Request</strong> banner — click it. A browser tab opens on github.com. Add a short description of what changed and why → <strong>Create pull request</strong>.</p>
-    <p><strong>5. Wait for review.</strong> Your maintainer gets notified. They'll either:</p>
-    <ul>
-      <li><strong>Approve and merge</strong> — your change goes live, and everyone else can pull it.</li>
-      <li><strong>Request changes</strong> — they leave comments; you edit on the same branch, commit, and push. The PR updates automatically.</li>
-    </ul>
-  </div>
-
-  <div class="block">
-    <div class="block-kicker">Daily / Maintainer</div>
-    <h3>Reviewing a PR</h3>
-    <ol>
-      <li>Open the PR on github.com (you'll get an email notification).</li>
-      <li>Read the description and click the <strong>Files changed</strong> tab to see exactly what changed.</li>
-      <li>Leave comments on specific lines if needed, or approve the PR.</li>
-      <li>When ready, click <strong>Merge pull request</strong> → <strong>Confirm merge</strong>.</li>
-      <li>Click <strong>Delete branch</strong> (the button appears after merge) — keeps the repo tidy.</li>
-    </ol>
-  </div>
-
-  <div class="block">
-    <div class="block-kicker">Tips</div>
-    <h3>Keep PRs healthy</h3>
-    <ul>
-      <li><strong>Keep branches short-lived.</strong> Open a PR, get it merged, delete the branch. Long-running branches drift from <code>main</code> and become painful to merge.</li>
-      <li><strong>One PR per topic.</strong> Don't bundle <em>"added gardening notes + fixed typos + restructured wiki"</em> into one PR — split them. Smaller PRs review faster and are easier to revert.</li>
-      <li><strong>Write clear PR descriptions.</strong> A one-line title plus 2–3 sentences explaining <em>what</em> and <em>why</em> makes review much faster.</li>
-    </ul>
-  </div>
-</section>
-
-<!-- ════════ SECTION 04 — OBSIDIAN ════════ -->
+<!-- ════════ SECTION 02 — VIEWING IN OBSIDIAN ════════ -->
 <section id="obsidian" class="reveal">
   <div class="obsidian-head">
     <div class="obsidian-head-text">
-      <span class="section-marker">04</span>
+      <span class="section-marker">02</span>
       <div class="section-label">Viewing in Obsidian</div>
       <h2>Browse your wiki visually<span class="punct">.</span></h2>
     </div>
@@ -1350,10 +1500,10 @@
 
   <div class="block">
     <h3>What's Obsidian, and why use it?</h3>
-    <p>Claude Code is great for <strong>building</strong> the wiki — compiling raw material, writing articles, running audits. But it's not designed for <strong>browsing</strong> what you've built.</p>
-    <p>Obsidian fills that gap. It's a free markdown reader that natively understands <code>[[wiki links]]</code> — the same link style Claude already writes into every article. That means:</p>
+    <p>Claude Code is great for <strong>building</strong> the wiki — compiling raw files, writing articles, running audits. But it's not designed for <strong>browsing</strong> what you've built.</p>
+    <p>Obsidian fills that gap. It's a free markdown reader that natively understands <code class="literal">[[wiki links]]</code> — the same link style Claude already writes into every article. That means:</p>
     <ul>
-      <li>Click any <code>[[link]]</code> in an article and jump to it.</li>
+      <li>Click any <code class="literal">[[link]]</code> in an article and jump to it.</li>
       <li>Search across the whole wiki instantly.</li>
       <li>See a <strong>graph view</strong> showing how topics connect.</li>
       <li>Read your wiki on your phone or tablet too (optional).</li>
@@ -1388,7 +1538,7 @@
           <li>Click <strong>Open</strong>.</li>
         </ol>
         <p>Obsidian scans the folder and shows every markdown file in the left sidebar.</p>
-        <div class="quote"><strong>Tip:</strong> You can point Obsidian at the <strong>whole project folder</strong> (so you also see <code>CLAUDE.md</code>, <code>raw/</code>, etc.), or <strong>just the <code>wiki/</code> subfolder</strong> if you only want to browse the polished knowledge base. Either works — pick whichever feels less cluttered.</div>
+        <div class="quote"><strong>Tip:</strong> You can point Obsidian at the <strong>whole project folder</strong> (so you also see <code class="folder">CLAUDE.md</code>, <code class="folder">raw/</code>, etc.), or <strong>just the <code class="folder">wiki/</code> subfolder</strong> if you only want to browse the polished knowledge base. Either works — pick whichever feels less cluttered.</div>
       </div>
     </div>
 
@@ -1398,9 +1548,9 @@
         <h3>Start at the master index</h3>
         <p>Your wiki has a built-in entry point.</p>
         <ol>
-          <li>In the left sidebar, open <code>wiki/_master-index.md</code>.</li>
+          <li>In the left sidebar, open <code class="folder">wiki/_master-index.md</code>.</li>
           <li>You'll see a table of every topic in your wiki.</li>
-          <li>Click any <code>[[link]]</code> in the table to jump to that topic's index.</li>
+          <li>Click any <code class="literal">[[link]]</code> in the table to jump to that topic's index.</li>
           <li>From there, click into any article.</li>
         </ol>
         <p>This is the same path Claude follows when answering questions — now you can walk it yourself.</p>
@@ -1498,7 +1648,7 @@
             </g>
           </svg>
         </div>
-        <p class="graph-caption">Every article is a node. Every <code>[[link]]</code> between articles becomes an edge. Drag any dot to pull the graph around.</p>
+        <p class="caption">Every article is a node. Every <code class="literal">[[link]]</code> between articles becomes an edge. Drag any dot to pull the graph around.</p>
 
         <ol>
           <li>Click the <strong>graph icon</strong> in the left sidebar (it looks like three connected dots), or press <strong>Ctrl/Cmd + G</strong>.</li>
@@ -1528,7 +1678,7 @@
         <tr><th>Task</th><th>Use</th></tr>
       </thead>
       <tbody>
-        <tr><td>Drop new material into <code>raw/</code></td><td>Either (Obsidian or Finder)</td></tr>
+        <tr><td>Drop new files into <code class="folder">raw/</code></td><td>Either (Obsidian or Finder)</td></tr>
         <tr><td>Compile / audit / ask the wiki questions</td><td><strong>Claude Code</strong></td></tr>
         <tr><td>Browse, search, follow links, read articles</td><td><strong>Obsidian</strong></td></tr>
         <tr><td>Edit an article by hand</td><td>Either</td></tr>
@@ -1538,10 +1688,185 @@
 
   <p style="color: var(--ink-soft); max-width: 620px; margin: 20px 0 12px;">A common rhythm:</p>
   <ol style="color: var(--ink-soft); padding-left: 22px; max-width: 620px;">
-    <li>In <strong>Claude Code</strong>, say <code>compile</code> to bring new material into the wiki.</li>
+    <li>In <strong>Claude Code</strong>, say <code class="cmd">compile</code> to bring new files into the wiki.</li>
     <li>Switch to <strong>Obsidian</strong> to read what Claude wrote, follow the links, and check the graph.</li>
-    <li>Spot something thin or missing? Back to <strong>Claude Code</strong> and say <code>audit</code>.</li>
+    <li>Spot something thin or missing? Back to <strong>Claude Code</strong> and say <code class="cmd">audit</code>.</li>
   </ol>
+</section>
+
+<!-- ════════ SECTION 03 — WORK TOGETHER ════════ -->
+<section id="together" class="reveal">
+  <span class="section-marker">03</span>
+  <div class="section-label">Work Together</div>
+  <h2>Collaborate with your team<span class="punct">.</span></h2>
+  <p class="section-intro">Want a small team to build the same wiki together? Use <strong>GitHub Desktop</strong> as the syncing layer. No terminal, no coding.</p>
+
+  <div class="label-eyebrow">What You'll Need (per person)</div>
+  <ul style="color: var(--ink-soft); padding-left: 22px; max-width: 620px; margin-bottom: 8px;">
+    <li>The <strong>Claude Code desktop app</strong> — you already have this</li>
+    <li>The <strong>GitHub Desktop app</strong> — <a href="https://desktop.github.com" target="_blank" rel="noopener">desktop.github.com</a></li>
+    <li>A free <strong>GitHub account</strong> — <a href="https://github.com/signup" target="_blank" rel="noopener">github.com/signup</a></li>
+  </ul>
+
+  <div style="margin-top: 64px;">
+
+    <div class="subsection-eyebrow">One-time setup</div>
+
+    <div class="block">
+      <div class="block-kicker">Team Lead</div>
+      <h3>Set up the shared repo</h3>
+      <ol>
+        <li>Go to <a href="https://github.com/new" target="_blank" rel="noopener">github.com/new</a> and create a new repository (e.g. <code class="literal">team-wiki</code>). Keep it <strong>Private</strong> if your files are sensitive.</li>
+        <li>Open the wiki folder in GitHub Desktop → <strong>File → Add Local Repository</strong> → pick the folder → click <strong>Publish repository</strong>.</li>
+        <li>In the repo's <strong>Settings → Collaborators</strong> on github.com, invite your team members by username or email.</li>
+      </ol>
+    </div>
+
+    <div class="block">
+      <div class="block-kicker">Team Member</div>
+      <h3>Get a synced copy</h3>
+      <ol>
+        <li>Install <strong>GitHub Desktop</strong> from <a href="https://desktop.github.com" target="_blank" rel="noopener">desktop.github.com</a> and sign in.</li>
+        <li>Accept the email invitation from the team lead.</li>
+        <li>In GitHub Desktop, click <strong>Clone a repository</strong> → pick your team's wiki → choose where to save it.</li>
+      </ol>
+      <p>You now have a synced copy of the wiki on your machine.</p>
+    </div>
+
+    <div class="subsection-eyebrow">Daily</div>
+
+    <div class="block">
+      <div class="block-kicker">Everyone</div>
+      <h3>Sync, work, share</h3>
+      <p>The daily rhythm. In GitHub Desktop's own words this is the <strong>Pull → Work → Push</strong> loop — same idea, more technical-sounding.</p>
+
+      <p><strong>Sync — before you start:</strong></p>
+      <ol>
+        <li>Open <strong>GitHub Desktop</strong> → <strong>Fetch origin</strong> → <strong>Pull origin</strong> to grab the latest changes from the team.</li>
+      </ol>
+
+      <p><strong>Work — as usual:</strong></p>
+      <ol>
+        <li>Open the wiki folder in <strong>Claude Code</strong> and work as usual — drop files into <code class="folder">raw/</code>, say <code class="cmd">compile</code>, ask the wiki questions.</li>
+      </ol>
+
+      <p><strong>Share — when you've made changes you want others to see:</strong></p>
+      <ol>
+        <li>In <strong>GitHub Desktop</strong>, you'll see all your changed files on the left.</li>
+        <li>Type a short summary at the bottom (e.g. <em>"Added gardening notes"</em>).</li>
+        <li>Click <strong>Commit to main</strong>, then <strong>Push origin</strong>.</li>
+      </ol>
+
+      <p>Your team members can now <strong>Fetch → Pull</strong> to receive your changes.</p>
+    </div>
+
+    <div class="block">
+      <div class="block-kicker">Tips</div>
+      <h3>Habits that prevent conflicts</h3>
+      <ul>
+        <li><strong>Pull before you start. Push when you finish.</strong> That habit prevents most conflicts.</li>
+        <li>If two people edited the same article at the same time, GitHub Desktop will guide you through merging.</li>
+        <li>Everything is version-controlled — you can roll back any change from GitHub Desktop's <strong>History</strong> tab.</li>
+      </ul>
+    </div>
+
+  </div>
+</section>
+
+<!-- ════════ SECTION 04 — ADVANCED ════════ -->
+<section id="advanced" class="reveal">
+  <span class="section-marker">04</span>
+  <div class="section-label">Advanced Collaboration</div>
+  <h2>Pull Requests for bigger teams<span class="punct">.</span></h2>
+  <p class="section-intro">The "everyone pushes to <code class="literal">main</code>" flow above works for small, trusted teams. As your group grows — or when changes need a second pair of eyes before going live — switch to <strong>Pull Requests</strong>.</p>
+
+  <div class="skip-guard">
+    <strong>You don't need this if your team is small and trusts each other.</strong> Section 03's <em>Sync → Work → Share</em> loop is enough on its own. Come back here when your group grows, or when you want a second pair of eyes on every change before it goes live.
+  </div>
+
+  <div class="block">
+    <h3>What's a Pull Request?</h3>
+    <p>Think of a Pull Request (PR) as a <strong>draft change proposal</strong>. Instead of pushing your edits straight into the shared wiki, you save them on a personal "side track" (a <strong>branch</strong>) and ask a teammate to review them. Once approved, the change is <strong>merged</strong> into the main wiki — and everyone else pulls it down as normal.</p>
+    <p>It's the digital equivalent of <em>"let me show you this before I publish it."</em></p>
+  </div>
+
+  <div class="block">
+    <h3>Two roles — Maintainers and Contributors</h3>
+    <p>PRs introduce a split between two roles:</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Role</th><th>Who</th><th>What they do</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Maintainer</td><td>Team lead (1–2 people)</td><td>Reviews PRs, approves or requests changes, merges into <code class="literal">main</code>, manages access</td></tr>
+          <tr><td>Contributor</td><td>Everyone else</td><td>Edits the wiki on their own branch, opens a PR, responds to review feedback</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The maintainer is <strong>not</strong> the only one who can edit the wiki — contributors do all the writing. The maintainer's job is to be the <strong>gatekeeper of <code class="literal">main</code></strong>, making sure nothing inconsistent or accidental lands in the shared copy.</p>
+  </div>
+
+  <details class="role-toggle">
+    <summary>
+      <span class="role-name">Maintainer</span>
+      <svg class="role-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg>
+    </summary>
+    <div class="role-toggle-body">
+      <h4>One-time</h4>
+      <h5>Turn on branch protection</h5>
+      <p>To require PRs (instead of letting anyone push directly to <code class="literal">main</code>):</p>
+      <ol>
+        <li>Go to your repo on github.com.</li>
+        <li>Click <strong>Settings → Branches</strong>.</li>
+        <li>Under <strong>Branch protection rules</strong>, click <strong>Add rule</strong>.</li>
+        <li>Branch name pattern: <code class="literal">main</code></li>
+        <li>Check <strong>Require a pull request before merging</strong>.</li>
+        <li>Click <strong>Create</strong>.</li>
+      </ol>
+      <p>From now on, every change — even the maintainer's own — flows through a PR.</p>
+
+      <h4>Daily</h4>
+      <h5>Reviewing a PR</h5>
+      <ol>
+        <li>Open the PR on github.com (you'll get an email notification).</li>
+        <li>Read the description and click the <strong>Files changed</strong> tab to see exactly what changed.</li>
+        <li>Leave comments on specific lines if needed, or approve the PR.</li>
+        <li>When ready, click <strong>Merge pull request</strong> → <strong>Confirm merge</strong>.</li>
+        <li>Click <strong>Delete branch</strong> (the button appears after merge) — keeps the repo tidy.</li>
+      </ol>
+    </div>
+  </details>
+
+  <details class="role-toggle">
+    <summary>
+      <span class="role-name">Contributor</span>
+      <svg class="role-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg>
+    </summary>
+    <div class="role-toggle-body">
+      <h4>Daily</h4>
+      <h5>The PR workflow</h5>
+      <p><strong>1. Start a branch before editing.</strong> In GitHub Desktop, click the <strong>Current Branch</strong> dropdown → <strong>New Branch</strong> → name it after your change (e.g. <code class="literal">add-gardening-notes</code>) → <strong>Create branch</strong>.</p>
+      <p><strong>2. Edit as usual.</strong> Open the folder in Claude Code, drop files into <code class="folder">raw/</code>, say <code class="cmd">compile</code>. Your changes are isolated to your branch — <code class="literal">main</code> is untouched.</p>
+      <p><strong>3. Commit and push your branch.</strong> Write a commit message → <strong>Commit to &lt;your-branch&gt;</strong> → <strong>Publish branch</strong> (first time) or <strong>Push origin</strong> (after that).</p>
+      <p><strong>4. Open the Pull Request.</strong> GitHub Desktop shows a <strong>Create Pull Request</strong> banner — click it. A browser tab opens on github.com. Add a short description of what changed and why → <strong>Create pull request</strong>.</p>
+      <p><strong>5. Wait for review.</strong> Your maintainer gets notified. They'll either:</p>
+      <ul>
+        <li><strong>Approve and merge</strong> — your change goes live, and everyone else can pull it.</li>
+        <li><strong>Request changes</strong> — they leave comments; you edit on the same branch, commit, and push. The PR updates automatically.</li>
+      </ul>
+    </div>
+  </details>
+
+  <div class="block">
+    <div class="block-kicker">Tips</div>
+    <h3>Keep PRs healthy</h3>
+    <ul>
+      <li><strong>Keep branches short-lived.</strong> Open a PR, get it merged, delete the branch. Long-running branches drift from <code class="literal">main</code> and become painful to merge.</li>
+      <li><strong>One PR per topic.</strong> Don't bundle <em>"added gardening notes + fixed typos + restructured wiki"</em> into one PR — split them. Smaller PRs review faster and are easier to revert.</li>
+      <li><strong>Write clear PR descriptions.</strong> A one-line title plus 2–3 sentences explaining <em>what</em> and <em>why</em> makes review much faster.</li>
+    </ul>
+  </div>
 </section>
 
 <!-- ════════ ABOUT / CONTACT ════════ -->
@@ -1619,23 +1944,6 @@
     window.addEventListener('resize', function () {
       if (window.innerWidth > 960) close();
     });
-  })();
-
-  // ───── Reading progress ─────
-  (function () {
-    var bar = document.getElementById('progress');
-    if (!bar) return;
-    var raf;
-    function update() {
-      var max = document.documentElement.scrollHeight - window.innerHeight;
-      var pct = max > 0 ? (window.scrollY / max) : 0;
-      bar.style.transform = 'scaleX(' + Math.min(1, Math.max(0, pct)) + ')';
-      raf = null;
-    }
-    window.addEventListener('scroll', function () {
-      if (!raf) raf = requestAnimationFrame(update);
-    }, { passive: true });
-    update();
   })();
 
   // ───── Scroll reveal ─────
