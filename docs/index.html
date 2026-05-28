@@ -2337,8 +2337,17 @@
       });
     }
 
+    // Observer updates are silenced while a click-initiated smooth scroll is
+    // in flight, so intermediate sections don't flicker open/closed.
+    var observerSuppressedUntil = 0;
+    // Section the user explicitly collapsed (by clicking its row a second
+    // time). We won't auto-expand it again while they remain inside it.
+    // Cleared as soon as they scroll into a different section.
+    var manuallyCollapsedId = null;
+
     var currentSection = null;
     function setActiveSection(id) {
+      if (Date.now() < observerSuppressedUntil) return;
       if (currentSection === id) return;
       if (currentSection && sectionByHref[currentSection]) {
         sectionByHref[currentSection].classList.remove('is-active');
@@ -2346,7 +2355,10 @@
       if (id && sectionByHref[id]) {
         sectionByHref[id].classList.add('is-active');
       }
-      expandGroup(id);
+      if (id !== manuallyCollapsedId) {
+        expandGroup(id);
+        manuallyCollapsedId = null;
+      }
       currentSection = id;
     }
 
@@ -2372,6 +2384,7 @@
 
     var currentSub = null;
     function setActiveSub(id) {
+      if (Date.now() < observerSuppressedUntil) return;
       if (currentSub === id) return;
       if (currentSub && subByHref[currentSub]) {
         subByHref[currentSub].classList.remove('is-active');
@@ -2430,12 +2443,65 @@
       updateActiveSub();
     }
 
-    // Snappy feedback: clicking a section row expands its group immediately,
-    // before the smooth-scroll lands and the observer fires.
-    sectionLinks.forEach(function (a) {
-      a.addEventListener('click', function () {
+    // Click on any sidebar link: apply the destination state immediately
+    // (active row, expanded group, sub-highlight) and silence the observers
+    // for ~900ms so the scroll lands cleanly without intermediate flicker.
+    function applyDestination(id) {
+      if (sectionByHref[id]) {
+        if (currentSection && sectionByHref[currentSection]) {
+          sectionByHref[currentSection].classList.remove('is-active');
+        }
+        sectionByHref[id].classList.add('is-active');
+        expandGroup(id);
+        currentSection = id;
+        return;
+      }
+      if (subByHref[id]) {
+        var group = subByHref[id].closest('.ds-group');
+        var parentId = group ? group.dataset.section : null;
+        if (parentId) {
+          if (currentSection !== parentId) {
+            if (currentSection && sectionByHref[currentSection]) {
+              sectionByHref[currentSection].classList.remove('is-active');
+            }
+            if (sectionByHref[parentId]) sectionByHref[parentId].classList.add('is-active');
+            currentSection = parentId;
+          }
+          expandGroup(parentId);
+        }
+        if (currentSub && subByHref[currentSub]) {
+          subByHref[currentSub].classList.remove('is-active');
+        }
+        subByHref[id].classList.add('is-active');
+        currentSub = id;
+      }
+    }
+
+    document.querySelectorAll('.docs-sidebar-links a[href^="#"]').forEach(function (a) {
+      a.addEventListener('click', function (e) {
         var id = a.getAttribute('href').slice(1);
-        if (id) expandGroup(id);
+        if (!id) return;
+
+        // Clicking a top-level section row while already on that section:
+        // toggle the group open/closed in place (no scroll, no suppression).
+        if (a.classList.contains('ds-section') && currentSection === id) {
+          var group = document.querySelector('.ds-group[data-section="' + id + '"]');
+          if (group) {
+            e.preventDefault();
+            if (group.classList.contains('is-expanded')) {
+              group.classList.remove('is-expanded');
+              manuallyCollapsedId = id;
+            } else {
+              group.classList.add('is-expanded');
+              manuallyCollapsedId = null;
+            }
+            return;
+          }
+        }
+
+        manuallyCollapsedId = null;
+        applyDestination(id);
+        observerSuppressedUntil = Date.now() + 900;
       });
     });
   })();
