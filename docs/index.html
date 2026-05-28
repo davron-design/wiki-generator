@@ -77,7 +77,7 @@
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    html { scroll-behavior: smooth; overflow-x: clip; }
+    html { scroll-behavior: smooth; overflow-x: clip; scroll-padding-top: 80px; }
     body { overflow-x: clip; }
 
     body {
@@ -112,7 +112,7 @@
       backdrop-filter: saturate(180%) blur(14px);
       -webkit-backdrop-filter: saturate(180%) blur(14px);
       background: color-mix(in srgb, var(--bg) 82%, transparent);
-      border-bottom: 1px solid var(--line);
+      border-radius: 8px;
       z-index: 50;
       transition: background 0.3s ease, border-color 0.3s ease;
     }
@@ -368,7 +368,7 @@
     .hero-sub {
       font-size: clamp(17px, 1.6vw, 19px);
       color: var(--ink-soft);
-      max-width: 760px;
+      max-width: none;
       line-height: 1.55;
       margin-bottom: 48px;
     }
@@ -462,13 +462,13 @@
       letter-spacing: -0.03em;
       line-height: 1.05;
       margin-bottom: 28px;
-      max-width: 760px;
+      max-width: none;
     }
     .section-intro {
       font-size: 18px;
       color: var(--ink-soft);
       line-height: 1.6;
-      max-width: 620px;
+      max-width: none;
       margin-bottom: 72px;
     }
 
@@ -528,7 +528,7 @@
     .step-content ol {
       color: var(--ink-soft);
       margin-bottom: 16px;
-      max-width: 620px;
+      max-width: none;
     }
     .step-content p:last-child,
     .step-content ul:last-child,
@@ -559,7 +559,7 @@
       border-radius: 10px;
       overflow-x: auto;
       margin: 16px 0;
-      max-width: 620px;
+      max-width: none;
       transition: background 0.3s ease, border-color 0.3s ease;
     }
     pre code {
@@ -595,7 +595,7 @@
       padding: 18px 24px;
       margin: 20px 0;
       color: var(--ink);
-      max-width: 620px;
+      max-width: none;
       font-size: 15.5px;
       line-height: 1.6;
       border-radius: 10px;
@@ -607,7 +607,7 @@
     }
 
     /* ───── Tables ───── */
-    .table-wrap { max-width: 760px; overflow-x: auto; }
+    .table-wrap { max-width: none; overflow-x: auto; }
     table {
       border-collapse: collapse;
       width: 100%;
@@ -665,7 +665,7 @@
     .block ol {
       color: var(--ink-soft);
       margin-bottom: 14px;
-      max-width: 620px;
+      max-width: none;
     }
     .block ul, .block ol { padding-left: 22px; }
     .block li { margin-bottom: 8px; }
@@ -680,25 +680,68 @@
       margin: 64px 0 20px;
     }
 
-    /* ───── Sub-section eyebrow (group dividers inside a section) ───── */
-    .subsection-eyebrow {
-      font-family: 'JetBrains Mono', ui-monospace, monospace;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--accent);
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      margin: 56px 0 20px;
-      padding-top: 16px;
-      border-top: 1.5px solid var(--accent);
-      display: inline-block;
+    /* ───── Phases (once / daily) — left-rail markers, same vocabulary as §01 .step-num ───── */
+    .phases { margin-top: 56px; }
+    .phase {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 32px;
+      padding: 48px 0;
+      border-top: 1px solid var(--line-soft);
+      align-items: start;
+      transition: border-color 0.3s ease;
     }
-    .subsection-eyebrow:first-child { margin-top: 0; }
-    /* The subsection eyebrow is itself the divider — drop the .block's
-       top hairline when one immediately follows. */
-    .subsection-eyebrow + .block {
+    .phase:first-child {
       border-top: none;
       padding-top: 0;
+    }
+    .phase-marker {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 44px;
+      font-weight: 400;
+      color: var(--accent);
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+    .phase-content > .block:first-child {
+      padding-top: 0;
+      border-top: none;
+    }
+    .phase-content > .block:last-child { padding-bottom: 0; }
+
+    /* ───── Loop preview strip (Pull → Work → Push) ───── */
+    .loop-preview {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin: 0 0 28px;
+      max-width: none;
+    }
+    .loop-step {
+      border-top: 1px solid var(--accent);
+      padding-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: border-color 0.3s ease;
+    }
+    .loop-step-num {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 11px;
+      color: var(--accent);
+      font-weight: 600;
+      letter-spacing: 0.16em;
+    }
+    .loop-step-name {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+    .loop-step-when {
+      font-size: 13px;
+      color: var(--ink-muted);
+      line-height: 1.4;
     }
 
     /* ───── Role toggles ───── */
@@ -766,7 +809,7 @@
     .role-toggle-body {
       padding: 0 16px 40px;
       color: var(--ink-soft);
-      max-width: 652px;
+      max-width: none;
     }
     .role-toggle-body > h4 {
       font-family: 'JetBrains Mono', ui-monospace, monospace;
@@ -795,7 +838,7 @@
     .role-toggle-body ol,
     .role-toggle-body ul {
       margin-bottom: 14px;
-      max-width: 620px;
+      max-width: none;
     }
     .role-toggle-body p:last-child,
     .role-toggle-body ol:last-child,
@@ -819,6 +862,8 @@
       margin-bottom: 24px;
     }
     .obsidian-head > .obsidian-head-text > * { display: block; }
+    .obsidian-head-text .section-label { display: inline-block; }
+    #obsidian .section-intro { max-width: 720px; }
     .obsidian-mark {
       position: relative;
       width: clamp(96px, 11vw, 132px);
@@ -881,7 +926,7 @@
       border: 1px solid var(--line);
       border-radius: 12px;
       margin: 24px 0 12px;
-      max-width: 620px;
+      max-width: none;
       overflow: hidden;
       aspect-ratio: 2 / 1;
       transition: background 0.3s ease, border-color 0.3s ease;
@@ -970,7 +1015,7 @@
     .caption {
       font-size: 13px;
       color: var(--ink-muted);
-      max-width: 620px;
+      max-width: none;
       margin-top: 4px;
       margin-bottom: 16px;
     }
@@ -978,7 +1023,7 @@
     /* ───── Inline step images ───── */
     .step-image {
       display: block;
-      max-width: 620px;
+      max-width: none;
       width: 100%;
       height: auto;
       border-radius: 12px;
@@ -1025,7 +1070,7 @@
       grid-template-columns: auto 1fr;
       gap: 40px;
       align-items: start;
-      max-width: 720px;
+      max-width: 920px;
       margin: 0 auto;
     }
     .avatar {
@@ -1069,7 +1114,7 @@
     .about-content p {
       color: var(--ink-soft);
       font-size: 16px;
-      max-width: 500px;
+      max-width: none;
       margin-bottom: 8px;
       line-height: 1.6;
     }
@@ -1120,7 +1165,7 @@
 
     /* ───── Hero glossary disclosure ───── */
     .glossary {
-      max-width: 540px;
+      max-width: none;
       margin: 0 0 36px;
       border-radius: 12px;
       background: var(--bg-soft);
@@ -1168,11 +1213,19 @@
     .glossary-body dt:first-of-type { margin-top: 0; }
     .glossary-body dd {
       margin: 0 0 4px;
-      max-width: 500px;
+      max-width: none;
       text-align: justify;
       hyphens: auto;
       -webkit-hyphens: auto;
     }
+    .glossary-body p {
+      margin: 0;
+      max-width: none;
+      text-align: justify;
+      hyphens: auto;
+      -webkit-hyphens: auto;
+    }
+    .glossary-body p + p { margin-top: 10px; }
     @media (prefers-reduced-motion: reduce) {
       .glossary .glossary-chevron { transition: none; }
     }
@@ -1184,7 +1237,7 @@
       padding: 18px 22px;
       border-radius: 12px;
       margin: 0 0 56px;
-      max-width: 720px;
+      max-width: 920px;
       color: var(--ink-soft);
       font-size: 15.5px;
       line-height: 1.6;
@@ -1226,6 +1279,22 @@
       font-size: 0.82em;
     }
 
+    /* ───── PR diagram (static SVG illustration) ───── */
+    .pr-demo {
+      display: block;
+      max-width: 720px;
+      margin: 32px auto 4px;
+      width: 100%;
+    }
+    .pr-svg {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+    [data-theme="dark"] .pr-svg {
+      filter: brightness(0.94) saturate(0.96);
+    }
+
     /* ───── Responsive ───── */
     @media (max-width: 720px) {
       .nav-inner { padding: 14px 20px; }
@@ -1248,6 +1317,185 @@
       .step-celebration-emoji { font-size: 26px; }
       .step-celebration-text { font-size: 15px; }
       .glossary { max-width: none; }
+      .phase { grid-template-columns: 1fr; gap: 14px; padding: 36px 0; }
+      .phase-marker { font-size: 32px; }
+      .loop-preview { grid-template-columns: 1fr; gap: 14px; }
+    }
+
+    /* ───── Docs sidebar (≥1240px) ───── */
+    .docs-sidebar { display: none; }
+
+    @media (min-width: 1240px) {
+      body { padding-left: 280px; }
+
+      /* Sidebar replaces the top nav at this width */
+      nav, .mobile-menu { display: none; }
+
+      .docs-sidebar {
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 280px;
+        background: transparent;
+        padding: 40px 28px 28px;
+        z-index: 50;
+        overflow-y: auto;
+        transition: background 0.3s ease, border-color 0.3s ease;
+      }
+
+      .docs-sidebar-logo {
+        font-weight: 600;
+        font-size: 15px;
+        letter-spacing: -0.01em;
+        color: var(--ink);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 40px;
+        white-space: nowrap;
+      }
+      .docs-sidebar-logo .dot {
+        display: inline-block;
+        width: 9px;
+        height: 9px;
+        background: var(--accent);
+        border-radius: 50%;
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 14%, transparent);
+      }
+
+      .docs-sidebar-eyebrow {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 11px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        color: var(--ink-muted);
+        margin-bottom: 14px;
+      }
+
+      .docs-sidebar-links {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .ds-group {
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Top-level section row */
+      .ds-section {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 10px 12px;
+        color: var(--ink-soft);
+        font-size: 14.5px;
+        border-radius: 8px;
+        transition: color 0.15s ease, background 0.2s ease;
+      }
+      .ds-section .nav-num {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 11px;
+        color: var(--ink-muted);
+        font-weight: 500;
+        letter-spacing: 0;
+        flex-shrink: 0;
+        transition: color 0.15s ease;
+      }
+      .ds-chevron {
+        width: 14px;
+        height: 14px;
+        margin-left: auto;
+        color: var(--ink-muted);
+        flex-shrink: 0;
+        transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+                    color 0.15s ease;
+      }
+      .ds-section:hover {
+        color: var(--accent);
+        background: color-mix(in srgb, var(--accent) 6%, transparent);
+      }
+      .ds-section:hover .nav-num,
+      .ds-section:hover .ds-chevron { color: var(--accent); }
+      .ds-section.is-active {
+        color: var(--accent);
+        font-weight: 600;
+        background: color-mix(in srgb, var(--accent) 9%, transparent);
+      }
+      [data-theme="dark"] .ds-section.is-active {
+        background: color-mix(in srgb, var(--accent) 14%, transparent);
+      }
+      .ds-section.is-active .nav-num,
+      .ds-section.is-active .ds-chevron { color: var(--accent); }
+
+      /* Nested sub-section list — collapsed by default */
+      .ds-sublinks {
+        list-style: none;
+        margin: 0 0 0 22px;
+        padding: 0;
+        border-left: 1px solid var(--line);
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+                    padding 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+                    border-color 0.3s ease;
+      }
+      .ds-group.is-expanded > .ds-sublinks {
+        max-height: 420px;
+        padding: 6px 0 10px;
+      }
+      .ds-group.is-expanded .ds-chevron {
+        transform: rotate(90deg);
+      }
+      .ds-sublinks li { list-style: none; }
+      .ds-sublinks a {
+        display: block;
+        padding: 7px 10px 7px 22px;
+        margin-left: -1px;
+        color: var(--ink-muted);
+        font-size: 13.5px;
+        line-height: 1.45;
+        border-left: 1px solid transparent;
+        transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+      }
+      .ds-sublinks a:hover {
+        color: var(--accent);
+      }
+      .ds-sublinks a.is-active {
+        color: var(--accent);
+        font-weight: 500;
+        border-left-color: var(--accent);
+      }
+      .ds-sublinks code.folder {
+        font-family: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+        font-size: 0.86em;
+        background: var(--code-bg);
+        color: var(--code-ink);
+        padding: 1px 6px;
+        border-radius: 4px;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .ds-sublinks { transition: none; }
+        .ds-chevron { transition: color 0.15s ease; }
+      }
+
+      .docs-sidebar-spacer { flex: 1; min-height: 32px; }
+
+      .docs-sidebar-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding-top: 20px;
+      }
+      .docs-sidebar-footer .nav-github {
+        font-size: 13.5px;
+      }
     }
   </style>
 </head>
@@ -1291,6 +1539,67 @@
   <a href="#advanced"><span class="nav-num">04</span>Advanced</a>
 </div>
 
+<aside class="docs-sidebar" aria-label="Section navigation">
+  <a href="#top" class="docs-sidebar-logo"><span class="dot"></span>wiki-generator.md</a>
+  <div class="docs-sidebar-eyebrow">Contents</div>
+  <nav class="docs-sidebar-links">
+    <div class="ds-group" data-section="start">
+      <a href="#start" class="ds-section"><span class="nav-num">01</span>Get Started<svg class="ds-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg></a>
+      <ul class="ds-sublinks">
+        <li><a href="#start-install">Install Claude Code</a></li>
+        <li><a href="#start-folder">Create a folder for your wiki</a></li>
+        <li><a href="#start-open">Open the folder in Claude Code</a></li>
+        <li><a href="#start-skill">Install the wiki generator skill</a></li>
+        <li><a href="#start-build">Build your wiki project</a></li>
+        <li><a href="#start-raw">Add files to <code class="folder">raw/</code></a></li>
+        <li><a href="#start-compile">Compile the raw files</a></li>
+        <li><a href="#start-audit">Audit your wiki</a></li>
+      </ul>
+    </div>
+    <div class="ds-group" data-section="obsidian">
+      <a href="#obsidian" class="ds-section"><span class="nav-num">02</span>Obsidian<svg class="ds-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg></a>
+      <ul class="ds-sublinks">
+        <li><a href="#obsidian-what">What's Obsidian?</a></li>
+        <li><a href="#obsidian-download">Download Obsidian</a></li>
+        <li><a href="#obsidian-vault">Open your wiki as a vault</a></li>
+        <li><a href="#obsidian-index">Start at the master index</a></li>
+        <li><a href="#obsidian-graph">Try the Graph View</a></li>
+        <li><a href="#obsidian-search">Use search</a></li>
+      </ul>
+    </div>
+    <div class="ds-group" data-section="together">
+      <a href="#together" class="ds-section"><span class="nav-num">03</span>Work Together<svg class="ds-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg></a>
+      <ul class="ds-sublinks">
+        <li><a href="#together-repo">Set up the shared repo</a></li>
+        <li><a href="#together-sync">Get a synced copy</a></li>
+        <li><a href="#together-loop">Pull → Work → Push</a></li>
+        <li><a href="#together-habits">Habits that prevent conflicts</a></li>
+      </ul>
+    </div>
+    <div class="ds-group" data-section="advanced">
+      <a href="#advanced" class="ds-section"><span class="nav-num">04</span>Advanced<svg class="ds-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg></a>
+      <ul class="ds-sublinks">
+        <li><a href="#advanced-what">What's a Pull Request?</a></li>
+        <li><a href="#advanced-roles">Maintainers and Contributors</a></li>
+        <li><a href="#advanced-healthy">Keep PRs healthy</a></li>
+      </ul>
+    </div>
+  </nav>
+  <div class="docs-sidebar-spacer"></div>
+  <div class="docs-sidebar-footer">
+    <a href="https://github.com/davron-design/wiki-generator" target="_blank" rel="noopener" class="nav-github">GitHub ↗</a>
+    <button class="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+      <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="4"/>
+        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+      </svg>
+      <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+    </button>
+  </div>
+</aside>
+
 <header class="hero" id="top">
   <div class="hero-label">Beginner's Guide</div>
   <h1>Building the <span class="punch">Agentic Mind<span class="punct">.</span></span></h1>
@@ -1298,7 +1607,7 @@
 
   <details class="glossary">
     <summary>
-      <span>New to <strong>GitHub</strong>, <strong>repositories</strong>, or <strong>push</strong> / <strong>pull</strong>?</span>
+      <span>New to <strong>GitHub</strong>, <strong>repositories</strong>, <strong>commits</strong>, or <strong>push</strong> / <strong>pull</strong>?</span>
       <svg class="glossary-chevron" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg>
     </summary>
     <dl class="glossary-body">
@@ -1306,6 +1615,8 @@
       <dd>A free website where teams keep folders of files in sync, with a complete history of every change. Owned by Microsoft, used by millions of people. Think of it as the cloud home of your wiki.</dd>
       <dt>Repository (or "repo")</dt>
       <dd>The shared folder on GitHub itself — your wiki, but in the cloud. Like a Google Drive folder, except every edit is tracked and you can roll back to any earlier version.</dd>
+      <dt>Commit</dt>
+      <dd>A saved snapshot of your changes — one recorded step in the wiki's history. When you click <strong>Commit to main</strong> in GitHub Desktop, you're stamping your edits with a short message so everyone can see what changed and when.</dd>
       <dt>Push and Pull</dt>
       <dd><strong>Pull</strong> = grab the latest changes from GitHub onto your computer. <strong>Push</strong> = send your own changes back up so the rest of the team can see them. You'll do both with one-click buttons in GitHub Desktop.</dd>
     </dl>
@@ -1329,7 +1640,7 @@
     <div class="step">
       <div class="step-num">0</div>
       <div class="step-content">
-        <h3>Install Claude Code</h3>
+        <h3 id="start-install">Install Claude Code</h3>
         <p>If you don't already have it, download the <strong>Claude Code desktop app</strong> from <a href="https://claude.com/claude-code" target="_blank" rel="noopener">claude.com/claude-code</a>. It's free, installs in under a minute, and works on Mac and Windows.</p>
         <p>Sign in once you've launched it — that's the only account you need for this whole section.</p>
       </div>
@@ -1338,7 +1649,7 @@
     <div class="step">
       <div class="step-num">1</div>
       <div class="step-content">
-        <h3>Create a folder for your wiki</h3>
+        <h3 id="start-folder">Create a folder for your wiki</h3>
         <p>Pick a spot on your computer — your Desktop is fine. Create a new folder and name it whatever you want: <em>My Wiki</em>, <em>Gardening Notes</em>, <em>Work Knowledge Base</em>.</p>
         <p>That folder is the home of your wiki. Everything will live inside it.</p>
       </div>
@@ -1347,7 +1658,7 @@
     <div class="step">
       <div class="step-num">2</div>
       <div class="step-content">
-        <h3>Open the folder in Claude Code</h3>
+        <h3 id="start-open">Open the folder in Claude Code</h3>
         <p>Launch the Claude Code desktop app and open the folder you just created. You should now see an empty project with a chat box ready to go.</p>
         <img src="assets/claude-code-empty.png" alt="The empty Claude Code project view, ready for your first prompt" class="step-image" loading="lazy" />
       </div>
@@ -1356,7 +1667,7 @@
     <div class="step">
       <div class="step-num">3</div>
       <div class="step-content">
-        <h3>Install the wiki generator skill</h3>
+        <h3 id="start-skill">Install the wiki generator skill</h3>
         <p>Paste this prompt into Claude Code:</p>
         <div class="quote">Please download the repo at <strong>https://github.com/davron-design/wiki-generator</strong> and install it as a project-scoped skill in this folder. Put the skill files under <code class="folder">.claude/skills/wiki-generator/</code> so the skill only applies to this project. Once it's installed, list the skills so I can confirm it's ready to use.</div>
         <p class="caption">Don't worry about the technical words inside — just paste the whole block as-is. Claude handles the rest.</p>
@@ -1367,7 +1678,7 @@
     <div class="step">
       <div class="step-num">4</div>
       <div class="step-content">
-        <h3>Build your wiki project</h3>
+        <h3 id="start-build">Build your wiki project</h3>
         <p>In Claude Code, type:</p>
         <pre><code class="skill">/wiki-generator</code></pre>
         <p>Claude will create three folders for you:</p>
@@ -1377,13 +1688,24 @@
           <li><code class="folder">output/</code> — where reports and query results show up</li>
         </ul>
         <p>It also installs two companion skills — <code class="skill">/raw-compile</code> and <code class="skill">/audit-wiki</code> — automatically.</p>
+
+        <details class="glossary">
+          <summary>
+            <span>What's a <strong>skill</strong>?</span>
+            <svg class="glossary-chevron" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg>
+          </summary>
+          <div class="glossary-body">
+            <p>A <strong>skill</strong> is a small package of instructions that teaches Claude how to do a specific job. You install it once, then trigger it by name with a slash command — like <code class="skill">/wiki-generator</code> above.</p>
+            <p>Think of it as a shortcut for a complex task: instead of writing out detailed instructions every time, you say the skill name and Claude follows the recipe.</p>
+          </div>
+        </details>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">5</div>
       <div class="step-content">
-        <h3>Add files to <code class="folder">raw/</code></h3>
+        <h3 id="start-raw">Add files to <code class="folder">raw/</code></h3>
         <p>This is where you feed your wiki. Open the <code class="folder">raw/</code> folder and drop in any files you want included — articles, notes, research clippings, transcripts.</p>
         <p>Add as many files as you want. Don't worry about organizing them — that's Claude's job.</p>
       </div>
@@ -1392,7 +1714,7 @@
     <div class="step">
       <div class="step-num">6</div>
       <div class="step-content">
-        <h3>Compile the raw files</h3>
+        <h3 id="start-compile">Compile the raw files</h3>
         <p>In Claude Code, simply say:</p>
         <pre><code class="cmd">compile</code></pre>
         <p>Claude will read every file in <code class="folder">raw/</code>, group the files by topic, write clean wiki articles into <code class="folder">wiki/</code>, link them together with <code class="literal">[[wiki links]]</code>, and archive the compiled raw files so you know what's been processed.</p>
@@ -1403,7 +1725,7 @@
     <div class="step">
       <div class="step-num">7</div>
       <div class="step-content">
-        <h3>Audit your wiki</h3>
+        <h3 id="start-audit">Audit your wiki</h3>
         <p>Once your wiki is built, check it for gaps or inconsistencies. In Claude Code, say:</p>
         <pre><code class="cmd">audit</code></pre>
         <p>Claude will scan the wiki and produce a numbered audit report in <code class="folder">output/_audits/</code>. The report points out missing cross-links, thin topics, and inconsistencies between articles.</p>
@@ -1499,7 +1821,7 @@
   <p class="section-intro">Claude builds the wiki. <strong>Obsidian</strong> — a free markdown app — gives you a clickable, searchable, visual way to read it. Same folder. No sync needed.</p>
 
   <div class="block">
-    <h3>What's Obsidian, and why use it?</h3>
+    <h3 id="obsidian-what">What's Obsidian, and why use it?</h3>
     <p>Claude Code is great for <strong>building</strong> the wiki — compiling raw files, writing articles, running audits. But it's not designed for <strong>browsing</strong> what you've built.</p>
     <p>Obsidian fills that gap. It's a free markdown reader that natively understands <code class="literal">[[wiki links]]</code> — the same link style Claude already writes into every article. That means:</p>
     <ul>
@@ -1516,7 +1838,7 @@
     <div class="step">
       <div class="step-num">1</div>
       <div class="step-content">
-        <h3>Download Obsidian</h3>
+        <h3 id="obsidian-download">Download Obsidian</h3>
         <ol>
           <li>Go to <a href="https://obsidian.md" target="_blank" rel="noopener">obsidian.md</a>.</li>
           <li>Click the big <strong>Get Obsidian</strong> button.</li>
@@ -1529,7 +1851,7 @@
     <div class="step">
       <div class="step-num">2</div>
       <div class="step-content">
-        <h3>Open your wiki folder as a vault</h3>
+        <h3 id="obsidian-vault">Open your wiki folder as a vault</h3>
         <p>In Obsidian, a "vault" is just a folder full of markdown files. Your wiki folder is already exactly that.</p>
         <ol>
           <li>Launch <strong>Obsidian</strong>.</li>
@@ -1545,7 +1867,7 @@
     <div class="step">
       <div class="step-num">3</div>
       <div class="step-content">
-        <h3>Start at the master index</h3>
+        <h3 id="obsidian-index">Start at the master index</h3>
         <p>Your wiki has a built-in entry point.</p>
         <ol>
           <li>In the left sidebar, open <code class="folder">wiki/_master-index.md</code>.</li>
@@ -1560,7 +1882,7 @@
     <div class="step">
       <div class="step-num">4</div>
       <div class="step-content">
-        <h3>Try the Graph View</h3>
+        <h3 id="obsidian-graph">Try the Graph View</h3>
         <p>This is the fun part.</p>
 
         <div class="graph-demo" aria-label="Animated illustration of a wiki graph view">
@@ -1662,7 +1984,7 @@
     <div class="step">
       <div class="step-num">5</div>
       <div class="step-content">
-        <h3>Use search</h3>
+        <h3 id="obsidian-search">Use search</h3>
         <p>Press <strong>Ctrl/Cmd + Shift + F</strong> to open the search panel. Type anything — Obsidian searches across every article instantly.</p>
         <p>For quick file-name lookups, press <strong>Ctrl/Cmd + O</strong> and start typing an article name.</p>
       </div>
@@ -1671,7 +1993,7 @@
   </div>
 
   <div class="label-eyebrow">How Obsidian and Claude Code Work Together</div>
-  <p style="color: var(--ink-soft); max-width: 620px; margin-bottom: 20px;">You don't have to pick one. They share the same folder.</p>
+  <p style="color: var(--ink-soft); max-width: none; margin-bottom: 20px;">You don't have to pick one. They share the same folder.</p>
   <div class="table-wrap">
     <table>
       <thead>
@@ -1686,8 +2008,8 @@
     </table>
   </div>
 
-  <p style="color: var(--ink-soft); max-width: 620px; margin: 20px 0 12px;">A common rhythm:</p>
-  <ol style="color: var(--ink-soft); padding-left: 22px; max-width: 620px;">
+  <p style="color: var(--ink-soft); max-width: none; margin: 20px 0 12px;">A common rhythm:</p>
+  <ol style="color: var(--ink-soft); padding-left: 22px; max-width: none;">
     <li>In <strong>Claude Code</strong>, say <code class="cmd">compile</code> to bring new files into the wiki.</li>
     <li>Switch to <strong>Obsidian</strong> to read what Claude wrote, follow the links, and check the graph.</li>
     <li>Spot something thin or missing? Back to <strong>Claude Code</strong> and say <code class="cmd">audit</code>.</li>
@@ -1702,72 +2024,89 @@
   <p class="section-intro">Want a small team to build the same wiki together? Use <strong>GitHub Desktop</strong> as the syncing layer. No terminal, no coding.</p>
 
   <div class="label-eyebrow">What You'll Need (per person)</div>
-  <ul style="color: var(--ink-soft); padding-left: 22px; max-width: 620px; margin-bottom: 8px;">
+  <ul style="color: var(--ink-soft); padding-left: 22px; max-width: none; margin-bottom: 8px;">
     <li>The <strong>Claude Code desktop app</strong> — you already have this</li>
     <li>The <strong>GitHub Desktop app</strong> — <a href="https://desktop.github.com" target="_blank" rel="noopener">desktop.github.com</a></li>
     <li>A free <strong>GitHub account</strong> — <a href="https://github.com/signup" target="_blank" rel="noopener">github.com/signup</a></li>
   </ul>
 
-  <div style="margin-top: 64px;">
+  <div class="phases">
 
-    <div class="subsection-eyebrow">One-time setup</div>
+    <div class="phase">
+      <div class="phase-marker">ONCE</div>
+      <div class="phase-content">
 
-    <div class="block">
-      <div class="block-kicker">Team Lead</div>
-      <h3>Set up the shared repo</h3>
-      <ol>
-        <li>Go to <a href="https://github.com/new" target="_blank" rel="noopener">github.com/new</a> and create a new repository (e.g. <code class="literal">team-wiki</code>). Keep it <strong>Private</strong> if your files are sensitive.</li>
-        <li>Open the wiki folder in GitHub Desktop → <strong>File → Add Local Repository</strong> → pick the folder → click <strong>Publish repository</strong>.</li>
-        <li>In the repo's <strong>Settings → Collaborators</strong> on github.com, invite your team members by username or email.</li>
-      </ol>
+        <div class="block">
+          <div class="block-kicker">Team Lead</div>
+          <h3 id="together-repo">Set up the shared repo</h3>
+          <ol>
+            <li>Go to <a href="https://github.com/new" target="_blank" rel="noopener">github.com/new</a> and create a new repository (e.g. <code class="literal">team-wiki</code>). Keep it <strong>Private</strong> if your files are sensitive.</li>
+            <li>Open the wiki folder in GitHub Desktop → <strong>File → Add Local Repository</strong> → pick the folder → click <strong>Publish repository</strong>.</li>
+            <li>In the repo's <strong>Settings → Collaborators</strong> on github.com, invite your team members by username or email.</li>
+          </ol>
+        </div>
+
+        <div class="block">
+          <div class="block-kicker">Team Member</div>
+          <h3 id="together-sync">Get a synced copy</h3>
+          <ol>
+            <li>Install <strong>GitHub Desktop</strong> from <a href="https://desktop.github.com" target="_blank" rel="noopener">desktop.github.com</a> and sign in.</li>
+            <li>Accept the email invitation from the team lead.</li>
+            <li>In GitHub Desktop, click <strong>Clone a repository</strong> → pick your team's wiki → choose where to save it.</li>
+          </ol>
+          <p>You now have a synced copy of the wiki on your machine.</p>
+        </div>
+
+      </div>
     </div>
 
-    <div class="block">
-      <div class="block-kicker">Team Member</div>
-      <h3>Get a synced copy</h3>
-      <ol>
-        <li>Install <strong>GitHub Desktop</strong> from <a href="https://desktop.github.com" target="_blank" rel="noopener">desktop.github.com</a> and sign in.</li>
-        <li>Accept the email invitation from the team lead.</li>
-        <li>In GitHub Desktop, click <strong>Clone a repository</strong> → pick your team's wiki → choose where to save it.</li>
-      </ol>
-      <p>You now have a synced copy of the wiki on your machine.</p>
-    </div>
+    <div class="phase">
+      <div class="phase-marker">DAILY</div>
+      <div class="phase-content">
 
-    <div class="subsection-eyebrow">Daily</div>
+        <div class="block">
+          <div class="block-kicker">Everyone</div>
+          <h3 id="together-loop">Pull <span class="punct">→</span> Work <span class="punct">→</span> Push</h3>
+          <p>The daily rhythm, named for the GitHub Desktop buttons you'll click.</p>
 
-    <div class="block">
-      <div class="block-kicker">Everyone</div>
-      <h3>Sync, work, share</h3>
-      <p>The daily rhythm. In GitHub Desktop's own words this is the <strong>Pull → Work → Push</strong> loop — same idea, more technical-sounding.</p>
+          <div class="loop-preview">
+            <div class="loop-step">
+              <div class="loop-step-num">01</div>
+              <div class="loop-step-name">Pull</div>
+              <div class="loop-step-when">Before you start</div>
+            </div>
+            <div class="loop-step">
+              <div class="loop-step-num">02</div>
+              <div class="loop-step-name">Work</div>
+              <div class="loop-step-when">As you go</div>
+            </div>
+            <div class="loop-step">
+              <div class="loop-step-num">03</div>
+              <div class="loop-step-name">Push</div>
+              <div class="loop-step-when">When you're done</div>
+            </div>
+          </div>
 
-      <p><strong>Sync — before you start:</strong></p>
-      <ol>
-        <li>Open <strong>GitHub Desktop</strong> → <strong>Fetch origin</strong> → <strong>Pull origin</strong> to grab the latest changes from the team.</li>
-      </ol>
+          <p><strong>01 — Pull.</strong> Open <strong>GitHub Desktop</strong> → <strong>Fetch origin</strong> → <strong>Pull origin</strong> to grab the latest changes from the team.</p>
 
-      <p><strong>Work — as usual:</strong></p>
-      <ol>
-        <li>Open the wiki folder in <strong>Claude Code</strong> and work as usual — drop files into <code class="folder">raw/</code>, say <code class="cmd">compile</code>, ask the wiki questions.</li>
-      </ol>
+          <p><strong>02 — Work.</strong> Open the wiki folder in <strong>Claude Code</strong> and work as usual — drop files into <code class="folder">raw/</code>, say <code class="cmd">compile</code>, ask the wiki questions.</p>
 
-      <p><strong>Share — when you've made changes you want others to see:</strong></p>
-      <ol>
-        <li>In <strong>GitHub Desktop</strong>, you'll see all your changed files on the left.</li>
-        <li>Type a short summary at the bottom (e.g. <em>"Added gardening notes"</em>).</li>
-        <li>Click <strong>Commit to main</strong>, then <strong>Push origin</strong>.</li>
-      </ol>
+          <p><strong>03 — Push.</strong> Back in <strong>GitHub Desktop</strong>, you'll see your changed files on the left. Type a short summary at the bottom (e.g. <em>"Added gardening notes"</em>), then click <strong>Commit to main</strong> → <strong>Push origin</strong>.</p>
 
-      <p>Your team members can now <strong>Fetch → Pull</strong> to receive your changes.</p>
-    </div>
+          <p>Your team members can now <strong>Fetch → Pull</strong> to receive your changes.</p>
+        </div>
 
-    <div class="block">
-      <div class="block-kicker">Tips</div>
-      <h3>Habits that prevent conflicts</h3>
-      <ul>
-        <li><strong>Pull before you start. Push when you finish.</strong> That habit prevents most conflicts.</li>
-        <li>If two people edited the same article at the same time, GitHub Desktop will guide you through merging.</li>
-        <li>Everything is version-controlled — you can roll back any change from GitHub Desktop's <strong>History</strong> tab.</li>
-      </ul>
+        <div class="block">
+          <div class="block-kicker">Tips</div>
+          <h3 id="together-habits">Habits that prevent conflicts</h3>
+          <ul>
+            <li><strong>Pull before you start. Push when you finish.</strong> That habit prevents most conflicts.</li>
+            <li>If two people edited the same article at the same time, GitHub Desktop will guide you through merging.</li>
+            <li>Everything is version-controlled — you can roll back any change from GitHub Desktop's <strong>History</strong> tab.</li>
+          </ul>
+        </div>
+
+      </div>
     </div>
 
   </div>
@@ -1781,17 +2120,22 @@
   <p class="section-intro">The "everyone pushes to <code class="literal">main</code>" flow above works for small, trusted teams. As your group grows — or when changes need a second pair of eyes before going live — switch to <strong>Pull Requests</strong>.</p>
 
   <div class="skip-guard">
-    <strong>You don't need this if your team is small and trusts each other.</strong> Section 03's <em>Sync → Work → Share</em> loop is enough on its own. Come back here when your group grows, or when you want a second pair of eyes on every change before it goes live.
+    <strong>You don't need this if your team is small and trusts each other.</strong> Section 03's <em>Pull → Work → Push</em> loop is enough on its own. Come back here when your group grows, or when you want a second pair of eyes on every change before it goes live.
   </div>
 
   <div class="block">
-    <h3>What's a Pull Request?</h3>
+    <h3 id="advanced-what">What's a Pull Request?</h3>
     <p>Think of a Pull Request (PR) as a <strong>draft change proposal</strong>. Instead of pushing your edits straight into the shared wiki, you save them on a personal "side track" (a <strong>branch</strong>) and ask a teammate to review them. Once approved, the change is <strong>merged</strong> into the main wiki — and everyone else pulls it down as normal.</p>
     <p>It's the digital equivalent of <em>"let me show you this before I publish it."</em></p>
+
+    <div class="pr-demo reveal" role="img" aria-label="Pull Request diagram: a main branch, a side branch that forks off through Changes and a Pull Request, then is reviewed and merged back into main.">
+      <img src="assets/pull-request.svg" alt="" class="pr-svg" loading="lazy" />
+    </div>
+    <p class="caption">The wiki lives on <code class="literal">main</code>. To propose changes safely, you fork a side branch, work on it, open a PR, get reviewed, then merge back.</p>
   </div>
 
   <div class="block">
-    <h3>Two roles — Maintainers and Contributors</h3>
+    <h3 id="advanced-roles">Two roles — Maintainers and Contributors</h3>
     <p>PRs introduce a split between two roles:</p>
     <div class="table-wrap">
       <table>
@@ -1813,7 +2157,7 @@
       <svg class="role-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg>
     </summary>
     <div class="role-toggle-body">
-      <h4>One-time</h4>
+      <h4>Once</h4>
       <h5>Turn on branch protection</h5>
       <p>To require PRs (instead of letting anyone push directly to <code class="literal">main</code>):</p>
       <ol>
@@ -1860,7 +2204,7 @@
 
   <div class="block">
     <div class="block-kicker">Tips</div>
-    <h3>Keep PRs healthy</h3>
+    <h3 id="advanced-healthy">Keep PRs healthy</h3>
     <ul>
       <li><strong>Keep branches short-lived.</strong> Open a PR, get it merged, delete the branch. Long-running branches drift from <code class="literal">main</code> and become painful to merge.</li>
       <li><strong>One PR per topic.</strong> Don't bundle <em>"added gardening notes + fixed typos + restructured wiki"</em> into one PR — split them. Smaller PRs review faster and are easier to revert.</li>
@@ -1901,15 +2245,17 @@
 </footer>
 
 <script>
-  // ───── Theme toggle ─────
+  // ───── Theme toggle (nav + sidebar) ─────
   (function () {
-    var toggle = document.getElementById('themeToggle');
-    if (!toggle) return;
-    toggle.addEventListener('click', function () {
-      var current = document.documentElement.getAttribute('data-theme');
-      var next = current === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', next);
-      try { localStorage.setItem('theme', next); } catch (e) {}
+    var toggles = document.querySelectorAll('.theme-toggle');
+    if (!toggles.length) return;
+    toggles.forEach(function (toggle) {
+      toggle.addEventListener('click', function () {
+        var current = document.documentElement.getAttribute('data-theme');
+        var next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        try { localStorage.setItem('theme', next); } catch (e) {}
+      });
     });
   })();
 
@@ -1963,6 +2309,135 @@
       });
     }, { threshold: 0.08, rootMargin: '0px 0px -60px 0px' });
     document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
+  })();
+
+  // ───── Sidebar: section + sub-section tracking, auto-expand ─────
+  (function () {
+    if (!('IntersectionObserver' in window)) return;
+
+    // Top-level section rows
+    var sectionLinks = document.querySelectorAll('.ds-section[href^="#"]');
+    var sectionByHref = {};
+    sectionLinks.forEach(function (a) {
+      var id = a.getAttribute('href').slice(1);
+      if (id) sectionByHref[id] = a;
+    });
+    var sectionTargets = Object.keys(sectionByHref)
+      .map(function (id) { return document.getElementById(id); })
+      .filter(Boolean);
+
+    var groups = document.querySelectorAll('.ds-group');
+    function expandGroup(id) {
+      groups.forEach(function (g) {
+        if (g.dataset.section === id) {
+          g.classList.add('is-expanded');
+        } else {
+          g.classList.remove('is-expanded');
+        }
+      });
+    }
+
+    var currentSection = null;
+    function setActiveSection(id) {
+      if (currentSection === id) return;
+      if (currentSection && sectionByHref[currentSection]) {
+        sectionByHref[currentSection].classList.remove('is-active');
+      }
+      if (id && sectionByHref[id]) {
+        sectionByHref[id].classList.add('is-active');
+      }
+      expandGroup(id);
+      currentSection = id;
+    }
+
+    if (sectionTargets.length) {
+      var sectionIo = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) setActiveSection(entry.target.id);
+        });
+      }, { rootMargin: '-22% 0px -68% 0px', threshold: 0 });
+      sectionTargets.forEach(function (el) { sectionIo.observe(el); });
+    }
+
+    // Sub-section anchors (h3s)
+    var subLinks = document.querySelectorAll('.ds-sublinks a[href^="#"]');
+    var subByHref = {};
+    subLinks.forEach(function (a) {
+      var id = a.getAttribute('href').slice(1);
+      if (id) subByHref[id] = a;
+    });
+    var subTargets = Object.keys(subByHref)
+      .map(function (id) { return document.getElementById(id); })
+      .filter(Boolean);
+
+    var currentSub = null;
+    function setActiveSub(id) {
+      if (currentSub === id) return;
+      if (currentSub && subByHref[currentSub]) {
+        subByHref[currentSub].classList.remove('is-active');
+      }
+      if (id && subByHref[id]) {
+        subByHref[id].classList.add('is-active');
+      }
+      currentSub = id;
+    }
+
+    // For sub-sections, IntersectionObserver fires too early: it lights up the
+    // next h3 as soon as it enters the viewport scan band, while the user is
+    // still reading content under the previous h3. Use scroll position instead:
+    // the active sub-section is the LAST h3 whose top has crossed the read line.
+    if (subTargets.length) {
+      var READ_LINE_PX = 140; // distance from viewport top where the reader's eye lives
+
+      function updateActiveSub() {
+        var lastPassedId = null;
+        for (var i = 0; i < subTargets.length; i++) {
+          var rect = subTargets[i].getBoundingClientRect();
+          if (rect.top <= READ_LINE_PX) {
+            lastPassedId = subTargets[i].id;
+          } else {
+            break; // subTargets are in document order
+          }
+        }
+
+        // At the bottom of the page, the final h3 can't reach the read line
+        // because scroll-max isn't enough. If we're at scroll-max and the last
+        // h3 is anywhere in the viewport, activate it.
+        var scrollMax = document.documentElement.scrollHeight - window.innerHeight;
+        if (window.scrollY >= scrollMax - 4 && subTargets.length) {
+          for (var j = subTargets.length - 1; j >= 0; j--) {
+            if (subTargets[j].getBoundingClientRect().top < window.innerHeight) {
+              lastPassedId = subTargets[j].id;
+              break;
+            }
+          }
+        }
+
+        setActiveSub(lastPassedId);
+      }
+
+      var subTicking = false;
+      function onScroll() {
+        if (subTicking) return;
+        subTicking = true;
+        requestAnimationFrame(function () {
+          updateActiveSub();
+          subTicking = false;
+        });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onScroll, { passive: true });
+      updateActiveSub();
+    }
+
+    // Snappy feedback: clicking a section row expands its group immediately,
+    // before the smooth-scroll lands and the observer fires.
+    sectionLinks.forEach(function (a) {
+      a.addEventListener('click', function () {
+        var id = a.getAttribute('href').slice(1);
+        if (id) expandGroup(id);
+      });
+    });
   })();
 
   // ───── Graph demo: force-directed + draggable nodes ─────
