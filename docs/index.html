@@ -591,6 +591,7 @@
 
     /* ───── Callouts ───── */
     .quote {
+      position: relative;
       background: var(--accent-soft);
       padding: 18px 24px;
       margin: 20px 0;
@@ -605,6 +606,52 @@
     [data-theme="dark"] .quote {
       color: var(--ink-soft);
     }
+    .quote.has-copy { padding-right: 56px; }
+    .quote-text { display: block; }
+
+    /* ───── Copy-to-clipboard button ───── */
+    .copy-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      padding: 0;
+      border: 1px solid color-mix(in srgb, var(--accent) 24%, transparent);
+      border-radius: 9px;
+      background: var(--bg);
+      color: var(--accent);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .copy-btn:hover {
+      background: var(--accent-soft);
+      border-color: color-mix(in srgb, var(--accent) 42%, transparent);
+    }
+    .copy-btn:active { transform: scale(0.92); }
+    .copy-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .copy-btn svg {
+      width: 16px;
+      height: 16px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .copy-btn .icon-check { display: none; }
+    .copy-btn.copied {
+      color: #15a05a;
+      border-color: color-mix(in srgb, #15a05a 45%, transparent);
+      background: color-mix(in srgb, #15a05a 12%, var(--bg));
+    }
+    .copy-btn.copied .icon-copy { display: none; }
+    .copy-btn.copied .icon-check { display: block; }
+    [data-theme="dark"] .copy-btn.copied { color: #3ed68a; border-color: color-mix(in srgb, #3ed68a 42%, transparent); }
 
     /* ───── Tables ───── */
     .table-wrap { max-width: none; overflow-x: auto; }
@@ -1295,6 +1342,22 @@
       filter: brightness(0.94) saturate(0.96);
     }
 
+    /* ───── Master-wiki diagram (inline SVG, theme-independent colors) ───── */
+    .mw-demo {
+      display: block;
+      max-width: 940px;
+      margin: 36px auto 6px;
+      width: 100%;
+    }
+    .mw-svg {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+    .mw-svg text {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
     /* ───── Responsive ───── */
     @media (max-width: 720px) {
       .nav-inner { padding: 14px 20px; }
@@ -1510,6 +1573,7 @@
         <a href="#obsidian"><span class="nav-num">02</span>Obsidian</a>
         <a href="#together"><span class="nav-num">03</span>Work Together</a>
         <a href="#advanced"><span class="nav-num">04</span>Advanced</a>
+        <a href="#master"><span class="nav-num">05</span>Master Wiki</a>
       </div>
       <a href="https://github.com/davron-design/wiki-generator" target="_blank" rel="noopener" class="nav-github">GitHub ↗</a>
       <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">
@@ -1537,6 +1601,7 @@
   <a href="#obsidian"><span class="nav-num">02</span>Obsidian</a>
   <a href="#together"><span class="nav-num">03</span>Work Together</a>
   <a href="#advanced"><span class="nav-num">04</span>Advanced</a>
+  <a href="#master"><span class="nav-num">05</span>Master Wiki</a>
 </div>
 
 <aside class="docs-sidebar" aria-label="Section navigation">
@@ -1582,6 +1647,15 @@
         <li><a href="#advanced-what">What's a Pull Request?</a></li>
         <li><a href="#advanced-roles">Maintainers and Contributors</a></li>
         <li><a href="#advanced-healthy">Keep PRs healthy</a></li>
+      </ul>
+    </div>
+    <div class="ds-group" data-section="master">
+      <a href="#master" class="ds-section"><span class="nav-num">05</span>Master Wiki<svg class="ds-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg></a>
+      <ul class="ds-sublinks">
+        <li><a href="#master-what">What a master wiki does</a></li>
+        <li><a href="#master-structure">How the levels fit</a></li>
+        <li><a href="#master-flow">The compile flow</a></li>
+        <li><a href="#master-honest">Keep the master honest</a></li>
       </ul>
     </div>
   </nav>
@@ -1669,7 +1743,13 @@
       <div class="step-content">
         <h3 id="start-skill">Install the wiki generator skill</h3>
         <p>Paste this prompt into Claude Code:</p>
-        <div class="quote">Please download the repo at <strong>https://github.com/davron-design/wiki-generator</strong> and install it as a project-scoped skill in this folder. Put the skill files under <code class="folder">.claude/skills/wiki-generator/</code> so the skill only applies to this project. Once it's installed, list the skills so I can confirm it's ready to use.</div>
+        <div class="quote has-copy">
+          <span class="quote-text">Please download the repo at <strong>https://github.com/davron-design/wiki-generator</strong> and install it as a project-scoped skill in this folder. Put the skill files under <code class="folder">.claude/skills/wiki-generator/</code> so the skill only applies to this project. Once it's installed, list the skills so I can confirm it's ready to use.</span>
+          <button class="copy-btn" type="button" aria-label="Copy prompt" title="Copy prompt">
+            <svg class="icon-copy" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <svg class="icon-check" viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+        </div>
         <p class="caption">Don't worry about the technical words inside — just paste the whole block as-is. Claude handles the rest.</p>
         <p>If Claude asks for permission, just <strong>Always Allow</strong>. You only need to do this once per wiki.</p>
       </div>
@@ -2209,6 +2289,186 @@
       <li><strong>Keep branches short-lived.</strong> Open a PR, get it merged, delete the branch. Long-running branches drift from <code class="literal">main</code> and become painful to merge.</li>
       <li><strong>One PR per topic.</strong> Don't bundle <em>"added gardening notes + fixed typos + restructured wiki"</em> into one PR — split them. Smaller PRs review faster and are easier to revert.</li>
       <li><strong>Write clear PR descriptions.</strong> A one-line title plus 2–3 sentences explaining <em>what</em> and <em>why</em> makes review much faster.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ════════ SECTION 05 — MULTI-LEVEL WIKIS ════════ -->
+<section id="master" class="reveal">
+  <span class="section-marker">05</span>
+  <div class="section-label">Multi-Level Wikis</div>
+  <h2>A wiki of wikis<span class="punct">.</span></h2>
+  <p class="section-intro">When a program runs several workstreams in parallel — each with its own wiki — the cross-cutting picture gets lost. A <strong>master wiki</strong> is an AI-maintained synthesis layer that sits above two or more workstream wikis and surfaces what they share: decisions, dependencies, risks, and the places they quietly disagree.</p>
+
+  <div class="hero-ctas" style="margin: -40px 0 48px;">
+    <a href="https://github.com/davron-design/master-wiki-generator" target="_blank" rel="noopener" class="btn btn-secondary">View on GitHub</a>
+  </div>
+
+  <div class="skip-guard">
+    <strong>You only need this if you're running two or more wikis.</strong> A single team is well served by the <em>wiki-generator</em> from Section 01. Reach for the master pattern when separate workstreams each keep their own knowledge base, and someone needs the view across all of them.
+  </div>
+
+  <div class="block">
+    <h3 id="master-what">What a master wiki does</h3>
+    <p>The master never duplicates a workstream's content. Its only job is to answer the questions no single workstream can see:</p>
+    <ul>
+      <li><strong>Shared decisions</strong> — choices made in one workstream that quietly bind the others.</li>
+      <li><strong>Cross-team dependencies</strong> — who is waiting on whom, and for what.</li>
+      <li><strong>Risks that span teams</strong> — exposure no single wiki holds in full.</li>
+      <li><strong>Timeline interlocks</strong> — milestones that have to line up across workstreams.</li>
+      <li><strong>Conflicting approaches</strong> — two teams solving the same problem two different ways.</li>
+    </ul>
+    <p>Every claim it makes links straight back to the source article in the workstream wiki it came from, so the synthesis stays auditable. The <a href="https://github.com/davron-design/master-wiki-generator" target="_blank" rel="noopener">master-wiki-generator</a> skill packages this whole flow — installed the same way Section 01 installs <code class="skill">/wiki-generator</code>.</p>
+
+    <div class="mw-demo reveal" role="img" aria-label="Diagram of a multi-level wiki. Three colored workstream wikis — WS1, WS2 and WS3 — each run their own raw, wiki and output folders fed by their own files. Each workstream lead pushes its compiled wiki up into the master wiki's raw folder. The master maintainer then compiles raw into wiki into output, and a separate stack of cross-workstream files also feeds the master's raw folder.">
+      <svg class="mw-svg" viewBox="0 0 1000 510" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <symbol id="mw-folder" viewBox="0 0 96 78">
+            <path d="M5 21a8 8 0 0 1 8-8h21l9 9h40a8 8 0 0 1 8 8v32a8 8 0 0 1-8 8H13a8 8 0 0 1-8-8z" fill="currentColor"/>
+          </symbol>
+          <symbol id="mw-docs" viewBox="0 0 84 96">
+            <rect x="24" y="8" width="50" height="64" rx="8" fill="currentColor" fill-opacity="0.45"/>
+            <path d="M16 20h38a8 8 0 0 1 8 8v52a8 8 0 0 1-8 8H42l-7-7-7 7H16a8 8 0 0 1-8-8V28a8 8 0 0 1 8-8z" fill="currentColor"/>
+          </symbol>
+        </defs>
+
+        <!-- push-up flows (dashed) -->
+        <g fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 6">
+          <path d="M178 378V312Q178 300 190 300H448Q464 300 464 288V170" stroke="#DA2C95"/>
+          <path d="M500 378C500 330 483 330 483 288V170" stroke="#EC9A2D"/>
+          <path d="M822 378V312Q822 300 810 300H518Q502 300 502 288V170" stroke="#E9512F"/>
+        </g>
+
+        <!-- master wiki -->
+        <rect x="232" y="78" width="648" height="128" rx="14" fill="none" stroke="#8FC4EF" stroke-width="2"/>
+        <text x="262" y="148" font-size="25" font-weight="700" fill="#2E9BE6">Master Wiki</text>
+        <use href="#mw-folder" x="446" y="104" width="74" height="60" style="color:#4AA3E8"/>
+        <use href="#mw-folder" x="636" y="104" width="74" height="60" style="color:#4AA3E8"/>
+        <use href="#mw-folder" x="776" y="104" width="74" height="60" style="color:#4AA3E8"/>
+        <text x="483" y="141" font-size="11.5" font-weight="600" fill="#FFFFFF" text-anchor="middle">raw/</text>
+        <text x="673" y="141" font-size="11.5" font-weight="600" fill="#FFFFFF" text-anchor="middle">wiki/</text>
+        <text x="813" y="141" font-size="11.5" font-weight="600" fill="#FFFFFF" text-anchor="middle">output/</text>
+        <path d="M524 136H630" stroke="#2E9BE6" stroke-width="2" stroke-linecap="round"/>
+        <text x="577" y="129" font-size="9" font-weight="600" fill="#2E9BE6" text-anchor="middle">Maintainer compiles</text>
+        <path d="M636 136l-7-4v8z" fill="#2E9BE6"/>
+        <path d="M714 136H770" stroke="#2E9BE6" stroke-width="2" stroke-linecap="round"/>
+        <path d="M776 136l-7-4v8z" fill="#2E9BE6"/>
+
+        <!-- cross-workstream files -->
+        <use href="#mw-docs" x="404" y="2" width="52" height="60" style="color:#CFE6FA"/>
+        <text x="466" y="24" font-size="11.5" font-weight="600" fill="#2E9BE6">Cross-WS</text>
+        <text x="466" y="39" font-size="11.5" font-weight="600" fill="#2E9BE6">files</text>
+        <path d="M430 58C432 84 454 82 483 112" fill="none" stroke="#6FB4ED" stroke-width="2"/>
+
+        <!-- WS1 -->
+        <g>
+          <use href="#mw-folder" x="73" y="372" width="58" height="46" style="color:#E12E9C"/>
+          <use href="#mw-folder" x="149" y="372" width="58" height="46" style="color:#E12E9C"/>
+          <use href="#mw-folder" x="225" y="372" width="58" height="46" style="color:#E12E9C"/>
+          <text x="102" y="400" font-size="9" font-weight="600" fill="#FFFFFF" text-anchor="middle">raw/</text>
+          <text x="178" y="400" font-size="9" font-weight="600" fill="#FFFFFF" text-anchor="middle">wiki/</text>
+          <text x="254" y="400" font-size="9" font-weight="600" fill="#FFFFFF" text-anchor="middle">output/</text>
+          <path d="M138 391l5 5l-5 5" fill="none" stroke="#E12E9C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M214 391l5 5l-5 5" fill="none" stroke="#E12E9C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <use href="#mw-docs" x="14" y="388" width="40" height="48" style="color:#F8C9E5"/>
+          <path d="M46 410C58 410 60 396 76 396" fill="none" stroke="#E12E9C" stroke-width="1.5"/>
+          <text x="31" y="449" font-size="9.5" font-weight="600" fill="#C42A86" text-anchor="middle">WS files</text>
+          <text x="178" y="450" font-size="15" font-weight="700" fill="#C42A86" text-anchor="middle">WS1 Wiki</text>
+        </g>
+
+        <!-- WS2 -->
+        <g>
+          <use href="#mw-folder" x="395" y="372" width="58" height="46" style="color:#EE9F38"/>
+          <use href="#mw-folder" x="471" y="372" width="58" height="46" style="color:#EE9F38"/>
+          <use href="#mw-folder" x="547" y="372" width="58" height="46" style="color:#EE9F38"/>
+          <text x="424" y="400" font-size="9" font-weight="600" fill="#FFFFFF" text-anchor="middle">raw/</text>
+          <text x="500" y="400" font-size="9" font-weight="600" fill="#FFFFFF" text-anchor="middle">wiki/</text>
+          <text x="576" y="400" font-size="9" font-weight="600" fill="#FFFFFF" text-anchor="middle">output/</text>
+          <path d="M460 391l5 5l-5 5" fill="none" stroke="#EE9F38" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M536 391l5 5l-5 5" fill="none" stroke="#EE9F38" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <use href="#mw-docs" x="336" y="388" width="40" height="48" style="color:#FBE2BE"/>
+          <path d="M368 410C380 410 382 396 398 396" fill="none" stroke="#EE9F38" stroke-width="1.5"/>
+          <text x="353" y="449" font-size="9.5" font-weight="600" fill="#B9791C" text-anchor="middle">WS files</text>
+          <text x="500" y="450" font-size="15" font-weight="700" fill="#B9791C" text-anchor="middle">WS2 Wiki</text>
+        </g>
+
+        <!-- WS3 -->
+        <g>
+          <use href="#mw-folder" x="717" y="372" width="58" height="46" style="color:#EC5A41"/>
+          <use href="#mw-folder" x="793" y="372" width="58" height="46" style="color:#EC5A41"/>
+          <use href="#mw-folder" x="869" y="372" width="58" height="46" style="color:#EC5A41"/>
+          <text x="746" y="400" font-size="9" font-weight="600" fill="#FFFFFF" text-anchor="middle">raw/</text>
+          <text x="822" y="400" font-size="9" font-weight="600" fill="#FFFFFF" text-anchor="middle">wiki/</text>
+          <text x="898" y="400" font-size="9" font-weight="600" fill="#FFFFFF" text-anchor="middle">output/</text>
+          <path d="M782 391l5 5l-5 5" fill="none" stroke="#EC5A41" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M858 391l5 5l-5 5" fill="none" stroke="#EC5A41" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <use href="#mw-docs" x="658" y="388" width="40" height="48" style="color:#F9CDC2"/>
+          <path d="M690 410C702 410 704 396 720 396" fill="none" stroke="#EC5A41" stroke-width="1.5"/>
+          <text x="675" y="449" font-size="9.5" font-weight="600" fill="#C4452C" text-anchor="middle">WS files</text>
+          <text x="822" y="450" font-size="15" font-weight="700" fill="#C4452C" text-anchor="middle">WS3 Wiki</text>
+        </g>
+
+        <!-- push arrowheads -->
+        <path d="M464 159l-6 10h12z" fill="#DA2C95"/>
+        <path d="M483 159l-6 10h12z" fill="#EC9A2D"/>
+        <path d="M502 159l-6 10h12z" fill="#E9512F"/>
+
+        <!-- push labels -->
+        <g font-size="9" font-weight="600" text-anchor="middle">
+          <rect x="270" y="286" width="96" height="28" rx="8" fill="#F8C9E5"/>
+          <text fill="#C42A86"><tspan x="318" y="298">WS1 lead</tspan><tspan x="318" y="309">pushes updates</tspan></text>
+          <rect x="518" y="236" width="96" height="28" rx="8" fill="#FBE2BE"/>
+          <text fill="#B9791C"><tspan x="566" y="248">WS2 lead</tspan><tspan x="566" y="259">pushes updates</tspan></text>
+          <rect x="640" y="286" width="96" height="28" rx="8" fill="#F9CDC2"/>
+          <text fill="#C4452C"><tspan x="688" y="298">WS3 lead</tspan><tspan x="688" y="309">pushes updates</tspan></text>
+        </g>
+      </svg>
+    </div>
+    <p class="caption">Each workstream runs its own <code class="folder">raw/</code> → <code class="folder">wiki/</code> → <code class="folder">output/</code> pipeline. Leads push their compiled wikis up into the master's <code class="folder">raw/</code>, where the maintainer compiles everything into one cross-cutting view.</p>
+  </div>
+
+  <div class="block">
+    <h3 id="master-structure">How the levels fit</h3>
+    <p>The master is itself a wiki-generator project — same <code class="folder">raw/</code>, <code class="folder">wiki/</code>, <code class="folder">output/</code> layout, same <code class="cmd">compile</code> and <code class="cmd">audit</code> skills. What differs is <em>what lands in <code class="folder">raw/</code></em>:</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>What goes in raw/</th><th>Where it lives</th><th>Lifecycle</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Cross-workstream files</td><td>A loose file in the master's <code class="folder">raw/</code></td><td>Archived after each compile, like any source</td></tr>
+          <tr><td>A whole workstream wiki</td><td><code class="folder">raw/&lt;ws-slug&gt;-wiki/</code></td><td>Stays live — a synced copy, never archived</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The distinction matters: loose files are one-time source material, but workstream folders are living inputs that re-sync as each team updates its own wiki. Program-wide decisions, steering notes, and RFCs that touch multiple teams are the loose files; everything a single team owns stays in that team's wiki.</p>
+  </div>
+
+  <div class="block">
+    <h3 id="master-flow">The compile flow</h3>
+    <p>Two layers, two responsibilities:</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Who</th><th>What they do</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Workstream lead</td><td>Compiles their own wiki as usual, then pushes the polished <code class="folder">wiki/</code> up into the master's <code class="folder">raw/</code></td></tr>
+          <tr><td>Master maintainer</td><td>Reads every workstream wiki, then runs <code class="cmd">compile</code> at the top level to write the synthesis</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>When the maintainer compiles, the master doesn't organize by workstream — it organizes by <strong>theme</strong>: Risks, Decisions, Dependencies, Timeline, and Open Questions. A reader should be able to open the master and understand the <em>program</em>, not navigate three separate wikis stitched together.</p>
+  </div>
+
+  <div class="block">
+    <div class="block-kicker">Tips</div>
+    <h3 id="master-honest">Keep the master honest</h3>
+    <ul>
+      <li><strong>Link every claim back to source.</strong> The master is a synthesis, not a system of record. If a statement can't point to a workstream article, it doesn't belong.</li>
+      <li><strong>Organize by theme, never by team.</strong> A section per workstream just recreates the silos you're trying to see past.</li>
+      <li><strong>Cross-WS files stay loose; workstream wikis stay folders.</strong> Loose files get archived after compiling; the <code class="folder">raw/&lt;ws-slug&gt;-wiki/</code> folders stay live, so re-syncing is a copy, not a merge.</li>
+      <li><strong>Re-compile when a workstream ships.</strong> The synthesis is only as current as the last time you pulled the workstream wikis in.</li>
     </ul>
   </div>
 </section>
@@ -2781,6 +3041,54 @@
       requestAnimationFrame(step);
     }
     requestAnimationFrame(step);
+  })();
+
+  // ───── Copy-to-clipboard buttons ─────
+  (function () {
+    var btns = document.querySelectorAll('.copy-btn');
+    if (!btns.length) return;
+
+    function flash(btn) {
+      btn.classList.add('copied');
+      btn.setAttribute('title', 'Copied!');
+      btn.setAttribute('aria-label', 'Copied!');
+      window.clearTimeout(btn._copyTimer);
+      btn._copyTimer = window.setTimeout(function () {
+        btn.classList.remove('copied');
+        btn.setAttribute('title', 'Copy prompt');
+        btn.setAttribute('aria-label', 'Copy prompt');
+      }, 1800);
+    }
+
+    function fallbackCopy(text, done) {
+      try {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'absolute';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        done();
+      } catch (e) {}
+    }
+
+    btns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var quote = btn.closest('.quote');
+        var textEl = quote && quote.querySelector('.quote-text');
+        var text = (textEl ? textEl.textContent : '').trim();
+        if (!text) return;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(function () { flash(btn); })
+            .catch(function () { fallbackCopy(text, function () { flash(btn); }); });
+        } else {
+          fallbackCopy(text, function () { flash(btn); });
+        }
+      });
+    });
   })();
 </script>
 
