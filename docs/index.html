@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>wiki-generator.md</title>
   <meta name="description" content="A knowledge base that grows with every project. Set up an AI-powered wiki with Claude Code — no terminal, no coding." />
-  <meta property="og:title" content="Building the Agentic Mind" />
+  <meta property="og:title" content="wiki-generator.md" />
   <meta property="og:description" content="A knowledge base that grows with every project. Set up an AI-powered wiki with Claude Code — no terminal, no coding." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://davron-design.github.io/wiki-generator/" />
@@ -14,7 +14,7 @@
   <meta property="og:image:height" content="630" />
   <meta property="og:image:alt" content="Building the Agentic Mind — a knowledge base that grows with every project." />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Building the Agentic Mind" />
+  <meta name="twitter:title" content="wiki-generator.md" />
   <meta name="twitter:description" content="A knowledge base that grows with every project. Set up an AI-powered wiki with Claude Code — no terminal, no coding." />
   <meta name="twitter:image" content="https://davron-design.github.io/wiki-generator/assets/og-image.png" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='10' fill='%23a100ff'/%3E%3C/svg%3E" />
@@ -1342,6 +1342,24 @@
       filter: brightness(0.94) saturate(0.96);
     }
 
+    /* ───── Git-repo error banner (faithful GitHub Desktop screenshot, theme-independent) ───── */
+    .git-error-shot {
+      display: block;
+      max-width: 560px;
+      margin: 18px 0 6px;
+      width: 100%;
+    }
+    .git-error-shot svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 11px;
+      box-shadow: 0 6px 28px color-mix(in srgb, var(--ink) 8%, transparent);
+    }
+    [data-theme="dark"] .git-error-shot svg {
+      box-shadow: 0 6px 28px rgba(0, 0, 0, 0.6);
+    }
+
     /* ───── Master-wiki diagram (inline SVG, theme-independent colors) ───── */
     .mw-demo {
       display: block;
@@ -2120,9 +2138,22 @@
           <div class="block-kicker">Team Lead</div>
           <h3 id="together-repo">Set up the shared repo</h3>
           <ol>
-            <li>In GitHub Desktop, choose <strong>File → Add Local Repository</strong> and pick the wiki folder you created in Section 01. Since it isn't a Git repo yet, you'll see <em>"This directory does not appear to be a Git repository"</em> — click the <strong>create a repository</strong> link in that message.</li>
-            <li>A <strong>Create a New Repository</strong> dialog opens with the <strong>Name</strong> and <strong>Local Path</strong> already filled in from your folder (e.g. <code class="literal">team-wiki</code>). Leave the defaults as they are and click <strong>Create Repository</strong> — this turns your folder into a local Git repo.</li>
-            <li>Now click <strong>Publish repository</strong>. In that dialog, keep <strong>Keep this code private</strong> checked if your files are sensitive, then publish. This creates the GitHub repo straight from your existing folder — no empty repo to reconcile.</li>
+            <li>In GitHub Desktop, choose <strong>File → Add Local Repository</strong> and pick the wiki folder you created in Section 01. Since it isn't a Git repo yet, you'll see <em>"This directory does not appear to be a Git repository"</em> — click the <strong>create a repository</strong> link in that message.
+              <div class="git-error-shot" role="img" aria-label="GitHub Desktop error: This directory does not appear to be a Git repository. Would you like to create a repository here instead?">
+                <svg viewBox="0 0 720 112" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="1.5" y="1.5" width="717" height="109" rx="11" fill="#1b1f24" stroke="#30363d" stroke-width="1.5"/>
+                  <g transform="translate(30 47) scale(1.25)" fill="none" stroke="#f85149" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                  </g>
+                  <text x="78" y="46" font-family="'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="16.5" font-weight="500" fill="#f85149">This directory does not appear to be a Git repository.</text>
+                  <text x="78" y="78" font-family="'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="16.5" font-weight="500" fill="#f85149">Would you like to <tspan fill="#58a6ff" text-decoration="underline">create a repository</tspan> here instead?</text>
+                </svg>
+              </div>
+            </li>
+            <li>A <strong>Create a New Repository</strong> dialog opens with the <strong>Name</strong> and <strong>Local Path</strong> already filled in from your folder name (a folder named <em>Work Knowledge Base</em> becomes <code class="literal">work-knowledge-base</code>). Leave the defaults as they are and click <strong>Create Repository</strong> — this turns your folder into a local Git repo.</li>
+            <li>Now click <strong>Publish repository</strong> (sign in to your GitHub account if prompted). In that dialog, keep <strong>Keep this code private</strong> checked if your files are sensitive, then publish. This creates the GitHub repo straight from your existing folder — no empty repo to reconcile.</li>
             <li>In the repo's <strong>Settings → Collaborators</strong> on github.com, invite your team members by username or email.</li>
           </ol>
         </div>
@@ -2172,7 +2203,7 @@
 
           <p><strong>02 — Work.</strong> Open the wiki folder in <strong>Claude Code</strong> and work as usual — drop files into <code class="folder">raw/</code>, say <code class="cmd">compile</code>, ask the wiki questions.</p>
 
-          <p><strong>03 — Push.</strong> Back in <strong>GitHub Desktop</strong>, you'll see your changed files on the left. Type a short summary at the bottom (e.g. <em>"Added gardening notes"</em>), then click <strong>Commit to main</strong> → <strong>Push origin</strong>.</p>
+          <p><strong>03 — Push.</strong> Back in <strong>GitHub Desktop</strong>, you'll see your changed files on the left. Type a short summary at the bottom (e.g. <em>"Added onboarding notes"</em>), then click <strong>Commit to main</strong> → <strong>Push origin</strong>.</p>
 
           <p>Your team members can now <strong>Fetch → Pull</strong> to receive your changes.</p>
         </div>
@@ -2271,7 +2302,7 @@
     <div class="role-toggle-body">
       <h4>Daily</h4>
       <h5>The PR workflow</h5>
-      <p><strong>1. Start a branch before editing.</strong> In GitHub Desktop, click the <strong>Current Branch</strong> dropdown → <strong>New Branch</strong> → name it after your change (e.g. <code class="literal">add-gardening-notes</code>) → <strong>Create branch</strong>.</p>
+      <p><strong>1. Start a branch before editing.</strong> In GitHub Desktop, click the <strong>Current Branch</strong> dropdown → <strong>New Branch</strong> → name it after your change (e.g. <code class="literal">add-onboarding-notes</code>) → <strong>Create branch</strong>.</p>
       <p><strong>2. Edit as usual.</strong> Open the folder in Claude Code, drop files into <code class="folder">raw/</code>, say <code class="cmd">compile</code>. Your changes are isolated to your branch — <code class="literal">main</code> is untouched.</p>
       <p><strong>3. Commit and push your branch.</strong> Write a commit message → <strong>Commit to &lt;your-branch&gt;</strong> → <strong>Publish branch</strong> (first time) or <strong>Push origin</strong> (after that).</p>
       <p><strong>4. Open the Pull Request.</strong> GitHub Desktop shows a <strong>Create Pull Request</strong> banner — click it. A browser tab opens on github.com. Add a short description of what changed and why → <strong>Create pull request</strong>.</p>
@@ -2288,7 +2319,7 @@
     <h3 id="advanced-healthy">Keep PRs healthy</h3>
     <ul>
       <li><strong>Keep branches short-lived.</strong> Open a PR, get it merged, delete the branch. Long-running branches drift from <code class="literal">main</code> and become painful to merge.</li>
-      <li><strong>One PR per topic.</strong> Don't bundle <em>"added gardening notes + fixed typos + restructured wiki"</em> into one PR — split them. Smaller PRs review faster and are easier to revert.</li>
+      <li><strong>One PR per topic.</strong> Don't bundle <em>"added onboarding notes + fixed typos + restructured wiki"</em> into one PR — split them. Smaller PRs review faster and are easier to revert.</li>
       <li><strong>Write clear PR descriptions.</strong> A one-line title plus 2–3 sentences explaining <em>what</em> and <em>why</em> makes review much faster.</li>
     </ul>
   </div>
