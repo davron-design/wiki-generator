@@ -31,7 +31,7 @@ Round numbering is **per topic, not global**. The whole-wiki audit has its own r
 2. **Read the index layer.** Start with `wiki/_master-index.md`, then each in-scope topic's `_index.md`.
 3. **Read in-scope articles.** Cover every article in the scope.
 4. **Look for:**
-   - **Inconsistencies / contradictions** — claims that conflict across articles, or within one article. Note file:line.
+   - **Inconsistencies / contradictions** — claims that conflict across articles, or within one article. Note file:line. `raw-compile` defers every overwrite/supersede decision to audit, so compile-flagged conflicts and any `⚠️` source-conflict callouts are first-class findings here — reconcile them, don't merely re-note them.
    - **Missing cross-links** — concepts mentioned in prose that have (or should have) their own article but aren't linked with `[[wiki links]]`.
    - **Gaps in coverage** — topics referenced but never articled; obvious sibling concepts missing from a topic folder.
    - **Stale or structural issues** — outdated indexes, orphaned articles, broken `[[links]]`.
@@ -104,7 +104,7 @@ Compute it as `score = max(0, 100 − Σ penalties)`, one penalty per *open* iss
 | Convention nit (missing `## Key Takeaways`, threadbare index description, off-convention filename) | −1 |
 
 You record two numbers:
-- **Before:** computed over every issue the audit surfaced this round.
+- **Before:** anchor on the prior round's *After* for this scope — its still-open issues carry forward and stay counted. Re-verify each carried-forward issue (drop any the user fixed out-of-band since last round), then add every new issue this round surfaces. A scope's first-ever round has no prior After, so Before is simply what you found. If a carried-forward count disagrees with last round's, reconcile it under Known Open Items and say why — an unexplained jump means the trend is fiction, not progress.
 - **After:** recomputed once the user's chosen fixes land — drop the penalty for each *resolved* issue; anything deferred or declined stays counted. If no fixes are applied, after == before.
 
 **Keep the report side dead simple.** The rubric above is *your* working method, not something the reader needs — so the report shows only one line: `Before → After: <before> → <after>`, with `(no change)` appended when nothing was applied (e.g. a report-only pass). No breakdown table, no per-dimension penalties, no formula in the report — just the number and how it moved.
@@ -125,6 +125,7 @@ You record two numbers:
 - **NEVER add `⚠️` callouts to articles before the user has approved them.** The report-only pass is binding — inline edits during audit defeat the whole point.
 - **NEVER claim an inconsistency without `file:line` evidence.** A finding the user can't navigate to is unactionable.
 - **NEVER tune the integrity weights or skip issues to make a round look better.** The rubric is fixed precisely so rounds are comparable; a flattered score is worse than no score.
+- **NEVER recompute the Before score from a blank slate when a prior round exists.** Anchor it to the last round's After and carry the still-open issues forward — a Before that ignores history isn't a baseline, it's an unrelated number, and the round-over-round delta becomes meaningless.
 - **NEVER report an after-score that assumes fixes you didn't actually apply.** The after-score must reflect the wiki as it stands once you've stopped editing — deferred and declined issues stay counted.
 - **NEVER dump the scoring rubric, penalty breakdown, or per-dimension table into the report.** The score is one line — `Before → After: X → Y` — the rubric is your internal method, not reader-facing clutter.
 
