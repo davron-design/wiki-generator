@@ -22,10 +22,10 @@ When answering questions against the knowledge base:
 5. If the wiki doesn't offer any knowledge, don't make anything up and be sure to mention it
 
 ### Compiling
-When the user says "compile" or drops new material in raw/, use the `raw-compile` skill.
+When the user says "compile" or drops new material in raw/, use the `raw-compile` skill. Compile is **additive** — it writes new articles and never rewrites existing ones. When new material contradicts or supersedes an article already in the wiki, compile leaves the article untouched and logs the conflict to `wiki/_pending-reconciliation.md` for the audit to resolve.
 
 ### Auditing
-When the user says "audit" or "lint", use the `audit-wiki` skill.
+When the user says "audit" or "lint", use the `audit-wiki` skill. Auditing is a **periodic** reconciliation pass, not a step you run after every compile — compile is cheap and additive, audit is where deferred conflicts get resolved. Ingest freely, then audit when the reconciliation queue grows past ~10 open entries, after roughly 10 new sources, or whenever a source significantly supersedes an existing topic. Batching ingest and then auditing in bursts is the intended rhythm; auditing after every single compile just generates noise.
 
 ## Conventions
 - Always use [[wiki links]] when referencing other notes

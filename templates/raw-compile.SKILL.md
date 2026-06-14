@@ -40,12 +40,33 @@ For each remaining file in `raw/` (skip any `_<date>-compiled/` archive folders;
 5. **Update `wiki/_master-index.md`** — also a markdown table (`| Topic | Description |`), one row per topic. Use the piped wiki-link form `[[topic-slug/_index|topic-slug]]` so the row links to the topic's index while showing a clean label. Add or update the row when you create a new topic or when the existing description has gone stale. Descriptions should be navigable — pack in signature sub-areas and key entities, not just a category name.
 6. **Archive the source.** Once all raw files for this run are compiled, create `raw/_<YYYY-MM-DD>-compiled/` (use today's date) and move every raw file you just compiled into it. Files that pre-existed inside an older `_*-compiled/` folder stay where they are.
 
+## Logging deferred conflicts
+
+Compile is additive — it never rewrites an existing article. But additive ingest only stays safe if the conflicts it *defers* are captured somewhere durable. A conflict mentioned only in your run report is gone by the next session, and the audit has no way to know it was ever raised — so it silently rots into "organized misinformation": a superseded claim sits in an article, newer articles link to it, and every page still reads fine. The reconciliation queue is what prevents that.
+
+So whenever new raw material contradicts or supersedes an article already in the wiki, append a row to `wiki/_pending-reconciliation.md` (create the file with this header if it doesn't exist yet):
+
+```markdown
+# Pending Reconciliation
+
+Conflicts `raw-compile` deferred for `audit-wiki` to resolve. Compile appends `open` rows; audit flips them to `resolved (round N)`.
+
+| Flagged | Existing article | Conflicting claim (source) | Status |
+|---|---|---|---|
+| YYYY-MM-DD | `wiki/<topic>/<article>.md:<line>` | what the new source asserts and what it contradicts | open |
+```
+
+Keep each row specific enough that the audit can act on it without re-deriving the conflict from scratch — name the article path and line, quote what the new source claims, and name the raw source. Leave `Status` as `open`; resolving it is an audit-time decision, never a compile-time one.
+
+`_pending-reconciliation.md` is a meta file like `_master-index.md`, not an article, so it lives at the wiki root and is exempt from the "every article belongs to a topic folder" rule. This file is the connective tissue between additive ingest and periodic reconciliation — without it, the whole compile-then-audit split leaks.
+
 ## Output to the user
 
 After compiling, report:
 - Which topics received articles (new vs. existing)
 - Any new topic folders created
 - The name of the dated archive folder
+- Any conflicts logged to `wiki/_pending-reconciliation.md` this run, and the total number of `open` rows now waiting — so the user can see reconciliation debt accruing and judge when an audit is due
 - Anything ambiguous you had to make a judgment call on (so the user can correct course)
 
 ## Anti-patterns
@@ -54,6 +75,6 @@ After compiling, report:
 - **NEVER skip `[[wiki links]]` for cross-references.** Broken graphs are silent failures — the article reads correctly but the knowledge base loses its connective tissue.
 - **NEVER fork a variant slug for an entity that already has an article.** "GenAI" and "generative AI" as two files silently fragment the link graph — the wiki's connective tissue rots while every page still reads fine.
 - **NEVER move a raw file into `_<date>-compiled/` until its article is written AND the topic index is updated.** Partial archives sever the source-to-article provenance trail.
-- **NEVER overwrite an existing wiki article during compile.** If new raw material conflicts with or supersedes an existing article, leave the article untouched and flag it: name the existing article path, quote the conflicting raw claim, and recommend running `audit-wiki` to reconcile. Updating existing content is an audit-time decision, not an ingest-time one.
+- **NEVER overwrite an existing wiki article during compile.** If new raw material conflicts with or supersedes an existing article, leave the article untouched and log it to the reconciliation queue (see *Logging deferred conflicts* above). Updating existing content is an audit-time decision, not an ingest-time one — but the conflict must land as an `open` row in `wiki/_pending-reconciliation.md`, not merely in the run report, or it evaporates before the next audit and the deferral becomes a quiet data loss.
 - **NEVER skip the `## Key Takeaways` section.** It is the article's TL;DR — queries depend on it.
 - **NEVER write `_master-index.md` or a topic `_index.md` as a bullet list.** Indexes are markdown tables — the extra structure is what makes the wiki navigable at a glance. If you find an existing index in bullet form, convert it to a table when you touch it.
