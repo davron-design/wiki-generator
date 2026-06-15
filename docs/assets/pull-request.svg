@@ -1,4 +1,4 @@
-<svg width="460" height="215" viewBox="0 0 460 215" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="476" height="215" viewBox="0 0 476 215" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g clip-path="url(#clip0_60_489)">
 <path d="M0 61C-1.10457 61 -2 61.8954 -2 63C-2 64.1046 -1.10457 65 0 65V63V61ZM461.414 64.4142C462.195 63.6332 462.195 62.3668 461.414 61.5858L448.686 48.8579C447.905 48.0768 446.639 48.0768 445.858 48.8579C445.077 49.6389 445.077 50.9052 445.858 51.6863L457.172 63L445.858 74.3137C445.077 75.0948 445.077 76.3611 445.858 77.1421C446.639 77.9232 447.905 77.9232 448.686 77.1421L461.414 64.4142ZM0 63V65H460V63V61H0V63Z" fill="#A100FF"/>
 <path d="M448 63H406.901C393.698 63 381.851 71.1085 377.072 83.4157L363.582 118.151C352.38 146.996 324.613 166 293.669 166H166.331C135.387 166 107.62 146.996 96.4178 118.151L82.9284 83.4157C78.1489 71.1085 66.3016 63 53.0988 63H26" stroke="url(#paint0_linear_60_489)" stroke-width="2" stroke-linecap="round" stroke-dasharray="4 4"/>
@@ -35,7 +35,7 @@
 <stop offset="1" stop-color="#A100FF"/>
 </linearGradient>
 <clipPath id="clip0_60_489">
-<rect width="460" height="215" fill="white"/>
+<rect width="476" height="215" fill="white"/>
 </clipPath>
 </defs>
 </svg>
