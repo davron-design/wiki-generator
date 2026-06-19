@@ -1,0 +1,89 @@
+name: Sync ws-templates to master-wiki-generator
+
+# When the four canonical workstream templates change here, mirror them into
+# master-wiki-generator/templates/ws-templates/ via an automatic pull request.
+#
+# wiki-generator/templates/ is the SINGLE SOURCE OF TRUTH. master-wiki-generator
+# only ships *copies* so it can scaffold workstream wikis without wiki-generator
+# being installed. This workflow keeps those copies honest.
+#
+# ── One-time setup (required) ────────────────────────────────────────────────
+# This workflow writes to a *different* repo, so the default GITHUB_TOKEN is not
+# enough. Create a token with write access to master-wiki-generator and store it
+# as a secret named MASTER_WIKI_SYNC_TOKEN in THIS repo:
+#
+#   1. GitHub → Settings → Developer settings → Fine-grained tokens → Generate.
+#        - Resource owner: davron-design
+#        - Repository access: Only select repositories → master-wiki-generator
+#        - Permissions: Contents = Read and write, Pull requests = Read and write
+#   2. Copy the token.
+#   3. In the wiki-generator repo → Settings → Secrets and variables → Actions →
+#      New repository secret → Name: MASTER_WIKI_SYNC_TOKEN → paste the token.
+#
+# (A classic PAT with the `repo` scope works too, but the fine-grained token
+#  above is narrower and preferred.)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'templates/CLAUDE.md'
+      - 'templates/master-index.md'
+      - 'templates/raw-compile.SKILL.md'
+      - 'templates/audit-wiki.SKILL.md'
+  workflow_dispatch: {}   # allow manual runs from the Actions tab
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout wiki-generator (source of truth)
+        uses: actions/checkout@v4
+        with:
+          path: wiki-generator
+
+      - name: Checkout master-wiki-generator (sync target)
+        uses: actions/checkout@v4
+        with:
+          repository: davron-design/master-wiki-generator
+          path: master-wiki-generator
+          token: ${{ secrets.MASTER_WIKI_SYNC_TOKEN }}
+
+      - name: Copy canonical templates into ws-templates
+        run: |
+          set -euo pipefail
+          src="wiki-generator/templates"
+          dst="master-wiki-generator/templates/ws-templates"
+          mkdir -p "$dst"
+          for f in CLAUDE.md master-index.md raw-compile.SKILL.md audit-wiki.SKILL.md; do
+            cp "$src/$f" "$dst/$f"
+            echo "synced: $f"
+          done
+
+      - name: Open / update pull request in master-wiki-generator
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.MASTER_WIKI_SYNC_TOKEN }}
+          path: master-wiki-generator
+          branch: sync/ws-templates
+          delete-branch: true
+          commit-message: "chore: sync ws-templates from wiki-generator@${{ github.sha }}"
+          title: "Sync ws-templates from wiki-generator"
+          body: |
+            Automated sync of the four canonical workstream templates from
+            `wiki-generator/templates/` into `templates/ws-templates/`.
+
+            - `CLAUDE.md`
+            - `master-index.md`
+            - `raw-compile.SKILL.md`
+            - `audit-wiki.SKILL.md`
+
+            Source: `davron-design/wiki-generator@${{ github.sha }}`
+
+            Review and merge to keep `master-wiki-generator`'s scaffolded
+            workstream wikis byte-for-byte identical to the standalone
+            `wiki-generator` output. Closing without merging leaves the copies
+            stale (the "silent divergence" bug described in `MAINTAINER.md`).
