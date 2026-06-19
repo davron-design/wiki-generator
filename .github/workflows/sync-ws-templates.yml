@@ -41,12 +41,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout wiki-generator (source of truth)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           path: wiki-generator
 
       - name: Checkout master-wiki-generator (sync target)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: davron-design/master-wiki-generator
           path: master-wiki-generator
@@ -64,7 +64,7 @@ jobs:
           done
 
       - name: Open / update pull request in master-wiki-generator
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.MASTER_WIKI_SYNC_TOKEN }}
           path: master-wiki-generator
