@@ -27,11 +27,11 @@ Round numbering is **per topic, not global**. The whole-wiki audit has its own r
 
 ## Procedure
 
-1. **Read past audits and the reconciliation queue.** List `output/_audits/` and read recent reports for the same scope, so you don't re-flag resolved items and so you can carry forward unresolved "Known Open Items". Then read `wiki/_pending-reconciliation.md` if it exists — every `open` row is a conflict that `raw-compile` deliberately deferred to you, and each one is a first-class Inconsistency finding for this round. This file, not the ephemeral compile run-report, is the durable handoff from ingest to audit; if it's missing or has no `open` rows, there's simply no deferred debt to clear.
+1. **Read past audits and the reconciliation queue.** List `output/_audits/` and read recent reports for the same scope, so you don't re-flag resolved items and so you can carry forward unresolved "Known Open Items". Past reports are also where *already-resolved* conflicts are recorded (under "Resolved Reconciliations") — that history lives there, not in the queue. Then read `wiki/_pending-reconciliation.md` if it exists — every row is a still-open conflict that `raw-compile` deliberately deferred to you, and each one is a first-class Inconsistency finding for this round. The queue holds only open debt: it carries no resolved rows, because resolved conflicts are logged to the audit report and their rows deleted. If the file is missing, there's simply no deferred debt to clear.
 2. **Read the index layer.** Start with `wiki/_master-index.md`, then each in-scope topic's `_index.md`.
 3. **Read in-scope articles.** Cover every article in the scope.
 4. **Look for:**
-   - **Inconsistencies / contradictions** — claims that conflict across articles, or within one article. Note file:line. `raw-compile` defers every overwrite/supersede decision to audit, so each `open` row in `wiki/_pending-reconciliation.md` (plus any `⚠️` source-conflict callouts) is a first-class finding here — reconcile it against the live article and decide which claim wins, don't merely re-note it.
+   - **Inconsistencies / contradictions** — claims that conflict across articles, or within one article. Note file:line. `raw-compile` defers every overwrite/supersede decision to audit, so each row in `wiki/_pending-reconciliation.md` (plus any `⚠️` source-conflict callouts) is a first-class finding here — reconcile it against the live article and decide which claim wins, don't merely re-note it.
    - **Missing cross-links** — concepts mentioned in prose that have (or should have) their own article but aren't linked with `[[wiki links]]`.
    - **Gaps in coverage** — topics referenced but never articled; obvious sibling concepts missing from a topic folder.
    - **Stale or structural issues** — outdated indexes, orphaned articles, broken `[[links]]`.
@@ -74,6 +74,11 @@ Round numbering is **per topic, not global**. The whole-wiki audit has its own r
 ### 5. New Articles Created (if any)
 - Table: Article | Purpose | Highest Leverage For
 
+## Resolved Reconciliations
+- The durable record of `_pending-reconciliation.md` rows cleared this round. Once a row is logged here, it is deleted from the queue — so this section, across all audit reports, is the permanent provenance trail of every deferred conflict ever resolved. Include only rows whose underlying conflict you actually fixed this round.
+- Table: Flagged (date) | Existing article (file:line) | Conflicting claim (source) | Resolution (which claim won + what changed) | Round
+- Omit this section only if no reconciliation rows were cleared this round.
+
 ## Other Changes
 - Index reorganizations, structural changes
 
@@ -103,7 +108,7 @@ Compute it as `score = max(0, 100 − Σ penalties)`, one penalty per *open* iss
 | Coverage gap (a concept referenced in prose but never articled) | −2 |
 | Convention nit (missing `## Key Takeaways`, threadbare index description, off-convention filename) | −1 |
 
-Open rows in `wiki/_pending-reconciliation.md` are deferred contradictions, so each counts as an inconsistency (−8) for as long as it stays `open` — it weighs on the score until reconciled, then drops out the moment its `Status` flips to `resolved`. This is what stops batched ingest from quietly inflating the score: the more conflicts compile defers, the lower the as-found score sits until an audit actually clears them.
+Rows in `wiki/_pending-reconciliation.md` are deferred contradictions, so each counts as an inconsistency (−8) for as long as it sits in the queue — it weighs on the score until reconciled, then drops out the moment its conflict is fixed and its row is cleared (logged to "Resolved Reconciliations" and deleted from the queue). This is what stops batched ingest from quietly inflating the score: the more conflicts compile defers, the lower the as-found score sits until an audit actually clears them. A row deferred (left in the queue) this round still counts; only a genuinely resolved-and-cleared one drops.
 
 You record two numbers:
 - **Before:** anchor on the prior round's *After* for this scope — its still-open issues carry forward and stay counted. Re-verify each carried-forward issue (drop any the user fixed out-of-band since last round), then add every new issue this round surfaces. A scope's first-ever round has no prior After, so Before is simply what you found. If a carried-forward count disagrees with last round's, reconcile it under Known Open Items and say why — an unexplained jump means the trend is fiction, not progress.
@@ -127,7 +132,8 @@ You record two numbers:
 - **NEVER add `⚠️` callouts to articles before the user has approved them.** The report-only pass is binding — inline edits during audit defeat the whole point.
 - **NEVER claim an inconsistency without `file:line` evidence.** A finding the user can't navigate to is unactionable.
 - **NEVER tune the integrity weights or skip issues to make a round look better.** The rubric is fixed precisely so rounds are comparable; a flattered score is worse than no score.
-- **NEVER mark a `_pending-reconciliation.md` row `resolved` without actually fixing the underlying conflict in the article.** The queue is the provenance trail from ingest to audit; a row flipped to `resolved` while the contradiction still lives in the wiki turns the handoff into a lie, and the next audit trusts it and skips the conflict for good.
+- **NEVER log a `_pending-reconciliation.md` row under "Resolved Reconciliations" (and delete it from the queue) without actually fixing the underlying conflict in the article.** Deleting is unforgiving: once the row is gone there is no open row left for the next audit to catch, and the report's "resolved" claim becomes the only record. A row logged-and-deleted while the contradiction still lives in the wiki turns the conflict invisible to every future audit — a silent, permanent data loss. Fix the article first; log and delete only what you genuinely resolved.
+- **NEVER leave resolved rows sitting in `_pending-reconciliation.md`, and NEVER keep an empty queue file around.** Resolved conflicts belong in the report's Resolved Reconciliations section, not the queue; the queue holds only open debt. When the last row clears, delete the file — an empty or resolved-cluttered queue forces every future audit to re-scan noise it should never see again.
 - **NEVER recompute the Before score from a blank slate when a prior round exists.** Anchor it to the last round's After and carry the still-open issues forward — a Before that ignores history isn't a baseline, it's an unrelated number, and the round-over-round delta becomes meaningless.
 - **NEVER report an after-score that assumes fixes you didn't actually apply.** The after-score must reflect the wiki as it stands once you've stopped editing — deferred and declined issues stay counted.
 - **NEVER dump the scoring rubric, penalty breakdown, or per-dimension table into the report.** The score is one line — `Before → After: X → Y` — the rubric is your internal method, not reader-facing clutter.
@@ -136,7 +142,7 @@ You record two numbers:
 
 After writing the report, surface:
 - The audit report path
-- The headline counts (findings per category, including the count of suggested new articles, and how many `_pending-reconciliation.md` rows were open coming in vs. cleared this round)
+- The headline counts (findings per category, including the count of suggested new articles, and how many `_pending-reconciliation.md` rows were open coming in vs. cleared this round — and whether the queue is now empty and the file deleted, or how many rows remain deferred)
 - The **Wiki Integrity Score** as `Before → After: X → Y`
 - A short list of the highest-leverage proposed fixes, so the user can approve, reject, or reorder before any edits are made
 - The High-impact suggested articles (just titles + one-line purpose), so the user can green-light, defer, or replace them
@@ -157,8 +163,8 @@ Adapt the option set to what was actually found (e.g. if there are no inconsiste
 
 Once the user picks what to apply:
 1. Apply exactly the approved fixes and create exactly the approved articles — nothing they deferred or declined.
-2. **Clear the reconciliation queue.** For every `wiki/_pending-reconciliation.md` row whose conflict you actually resolved this round, flip its `Status` to `resolved (round N)`; leave any the user deferred as `open` so they carry into the next audit. The queue and the report must agree — a conflict can't read `resolved` in one and `open` in the other.
-3. **Recompute the integrity score** over what's left open (resolved issues drop out; deferred/declined ones stay), and **update the report in place**: set the Wiki Integrity Score line to `Before → After: <before> → <after>`, and update "State of the Wiki After Round N" and "Known Open Items" to match reality.
+2. **Clear the reconciliation queue (log, then delete).** For every `wiki/_pending-reconciliation.md` row whose conflict you actually resolved this round, do it in this order: (a) first record it as a row in the report's **Resolved Reconciliations** section — carrying its original Flagged date, article file:line, and conflicting claim, plus the resolution you took and the round; then (b) delete that row from the queue. Logging before deleting matters: once the row is gone, the report is its only trace, so the record must exist first. Leave any row the user deferred in the queue (untouched) so it carries into the next audit. When **no rows remain** in `wiki/_pending-reconciliation.md`, **delete the file** — an empty queue is no queue, and a deleted file spares every future audit from scanning it. The queue and the report must partition cleanly: every cleared conflict appears in Resolved Reconciliations and is *absent* from the queue; every deferred conflict stays in the queue and is *absent* from Resolved Reconciliations.
+3. **Recompute the integrity score** over what's left in the queue (cleared issues drop out; deferred/declined ones stay), and **update the report in place**: set the Wiki Integrity Score line to `Before → After: <before> → <after>`, and update "State of the Wiki After Round N" and "Known Open Items" to match reality.
 4. Tell the user the score moved from `<before>` to `<after>` and what's still open, so the round closes with a clear, recorded measure of progress.
 
 If the user chooses report-only / do nothing, the as-found score stands as the round's closing score (before == after) — still record it so the next round has a baseline to trend from.
