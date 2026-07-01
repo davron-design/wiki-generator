@@ -22,10 +22,10 @@ When answering questions against the knowledge base:
 5. If the wiki doesn't offer any knowledge, don't make anything up and be sure to mention it
 
 ### Compiling
-When the user says "compile" or drops new material in raw/, use the `raw-compile` skill. Compile is **additive** — it writes new articles and never rewrites existing ones. When new material contradicts or supersedes an article already in the wiki, compile leaves the article untouched and logs the conflict to `wiki/_pending-reconciliation.md` for the audit to resolve.
+When the user says "compile" or drops new material in raw/, use the `raw-compile` skill. Compile is **additive** — it creates new articles and may **append** to existing ones, but never modifies or deletes existing text. When new material contradicts or supersedes something already in the wiki, compile leaves that text untouched and logs the conflict to `wiki/_pending-reconciliation.md` for the audit to resolve. Rewrites and merges happen only at audit time, with the user's approval.
 
 ### Auditing
-When the user says "audit" or "lint", use the `audit-wiki` skill. Auditing is a **periodic** reconciliation pass, not a step you run after every compile — compile is cheap and additive, audit is where deferred conflicts get resolved. Ingest freely, then audit when the reconciliation queue grows past ~10 open entries, after roughly 10 new sources, or whenever a source significantly supersedes an existing topic. Batching ingest and then auditing in bursts is the intended rhythm; auditing after every single compile just generates noise. When the audit resolves a conflict it records the resolution in its report (under "Resolved Reconciliations") and deletes the cleared row from the queue — so `_pending-reconciliation.md` only ever holds open debt, and the audit deletes the file once the last row clears.
+When the user says "audit" or "lint", use the `audit-wiki` skill. Auditing is a **periodic** reconciliation pass, not a step you run after every compile — compile is cheap and additive, audit is where deferred conflicts get resolved and accreted articles get consolidated. A scope's first audit is a full sweep; later rounds default to an incremental pass over what changed, and the audit recommends a full sweep when inconsistencies pile up. Ingest freely, then audit when the reconciliation queue grows past ~10 open entries, after roughly 10 new sources, or whenever a source significantly supersedes an existing topic. Batching ingest and then auditing in bursts is the intended rhythm; auditing after every single compile just generates noise. `_pending-reconciliation.md` only ever holds open debt — resolutions are recorded in the audit reports (the skill owns the mechanics).
 
 ## Conventions
 - Always use [[wiki links]] when referencing other notes
@@ -33,3 +33,4 @@ When the user says "audit" or "lint", use the `audit-wiki` skill. Auditing is a 
 - Keep articles concise — bullet points over paragraphs
 - Indexes (`_master-index.md` and every topic `_index.md`) are markdown tables, not bullet lists — group large topic indexes into `##` sections
 - Always include a ## Key Takeaways section in wiki articles
+- Every article ends with a `Sources:` footer (raw filename + compile date, one line per source) — provenance is what conflict resolution relies on
