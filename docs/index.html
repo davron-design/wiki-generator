@@ -608,6 +608,13 @@
     }
     .quote.has-copy { padding-right: 56px; }
     .quote-text { display: block; }
+    /* Terminal commands inside a copyable callout: monospace, wraps cleanly */
+    .quote.is-cmd .quote-text {
+      font-family: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+      font-size: 14px;
+      color: var(--ink);
+      overflow-wrap: anywhere;
+    }
 
     /* ───── Copy-to-clipboard button ───── */
     .copy-btn {
@@ -1360,6 +1367,54 @@
       box-shadow: 0 6px 28px rgba(0, 0, 0, 0.6);
     }
 
+    /* ───── Claude Code terminal (animated inline SVG, theme-independent dark) ───── */
+    .cli-term {
+      display: block;
+      max-width: 620px;
+      margin: 24px 0 6px;
+      width: 100%;
+    }
+    .cli-term svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 12px;
+      box-shadow: 0 8px 34px color-mix(in srgb, var(--ink) 10%, transparent);
+    }
+    [data-theme="dark"] .cli-term svg {
+      box-shadow: 0 8px 34px rgba(0, 0, 0, 0.6);
+    }
+    .cli-term text {
+      font-family: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+    }
+    /* Typewriter reveal: a clip rect grows 0 → full width in per-character steps. */
+    @keyframes cli-type {
+      0%   { width: 0; }
+      26%  { width: 125px; }
+      100% { width: 125px; }
+    }
+    /* Block cursor rides the reveal edge in lockstep with the typed characters. */
+    @keyframes cli-caret-move {
+      0%   { x: 66px; }
+      26%  { x: 191px; }
+      100% { x: 191px; }
+    }
+    @keyframes cli-caret-blink {
+      0%, 50%   { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+    .cli-clip-rect {
+      animation: cli-type 6s steps(50) infinite;
+    }
+    .cli-caret {
+      animation: cli-caret-move 6s steps(50) infinite,
+                 cli-caret-blink 1.06s step-end infinite;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      /* Fall back to the full static line + a still, solid cursor. */
+      .cli-clip-rect, .cli-caret { animation: none; }
+    }
+
     /* ───── Master-wiki diagram (inline SVG, theme-independent colors) ───── */
     .mw-demo {
       display: block;
@@ -1588,10 +1643,11 @@
     <div class="nav-right">
       <div class="nav-links nav-sections">
         <a href="#start"><span class="nav-num">01</span>Get Started</a>
-        <a href="#obsidian"><span class="nav-num">02</span>Obsidian</a>
-        <a href="#together"><span class="nav-num">03</span>Work Together</a>
-        <a href="#advanced"><span class="nav-num">04</span>Advanced</a>
-        <a href="#master"><span class="nav-num">05</span>Master Wiki</a>
+        <a href="#cli"><span class="nav-num">02</span>CLI</a>
+        <a href="#obsidian"><span class="nav-num">03</span>Obsidian</a>
+        <a href="#together"><span class="nav-num">04</span>Work Together</a>
+        <a href="#advanced"><span class="nav-num">05</span>Advanced</a>
+        <a href="#master"><span class="nav-num">06</span>Master Wiki</a>
       </div>
       <a href="https://github.com/davron-design/wiki-generator" target="_blank" rel="noopener" class="nav-github">GitHub ↗</a>
       <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">
@@ -1616,10 +1672,11 @@
 
 <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
   <a href="#start"><span class="nav-num">01</span>Get Started</a>
-  <a href="#obsidian"><span class="nav-num">02</span>Obsidian</a>
-  <a href="#together"><span class="nav-num">03</span>Work Together</a>
-  <a href="#advanced"><span class="nav-num">04</span>Advanced</a>
-  <a href="#master"><span class="nav-num">05</span>Master Wiki</a>
+  <a href="#cli"><span class="nav-num">02</span>CLI</a>
+  <a href="#obsidian"><span class="nav-num">03</span>Obsidian</a>
+  <a href="#together"><span class="nav-num">04</span>Work Together</a>
+  <a href="#advanced"><span class="nav-num">05</span>Advanced</a>
+  <a href="#master"><span class="nav-num">06</span>Master Wiki</a>
 </div>
 
 <aside class="docs-sidebar" aria-label="Section navigation">
@@ -1630,6 +1687,7 @@
       <a href="#start" class="ds-section"><span class="nav-num">01</span>Get Started<svg class="ds-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg></a>
       <ul class="ds-sublinks">
         <li><a href="#start-install">Install Claude Code</a></li>
+        <li><a href="#start-git">Install Git</a></li>
         <li><a href="#start-folder">Create a folder for your wiki</a></li>
         <li><a href="#start-open">Open the folder in Claude Code</a></li>
         <li><a href="#start-skill">Install the wiki generator skill</a></li>
@@ -1639,8 +1697,17 @@
         <li><a href="#start-audit">Audit your wiki</a></li>
       </ul>
     </div>
+    <div class="ds-group" data-section="cli">
+      <a href="#cli" class="ds-section"><span class="nav-num">02</span>Claude Code CLI<svg class="ds-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg></a>
+      <ul class="ds-sublinks">
+        <li><a href="#cli-what">What's a CLI?</a></li>
+        <li><a href="#cli-why">Why use the CLI?</a></li>
+        <li><a href="#cli-install">Install the Claude Code CLI</a></li>
+        <li><a href="#cli-run">Start Claude Code</a></li>
+      </ul>
+    </div>
     <div class="ds-group" data-section="obsidian">
-      <a href="#obsidian" class="ds-section"><span class="nav-num">02</span>Obsidian<svg class="ds-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg></a>
+      <a href="#obsidian" class="ds-section"><span class="nav-num">03</span>Obsidian<svg class="ds-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg></a>
       <ul class="ds-sublinks">
         <li><a href="#obsidian-what">What's Obsidian?</a></li>
         <li><a href="#obsidian-download">Download Obsidian</a></li>
@@ -1651,7 +1718,7 @@
       </ul>
     </div>
     <div class="ds-group" data-section="together">
-      <a href="#together" class="ds-section"><span class="nav-num">03</span>Work Together<svg class="ds-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg></a>
+      <a href="#together" class="ds-section"><span class="nav-num">04</span>Work Together<svg class="ds-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg></a>
       <ul class="ds-sublinks">
         <li><a href="#together-repo">Set up the shared repo</a></li>
         <li><a href="#together-sync">Get a synced copy</a></li>
@@ -1660,7 +1727,7 @@
       </ul>
     </div>
     <div class="ds-group" data-section="advanced">
-      <a href="#advanced" class="ds-section"><span class="nav-num">04</span>Advanced<svg class="ds-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg></a>
+      <a href="#advanced" class="ds-section"><span class="nav-num">05</span>Advanced<svg class="ds-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg></a>
       <ul class="ds-sublinks">
         <li><a href="#advanced-what">What's a Pull Request?</a></li>
         <li><a href="#advanced-roles">Maintainers and Contributors</a></li>
@@ -1668,7 +1735,7 @@
       </ul>
     </div>
     <div class="ds-group" data-section="master">
-      <a href="#master" class="ds-section"><span class="nav-num">05</span>Master Wiki<svg class="ds-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg></a>
+      <a href="#master" class="ds-section"><span class="nav-num">06</span>Master Wiki<svg class="ds-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg></a>
       <ul class="ds-sublinks">
         <li><a href="#master-what">What a master wiki does</a></li>
         <li><a href="#master-structure">How the levels fit</a></li>
@@ -1741,6 +1808,24 @@
     <div class="step">
       <div class="step-num">1</div>
       <div class="step-content">
+        <h3 id="start-git">Install Git</h3>
+        <p><svg viewBox="0 0 97 97" width="18" height="18" role="img" aria-label="Git logo" style="vertical-align:-4px;margin-right:6px;" xmlns="http://www.w3.org/2000/svg"><path fill="#F05133" d="M92.71 44.408 52.591 4.291c-2.31-2.311-6.057-2.311-8.369 0l-8.33 8.332L46.459 23.19c2.456-.83 5.272-.273 7.229 1.685 1.969 1.97 2.521 4.81 1.67 7.275l10.186 10.185c2.465-.85 5.307-.3 7.275 1.671 2.75 2.75 2.75 7.206 0 9.958-2.752 2.751-7.208 2.751-9.961 0-2.068-2.07-2.58-5.11-1.531-7.658l-9.5-9.499v24.997c.67.332 1.303.774 1.861 1.332 2.75 2.75 2.75 7.206 0 9.959-2.75 2.749-7.209 2.749-9.957 0-2.75-2.754-2.75-7.21 0-9.959.68-.679 1.467-1.193 2.307-1.537v-25.23c-.84-.344-1.625-.853-2.307-1.537-2.083-2.082-2.584-5.14-1.516-7.698L31.798 16.715 4.288 44.222c-2.311 2.313-2.311 6.06 0 8.371l40.121 40.118c2.31 2.311 6.056 2.311 8.369 0L92.71 52.779c2.311-2.311 2.311-6.06 0-8.371z"/></svg><strong>Git</strong> is a small, free tool Claude Code needs to download skills. The first time you open Claude Code it usually says Git is missing — so let's install it now.</p>
+        <p><strong>Windows</strong> — go to <a href="https://git-scm.com/install/windows" target="_blank" rel="noopener">git-scm.com/install/windows</a>, click <strong>Download</strong>, then run the file and click through the installer. The defaults are fine.</p>
+        <p><strong>Mac</strong> — open the <strong>Terminal</strong> app (press <strong>Cmd + Space</strong>, type <em>Terminal</em>, hit Enter), then paste this line and press Enter:</p>
+        <div class="quote has-copy is-cmd">
+          <span class="quote-text">xcode-select --install</span>
+          <button class="copy-btn" type="button" aria-label="Copy command" title="Copy command">
+            <svg class="icon-copy" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <svg class="icon-check" viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+        </div>
+        <p>A window pops up — click <strong>Install</strong> and let it finish. Then <strong>reopen Claude Code</strong> and the "Git is missing" warning will be gone.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
         <h3 id="start-folder">Create a folder for your wiki</h3>
         <p>Pick a spot on your computer — your Desktop is fine. Create a new folder and name it whatever you want: <em>My Wiki</em>, <em>Gardening Notes</em>, <em>Work Knowledge Base</em>.</p>
         <p>That folder is the home of your wiki. Everything will live inside it.</p>
@@ -1748,7 +1833,7 @@
     </div>
 
     <div class="step">
-      <div class="step-num">2</div>
+      <div class="step-num">3</div>
       <div class="step-content">
         <h3 id="start-open">Open the folder in Claude Code</h3>
         <p>Launch the Claude Code desktop app and open the folder you just created. You should now see an empty project with a chat box ready to go.</p>
@@ -1757,7 +1842,7 @@
     </div>
 
     <div class="step">
-      <div class="step-num">3</div>
+      <div class="step-num">4</div>
       <div class="step-content">
         <h3 id="start-skill">Install the wiki generator skill</h3>
         <p>Paste this prompt into Claude Code:</p>
@@ -1769,13 +1854,12 @@
           </button>
         </div>
         <p class="caption">Don't worry about the technical words inside — just paste the whole block as-is. Claude handles the rest.</p>
-        <p><svg viewBox="0 0 97 97" width="18" height="18" role="img" aria-label="Git logo" style="vertical-align:-4px;margin-right:6px;" xmlns="http://www.w3.org/2000/svg"><path fill="#F05133" d="M92.71 44.408 52.591 4.291c-2.31-2.311-6.057-2.311-8.369 0l-8.33 8.332L46.459 23.19c2.456-.83 5.272-.273 7.229 1.685 1.969 1.97 2.521 4.81 1.67 7.275l10.186 10.185c2.465-.85 5.307-.3 7.275 1.671 2.75 2.75 2.75 7.206 0 9.958-2.752 2.751-7.208 2.751-9.961 0-2.068-2.07-2.58-5.11-1.531-7.658l-9.5-9.499v24.997c.67.332 1.303.774 1.861 1.332 2.75 2.75 2.75 7.206 0 9.959-2.75 2.749-7.209 2.749-9.957 0-2.75-2.754-2.75-7.21 0-9.959.68-.679 1.467-1.193 2.307-1.537v-25.23c-.84-.344-1.625-.853-2.307-1.537-2.083-2.082-2.584-5.14-1.516-7.698L31.798 16.715 4.288 44.222c-2.311 2.313-2.311 6.06 0 8.371l40.121 40.118c2.31 2.311 6.056 2.311 8.369 0L92.71 52.779c2.311-2.311 2.311-6.06 0-8.371z"/></svg><strong>Heads up:</strong> this step downloads the repo using Git. Don't have Git yet? Just ask Claude Code <em>"install git for me"</em> first.</p>
         <p>If Claude asks for permission, just <strong>Always Allow</strong>. You only need to do this once per wiki.</p>
       </div>
     </div>
 
     <div class="step">
-      <div class="step-num">4</div>
+      <div class="step-num">5</div>
       <div class="step-content">
         <h3 id="start-build">Build your wiki project</h3>
         <p>In Claude Code, type:</p>
@@ -1802,7 +1886,7 @@
     </div>
 
     <div class="step">
-      <div class="step-num">5</div>
+      <div class="step-num">6</div>
       <div class="step-content">
         <h3 id="start-raw">Add files to <code class="folder">raw/</code></h3>
         <p>This is where you feed your wiki. Open the <code class="folder">raw/</code> folder and drop in any files you want included — articles, notes, research clippings, transcripts.</p>
@@ -1811,7 +1895,7 @@
     </div>
 
     <div class="step">
-      <div class="step-num">6</div>
+      <div class="step-num">7</div>
       <div class="step-content">
         <h3 id="start-compile">Compile the raw files</h3>
         <p>In Claude Code, simply say:</p>
@@ -1822,7 +1906,7 @@
     </div>
 
     <div class="step">
-      <div class="step-num">7</div>
+      <div class="step-num">8</div>
       <div class="step-content">
         <h3 id="start-audit">Audit your wiki</h3>
         <p>Once your wiki is built, check it for gaps or inconsistencies. In Claude Code, say:</p>
@@ -1857,11 +1941,136 @@
   </div>
 </section>
 
-<!-- ════════ SECTION 02 — VIEWING IN OBSIDIAN ════════ -->
+<!-- ════════ SECTION 02 — CLAUDE CODE CLI ════════ -->
+<section id="cli" class="reveal">
+  <span class="section-marker">02</span>
+  <div class="section-label">Claude Code CLI</div>
+  <h2>Level up with the CLI<span class="punct">.</span></h2>
+  <p class="section-intro">Everything so far runs in the <strong>desktop app</strong> — buttons, chat box, no terminal. The <strong>CLI</strong> is the same Claude Code in a terminal window, where it can also run commands and install tools for you. It's an optional power-up, not a requirement.</p>
+
+  <div class="skip-guard">
+    <strong>You don't need this.</strong> The desktop app from Section 01 already does everything in this guide. Reach for the CLI when you want Claude to <em>run commands, install tools, and work faster</em> — right inside your project folder.
+  </div>
+
+  <div class="block">
+    <h3 id="cli-what">What's a CLI?</h3>
+    <p><strong>CLI</strong> stands for <em>command-line interface</em>. Instead of clicking buttons, you type a short line into a black window called a <strong>terminal</strong>, press Enter, and the program responds — right there in text. That's the whole idea: you type, it does the thing.</p>
+    <p>Claude Code has a CLI version. You open a terminal, type <code class="cmd">claude</code>, and you're chatting with the same assistant you already know — just in text, and with a few extra powers.</p>
+
+    <div class="cli-term" role="img" aria-label="A terminal window running Claude Code. The orange Claude mascot sits beside the header ‘Claude Code v2.1.202’, the model line ‘Opus 4.8 (1M context)’ and the folder ‘~/my-wiki’. Below, a ‘›’ input box shows the words ‘this is a CLI’ being typed, with ‘? for shortcuts’ underneath.">
+      <svg viewBox="0 0 720 260" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <clipPath id="cli-typeclip">
+            <rect class="cli-clip-rect" x="66" y="176" width="125" height="22" />
+          </clipPath>
+        </defs>
+        <!-- terminal card -->
+        <rect x="1" y="1" width="718" height="258" rx="12" fill="#0d1117" stroke="#30363d" stroke-width="1.5"/>
+        <!-- title bar: traffic lights + label -->
+        <circle cx="28" cy="25" r="6.5" fill="#ff5f57"/>
+        <circle cx="52" cy="25" r="6.5" fill="#febc2e"/>
+        <circle cx="76" cy="25" r="6.5" fill="#28c840"/>
+        <text x="360" y="30" text-anchor="middle" fill="#8b949e" font-size="13">Terminal</text>
+        <line x1="1" y1="50" x2="719" y2="50" stroke="#30363d" stroke-width="1"/>
+        <!-- Claude Code mascot (official mark) -->
+        <g transform="translate(30 78) scale(2.333)">
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M20.998 10.949H24v3.102h-3v3.028h-1.487V20H18v-2.921h-1.487V20H15v-2.921H9V20H7.488v-2.921H6V20H4.487v-2.921H3V14.05H0V10.95h3V5h17.998v5.949zM6 10.949h1.488V8.102H6v2.847zm10.51 0H18V8.102h-1.49v2.847z" fill="#D97757"/>
+        </g>
+        <!-- welcome header -->
+        <text x="108" y="92" fill="#e6edf3" font-size="17" font-weight="700">Claude Code<tspan dx="12" fill="#8b949e" font-size="13" font-weight="400">v2.1.202</tspan></text>
+        <text x="108" y="113" fill="#8b949e" font-size="13">Opus 4.8 (1M context)</text>
+        <text x="108" y="133" fill="#8b949e" font-size="13">~/my-wiki</text>
+        <!-- input box with typewriter reveal -->
+        <rect x="28" y="164" width="664" height="42" rx="10" fill="none" stroke="#3a3f47" stroke-width="1.5"/>
+        <text x="46" y="191" fill="#9ba3af" font-size="18">›</text>
+        <g clip-path="url(#cli-typeclip)">
+          <text x="66" y="190" fill="#e6edf3" font-size="16">this is a CLI</text>
+        </g>
+        <rect class="cli-caret" x="191" y="178" width="10" height="18" rx="1" fill="#d0d7de"/>
+        <!-- shortcut hint -->
+        <text x="46" y="230" fill="#6a737d" font-size="12">? for shortcuts</text>
+      </svg>
+    </div>
+    <p class="caption">The Claude Code CLI in a terminal — the orange Claude mascot and version at the top, and an input box where you type. Describe what you want in plain English and press Enter, just like the desktop app.</p>
+  </div>
+
+  <div class="block">
+    <h3 id="cli-why">Why use the CLI?</h3>
+    <p>The desktop app is the friendly front door — great for reading, chatting, and everything in this guide. The CLI opens one extra door: because it runs in a real terminal, Claude can pick up its <strong>Bash tool</strong> and actually <em>do</em> things on your computer — run shell commands, install missing programs, and edit files directly.</p>
+    <p>That's exactly why installing a tool like Git is easier here: instead of downloading an installer by hand the way you did in Section 01, you can just tell the CLI <em>"install git for me"</em> and Claude runs it for you.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Do this</th><th>Reach for</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Read, click, and browse with no terminal</td><td><strong>Desktop app</strong></td></tr>
+          <tr><td>Run shell commands (like <code class="literal">git</code>) on your computer</td><td><strong>CLI</strong></td></tr>
+          <tr><td>Have Claude install a missing tool for you</td><td><strong>CLI</strong></td></tr>
+          <tr><td>Plug in extra tools and MCP servers</td><td><strong>CLI</strong></td></tr>
+          <tr><td>Everything in this beginner's guide</td><td>Either — both are Claude Code</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Same assistant, same account, same wiki folder. The CLI just lets Claude roll up its sleeves.</p>
+  </div>
+
+  <div class="steps">
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <h3 id="cli-install">Install the Claude Code CLI</h3>
+        <p>Open your terminal, then paste the one line that matches your computer and press Enter. It downloads and sets up the CLI for you — no other software to install first.</p>
+        <p><strong>Mac or Linux</strong> — open the <strong>Terminal</strong> app, paste this, press Enter:</p>
+        <div class="quote has-copy is-cmd">
+          <span class="quote-text">curl -fsSL https://claude.ai/install.sh | bash</span>
+          <button class="copy-btn" type="button" aria-label="Copy command" title="Copy command">
+            <svg class="icon-copy" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <svg class="icon-check" viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+        </div>
+        <p><strong>Windows</strong> — open <strong>PowerShell</strong>, paste this, press Enter:</p>
+        <div class="quote has-copy is-cmd">
+          <span class="quote-text">irm https://claude.ai/install.ps1 | iex</span>
+          <button class="copy-btn" type="button" aria-label="Copy command" title="Copy command">
+            <svg class="icon-copy" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <svg class="icon-check" viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+        </div>
+        <p class="caption">Not sure how to open a terminal? On Mac, press <strong>Cmd + Space</strong> and type <em>Terminal</em>. On Windows, press <strong>Start</strong> and type <em>PowerShell</em>.</p>
+        <p>When it finishes, check it worked by typing:</p>
+        <pre><code class="cmd">claude --version</code></pre>
+        <p>If you see a version number, you're set.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <h3 id="cli-run">Start Claude Code</h3>
+        <p>Point your terminal at your wiki folder, then launch Claude Code:</p>
+        <pre><code class="cmd">claude</code></pre>
+        <p>The first time you run it, Claude opens your browser to log in. Sign in with <strong>the same Claude account you already signed in with</strong> in Section 01 — nothing new to set up.</p>
+        <p>Once you're logged in, you're back at the <code class="literal">&gt;</code> prompt, working in the exact same wiki folder — just type what you want in plain English, the same way you do in the desktop app.</p>
+
+        <div class="step-celebration">
+          <div class="step-celebration-emoji" aria-hidden="true">⚡</div>
+          <div class="step-celebration-text">
+            <strong>Now Claude can install tools and run commands for you.</strong> Try asking it <em>install git for me</em> — in the CLI, it'll just do it.
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ════════ SECTION 03 — VIEWING IN OBSIDIAN ════════ -->
 <section id="obsidian" class="reveal">
   <div class="obsidian-head">
     <div class="obsidian-head-text">
-      <span class="section-marker">02</span>
+      <span class="section-marker">03</span>
       <div class="section-label">Viewing in Obsidian</div>
       <h2>Browse your wiki visually<span class="punct">.</span></h2>
     </div>
@@ -2115,9 +2324,9 @@
   </ol>
 </section>
 
-<!-- ════════ SECTION 03 — WORK TOGETHER ════════ -->
+<!-- ════════ SECTION 04 — WORK TOGETHER ════════ -->
 <section id="together" class="reveal">
-  <span class="section-marker">03</span>
+  <span class="section-marker">04</span>
   <div class="section-label">Work Together</div>
   <h2>Collaborate with your team<span class="punct">.</span></h2>
   <p class="section-intro">Want a small team to build the same wiki together? Use <strong>GitHub Desktop</strong> as the syncing layer. No terminal, no coding.</p>
@@ -2127,7 +2336,7 @@
     <li>The <strong>Claude Code desktop app</strong> — you already have this</li>
     <li>The <strong>GitHub Desktop app</strong> — <a href="https://desktop.github.com" target="_blank" rel="noopener">desktop.github.com</a></li>
     <li>A free <strong>GitHub account</strong> — <a href="https://github.com/signup" target="_blank" rel="noopener">github.com/signup</a></li>
-    <li><strong>Git</strong> installed — don't have it? Just ask Claude Code: <em>"install git for me."</em></li>
+    <li><strong>Git</strong> installed — you set this up back in Section 01, Step 1</li>
   </ul>
 
   <div class="phases">
@@ -2226,15 +2435,15 @@
   </div>
 </section>
 
-<!-- ════════ SECTION 04 — ADVANCED ════════ -->
+<!-- ════════ SECTION 05 — ADVANCED ════════ -->
 <section id="advanced" class="reveal">
-  <span class="section-marker">04</span>
+  <span class="section-marker">05</span>
   <div class="section-label">Advanced Collaboration</div>
   <h2>Pull Requests for bigger teams<span class="punct">.</span></h2>
   <p class="section-intro">The "everyone pushes to <code class="literal">main</code>" flow above works for small, trusted teams. As your group grows — or when changes need a second pair of eyes before going live — switch to <strong>Pull Requests</strong>.</p>
 
   <div class="skip-guard">
-    <strong>You don't need this if your team is small and trusts each other.</strong> Section 03's <em>Pull → Work → Push</em> loop is enough on its own. Come back here when your group grows, or when you want a second pair of eyes on every change before it goes live.
+    <strong>You don't need this if your team is small and trusts each other.</strong> Section 04's <em>Pull → Work → Push</em> loop is enough on its own. Come back here when your group grows, or when you want a second pair of eyes on every change before it goes live.
   </div>
 
   <div class="block">
@@ -2327,9 +2536,9 @@
   </div>
 </section>
 
-<!-- ════════ SECTION 05 — MULTI-LEVEL WIKIS ════════ -->
+<!-- ════════ SECTION 06 — MULTI-LEVEL WIKIS ════════ -->
 <section id="master" class="reveal">
-  <span class="section-marker">05</span>
+  <span class="section-marker">06</span>
   <div class="section-label">Multi-Level Wikis</div>
   <h2>A wiki of wikis<span class="punct">.</span></h2>
   <p class="section-intro">When a program runs several workstreams in parallel — each with its own wiki — the cross-cutting picture gets lost. A <strong>master wiki</strong> is an AI-maintained synthesis layer that sits above two or more workstream wikis and surfaces what they share: decisions, dependencies, risks, and the places they quietly disagree.</p>
