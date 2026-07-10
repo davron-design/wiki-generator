@@ -191,6 +191,7 @@
       border: 1px solid var(--line);
       width: 34px;
       height: 34px;
+      flex-shrink: 0;
       border-radius: 50%;
       cursor: pointer;
       display: flex;
@@ -217,6 +218,8 @@
     .nav-github {
       color: var(--ink-soft);
       font-size: 14px;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
     .nav-github:hover { color: var(--accent); }
 
@@ -227,6 +230,7 @@
       border: 1px solid var(--line);
       width: 34px;
       height: 34px;
+      flex-shrink: 0;
       border-radius: 50%;
       cursor: pointer;
       align-items: center;
@@ -303,9 +307,22 @@
       padding-left: 8px;
     }
     .mobile-menu a:hover .nav-num { color: var(--accent); }
+    /* GitHub lives in the top bar normally; on small phones it moves into the
+       menu so the logo, toggle, and burger never get pushed off-screen. */
+    .mobile-github { display: none; }
+    @media (max-width: 560px) {
+      .nav-github { display: none; }
+      .mobile-github { display: inline-flex; }
+    }
+    @media (min-width: 561px) {
+      /* GitHub is hidden from the menu here, so Master Wiki is the last row. */
+      .mobile-menu a:nth-last-child(2) { border-bottom: none; }
+    }
 
-    /* Switch to burger before the nav can wrap */
-    @media (max-width: 960px) {
+    /* Use the burger for the whole range below the sidebar (which takes over
+       at 1240px). The inline nav never fits the 920px nav-inner, so showing it
+       between 960–1240px only cramped it — wrapping GitHub and squishing the toggle. */
+    @media (max-width: 1239px) {
       .nav-sections { display: none; }
       .burger { display: inline-flex; }
     }
@@ -608,12 +625,35 @@
     }
     .quote.has-copy { padding-right: 56px; }
     .quote-text { display: block; }
-    /* Terminal commands inside a copyable callout: monospace, wraps cleanly */
+    /* Terminal commands inside a copyable callout: dark terminal look, syntax-highlighted */
+    .quote.is-cmd,
+    [data-theme="dark"] .quote.is-cmd {
+      background: #0d1117;
+      border-color: #30363d;
+      color: #d6bd94;
+    }
     .quote.is-cmd .quote-text {
       font-family: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
       font-size: 14px;
-      color: var(--ink);
+      color: #d6bd94;
       overflow-wrap: anywhere;
+    }
+    .quote.is-cmd .tok-flag { color: #7cb3ec; }
+    .quote.is-cmd .tok-url  { color: #e0a878; }
+    /* Copy button tuned for the dark terminal surface */
+    .quote.is-cmd .copy-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.16);
+      color: #c9d1d9;
+    }
+    .quote.is-cmd .copy-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+    .quote.is-cmd .copy-btn.copied {
+      color: #3ed68a;
+      border-color: color-mix(in srgb, #3ed68a 42%, transparent);
+      background: rgba(62, 214, 138, 0.14);
     }
 
     /* ───── Copy-to-clipboard button ───── */
@@ -1333,6 +1373,91 @@
       font-size: 0.82em;
     }
 
+    /* ───── Error-recognition helper: mirror the terminal error, then the fix ───── */
+    .err-help {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 16px 24px;
+      margin: 38px 0 8px;
+      max-width: 920px;
+    }
+    .err-term {
+      flex: 0 1 auto;
+      min-width: 248px;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 11px;
+      padding: 13px 17px;
+      font-family: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+      font-size: 13.5px;
+      line-height: 1.7;
+    }
+    .err-line { display: block; color: #d6bd94; overflow-wrap: anywhere; }
+    .err-prompt { color: #8b949e; }
+    .err-msg { color: #ff7b72; }
+    .err-fix {
+      flex: 1 1 300px;
+      font-size: 15.5px;
+      line-height: 1.6;
+      color: var(--ink-soft);
+    }
+    .err-fix strong { color: var(--ink); font-weight: 600; }
+    .err-fix code { font-size: 0.85em; }
+    @media (max-width: 560px) {
+      .err-term { flex-basis: 100%; min-width: 0; }
+    }
+
+    /* ───── OS install tabs ───── */
+    .os-tabs { margin: 12px 0 4px; max-width: 920px; }
+    .os-tablist {
+      display: inline-flex;
+      gap: 4px;
+      padding: 4px;
+      background: var(--bg-soft);
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      margin-bottom: 14px;
+      transition: background 0.3s ease, border-color 0.3s ease;
+    }
+    .os-tab {
+      appearance: none;
+      border: none;
+      background: none;
+      font: inherit;
+      font-size: 14.5px;
+      font-weight: 600;
+      color: var(--ink-soft);
+      padding: 8px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .os-tab:hover { color: var(--ink); }
+    .os-tab[aria-selected="true"] {
+      background: var(--bg);
+      color: var(--accent);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+    [data-theme="dark"] .os-tab[aria-selected="true"] {
+      background: var(--accent-soft);
+      box-shadow: none;
+    }
+    .os-tab:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+    .os-panel { animation: os-panel-in 0.18s ease; }
+    .os-panel[hidden] { display: none; }
+    .os-panel > p:first-child { margin-top: 0; }
+    @keyframes os-panel-in {
+      from { opacity: 0; transform: translateY(3px); }
+      to { opacity: 1; transform: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .os-panel { animation: none; }
+    }
+
     /* ───── PR diagram (static SVG illustration) ───── */
     .pr-demo {
       display: block;
@@ -1677,6 +1802,7 @@
   <a href="#together"><span class="nav-num">04</span>Work Together</a>
   <a href="#advanced"><span class="nav-num">05</span>Advanced</a>
   <a href="#master"><span class="nav-num">06</span>Master Wiki</a>
+  <a href="https://github.com/davron-design/wiki-generator" target="_blank" rel="noopener" class="mobile-github">GitHub ↗</a>
 </div>
 
 <aside class="docs-sidebar" aria-label="Section navigation">
@@ -1813,7 +1939,7 @@
         <p><strong>Windows</strong> — go to <a href="https://git-scm.com/install/windows" target="_blank" rel="noopener">git-scm.com/install/windows</a>, click <strong>Download</strong>, then run the file and click through the installer. The defaults are fine.</p>
         <p><strong>Mac</strong> — open the <strong>Terminal</strong> app (press <strong>Cmd + Space</strong>, type <em>Terminal</em>, hit Enter), then paste this line and press Enter:</p>
         <div class="quote has-copy is-cmd">
-          <span class="quote-text">xcode-select --install</span>
+          <span class="quote-text">xcode-select <span class="tok-flag">--install</span></span>
           <button class="copy-btn" type="button" aria-label="Copy command" title="Copy command">
             <svg class="icon-copy" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
             <svg class="icon-check" viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
@@ -2021,27 +2147,48 @@
       <div class="step-num">1</div>
       <div class="step-content">
         <h3 id="cli-install">Install the Claude Code CLI</h3>
-        <p>Open your terminal, then paste the one line that matches your computer and press Enter. It downloads and sets up the CLI for you — no other software to install first.</p>
-        <p><strong>Mac or Linux</strong> — open the <strong>Terminal</strong> app, paste this, press Enter:</p>
-        <div class="quote has-copy is-cmd">
-          <span class="quote-text">curl -fsSL https://claude.ai/install.sh | bash</span>
-          <button class="copy-btn" type="button" aria-label="Copy command" title="Copy command">
-            <svg class="icon-copy" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-            <svg class="icon-check" viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-          </button>
+        <p>Pick your computer below, then paste the one line into your terminal and press Enter. It downloads and sets up the CLI for you — no other software to install first.</p>
+
+        <div class="os-tabs">
+          <div class="os-tablist" role="tablist" aria-label="Choose your operating system">
+            <button class="os-tab" id="os-tab-unix" role="tab" aria-selected="true" aria-controls="os-panel-unix" type="button">Mac / Linux</button>
+            <button class="os-tab" id="os-tab-win" role="tab" aria-selected="false" aria-controls="os-panel-win" tabindex="-1" type="button">Windows</button>
+          </div>
+
+          <div class="os-panel" id="os-panel-unix" role="tabpanel" aria-labelledby="os-tab-unix" tabindex="0">
+            <p>Open the <strong>Terminal</strong> app (press <strong>Cmd + Space</strong> and type <em>Terminal</em>), paste this, press Enter:</p>
+            <div class="quote has-copy is-cmd">
+              <span class="quote-text">curl <span class="tok-flag">-fsSL</span> <span class="tok-url">https://claude.ai/install.sh</span> | bash</span>
+              <button class="copy-btn" type="button" aria-label="Copy command" title="Copy command">
+                <svg class="icon-copy" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                <svg class="icon-check" viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="os-panel" id="os-panel-win" role="tabpanel" aria-labelledby="os-tab-win" tabindex="0" hidden>
+            <p>Open <strong>PowerShell</strong> (press <strong>Start</strong> and type <em>PowerShell</em>), paste this, press Enter:</p>
+            <div class="quote has-copy is-cmd">
+              <span class="quote-text">irm <span class="tok-url">https://claude.ai/install.ps1</span> | iex</span>
+              <button class="copy-btn" type="button" aria-label="Copy command" title="Copy command">
+                <svg class="icon-copy" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                <svg class="icon-check" viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+              </button>
+            </div>
+          </div>
         </div>
-        <p><strong>Windows</strong> — open <strong>PowerShell</strong>, paste this, press Enter:</p>
-        <div class="quote has-copy is-cmd">
-          <span class="quote-text">irm https://claude.ai/install.ps1 | iex</span>
-          <button class="copy-btn" type="button" aria-label="Copy command" title="Copy command">
-            <svg class="icon-copy" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-            <svg class="icon-check" viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-          </button>
-        </div>
-        <p class="caption">Not sure how to open a terminal? On Mac, press <strong>Cmd + Space</strong> and type <em>Terminal</em>. On Windows, press <strong>Start</strong> and type <em>PowerShell</em>.</p>
+
         <p>When it finishes, check it worked by typing:</p>
         <pre><code class="cmd">claude --version</code></pre>
         <p>If you see a version number, you're set.</p>
+
+        <div class="err-help">
+          <div class="err-term" role="group" aria-label="Terminal error: running claude returns 'claude' is not recognized">
+            <code class="err-line"><span class="err-prompt">&gt;</span> claude</code>
+            <code class="err-line err-msg">'claude' is not recognized</code>
+          </div>
+          <p class="err-fix"><strong>Seeing this?</strong> Totally normal, nothing's broken. Close your terminal window, open a fresh one, and type <code class="literal">claude</code> again — that's it. Works the same on Mac, Windows, or Linux.</p>
+        </div>
       </div>
     </div>
 
@@ -3330,6 +3477,39 @@
         } else {
           fallbackCopy(text, function () { flash(btn); });
         }
+      });
+    });
+  })();
+
+  // ───── OS install tabs ─────
+  (function () {
+    var groups = document.querySelectorAll('.os-tabs');
+    if (!groups.length) return;
+
+    groups.forEach(function (group) {
+      var tabs = Array.prototype.slice.call(group.querySelectorAll('[role="tab"]'));
+      if (!tabs.length) return;
+
+      function select(tab) {
+        tabs.forEach(function (t) {
+          var on = t === tab;
+          t.setAttribute('aria-selected', on ? 'true' : 'false');
+          t.tabIndex = on ? 0 : -1;
+          var panel = document.getElementById(t.getAttribute('aria-controls'));
+          if (panel) panel.hidden = !on;
+        });
+      }
+
+      tabs.forEach(function (tab, i) {
+        tab.addEventListener('click', function () { select(tab); });
+        tab.addEventListener('keydown', function (e) {
+          var dir = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+          if (!dir) return;
+          e.preventDefault();
+          var next = tabs[(i + dir + tabs.length) % tabs.length];
+          select(next);
+          next.focus();
+        });
       });
     });
   })();
