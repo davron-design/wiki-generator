@@ -1,2 +1,11 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Shell scripts must be LF even on a Windows checkout. CRLF here fails at run
+# time with "bad interpreter: /bin/bash^M", and the guide sends Windows users
+# to clone this repo.
+*.sh text eol=lf
+
+# Binaries are matched by content heuristic under text=auto. Say it outright so
+# no future asset can be misdetected and corrupted by normalization.
+*.png binary
