@@ -1821,6 +1821,7 @@
         <li><a href="#start-raw">Add files to <code class="folder">raw/</code></a></li>
         <li><a href="#start-compile">Compile the raw files</a></li>
         <li><a href="#start-audit">Audit your wiki</a></li>
+        <li><a href="#start-update">Keep your wiki up to date</a></li>
       </ul>
     </div>
     <div class="ds-group" data-section="cli">
@@ -1996,7 +1997,7 @@
           <li><code class="folder">wiki/</code> — where the polished knowledge base lives</li>
           <li><code class="folder">output/</code> — where reports and query results show up</li>
         </ul>
-        <p>It also installs two companion skills — <code class="skill">/raw-compile</code> and <code class="skill">/audit-wiki</code> — automatically.</p>
+        <p>It also installs three companion skills automatically: <code class="skill">/raw-compile</code>, <code class="skill">/audit-wiki</code> and <code class="skill">/update-wiki</code>.</p>
 
         <details class="glossary">
           <summary>
@@ -2042,6 +2043,35 @@
       </div>
     </div>
 
+    <div class="step">
+      <div class="step-num">9</div>
+      <div class="step-content">
+        <h3 id="start-update">Keep your wiki up to date</h3>
+        <p>The compile and audit rules improve over time. Your wiki carries its own copy of them, so it runs whatever version it was built with until you refresh it. In Claude Code, say:</p>
+        <pre><code class="cmd">update</code></pre>
+        <p>Claude checks the version your wiki is on against the latest published one, shows you what changed since then, and asks before writing anything. It only ever rewrites four files: <code class="literal">CLAUDE.md</code> and the three skills. Your articles, your raw sources and your audit reports are never touched.</p>
+        <p>Restart Claude Code afterwards. Skills are read when a session starts, so the new rules apply from the next session on.</p>
+
+        <details class="glossary">
+          <summary>
+            <span>Nothing happens when I say <code class="cmd">update</code></span>
+            <svg class="glossary-chevron" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg>
+          </summary>
+          <div class="glossary-body">
+            <p>Wikis built before this feature existed have no <code class="skill">/update-wiki</code> skill to run. Paste this into Claude Code once, from inside your wiki folder:</p>
+            <div class="quote has-copy">
+              <span class="quote-text">Download templates/update-wiki.SKILL.md from https://github.com/davron-design/wiki-generator and save it as .claude/skills/update-wiki/SKILL.md in this folder. Then tell me to restart the session and say update.</span>
+              <button class="copy-btn" type="button" aria-label="Copy prompt" title="Copy prompt">
+                <svg class="icon-copy" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                <svg class="icon-check" viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+              </button>
+            </div>
+            <p>After that one paste, the skill keeps itself current along with everything else.</p>
+          </div>
+        </details>
+      </div>
+    </div>
+
     <div class="step-celebration">
       <div class="step-celebration-emoji" aria-hidden="true">🎉</div>
       <div class="step-celebration-text">
@@ -2061,6 +2091,7 @@
         <tr><td>Set up a new wiki</td><td><code class="skill">/wiki-generator</code></td></tr>
         <tr><td>Compile new files</td><td><code class="cmd">compile</code></td></tr>
         <tr><td>Audit the wiki</td><td><code class="cmd">audit</code></td></tr>
+        <tr><td>Update the wiki's rules</td><td><code class="cmd">update</code></td></tr>
         <tr><td>Ask a question</td><td>Just ask in plain English</td></tr>
       </tbody>
     </table>

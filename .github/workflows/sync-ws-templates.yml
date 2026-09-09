@@ -1,6 +1,6 @@
 name: Sync ws-templates to master-wiki-generator
 
-# When the four canonical workstream templates change here, mirror them into
+# When the canonical workstream templates change here, mirror them into
 # master-wiki-generator/templates/ws-templates/ via an automatic pull request.
 #
 # wiki-generator/templates/ is the SINGLE SOURCE OF TRUTH. master-wiki-generator
@@ -31,6 +31,8 @@ on:
       - 'templates/master-index.md'
       - 'templates/raw-compile.SKILL.md'
       - 'templates/audit-wiki.SKILL.md'
+      - 'templates/update-wiki.SKILL.md'
+      - 'templates/VERSION'
   workflow_dispatch: {}   # allow manual runs from the Actions tab
 
 permissions:
@@ -58,7 +60,7 @@ jobs:
           src="wiki-generator/templates"
           dst="master-wiki-generator/templates/ws-templates"
           mkdir -p "$dst"
-          for f in CLAUDE.md master-index.md raw-compile.SKILL.md audit-wiki.SKILL.md; do
+          for f in CLAUDE.md master-index.md raw-compile.SKILL.md audit-wiki.SKILL.md update-wiki.SKILL.md VERSION; do
             cp "$src/$f" "$dst/$f"
             echo "synced: $f"
           done
@@ -73,13 +75,15 @@ jobs:
           commit-message: "chore: sync ws-templates from wiki-generator@${{ github.sha }}"
           title: "Sync ws-templates from wiki-generator"
           body: |
-            Automated sync of the four canonical workstream templates from
+            Automated sync of the canonical workstream templates from
             `wiki-generator/templates/` into `templates/ws-templates/`.
 
             - `CLAUDE.md`
             - `master-index.md`
             - `raw-compile.SKILL.md`
             - `audit-wiki.SKILL.md`
+            - `update-wiki.SKILL.md`
+            - `VERSION`
 
             Source: `davron-design/wiki-generator@${{ github.sha }}`
 

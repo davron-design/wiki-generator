@@ -68,7 +68,7 @@ Now that the skill is installed, scaffold your wiki.
    - **`wiki/`** — where the polished knowledge base lives
    - **`output/`** — where reports and query results show up
 
-It will also install two companion skills (`raw-compile` and `audit-wiki`) automatically.
+It will also install three companion skills (`raw-compile`, `audit-wiki` and `update-wiki`) automatically.
 
 ---
 
@@ -120,11 +120,45 @@ Once your wiki is built, check it for gaps or inconsistencies.
 
 ---
 
+## Step 8: Keep Your Wiki Up to Date
+
+The compile and audit rules improve over time. Your wiki holds its own copy of them, so it
+stays on whatever version it was built with until you refresh it.
+
+1. In Claude Code, say:
+   ```
+   update
+   ```
+2. Claude will check the version your wiki is running against the latest published one, show
+   you what changed since then, and ask before writing anything.
+3. It only ever rewrites four files: `CLAUDE.md` and the three skills. Your articles, your raw
+   sources, and your audit reports are never touched.
+4. Restart Claude Code afterwards. Skills are read when a session starts, so the new rules
+   apply from the next session on.
+
+Run this whenever you want, or when someone tells you the rules changed. If your wiki is
+already current, `update` says so and stops.
+
+### If `update` doesn't do anything
+
+Wikis built before this feature existed have no `update-wiki` skill to run. Paste this into
+Claude Code from inside your wiki folder, once:
+
+> Download `templates/update-wiki.SKILL.md` from
+> https://github.com/davron-design/wiki-generator and save it as
+> `.claude/skills/update-wiki/SKILL.md` in this folder. Then tell me to restart the session
+> and say `update`.
+
+After that one paste, the skill keeps itself current along with everything else.
+
+---
+
 ## What's Next?
 
 - **Add more material** — keep dropping files into `raw/` and saying `compile` whenever you want to grow the wiki.
 - **Ask questions** — once your wiki has content, you can ask Claude things like "What does the wiki say about X?" and it'll pull answers from your knowledge base.
 - **Re-audit periodically** — as your wiki grows, running `audit` keeps it healthy.
+- **Update now and then** by saying `update`, which pulls the latest compile and audit rules into your wiki.
 
 ---
 
@@ -135,6 +169,7 @@ Once your wiki is built, check it for gaps or inconsistencies.
 | Set up a new wiki | `/wiki-generator` |
 | Compile new material | `compile` |
 | Audit the wiki | `audit` |
+| Update the wiki's rules | `update` |
 | Ask the wiki a question | Just ask in plain English |
 
 ---
