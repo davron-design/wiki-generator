@@ -9,6 +9,13 @@ Versions are dates (`YYYY-MM-DD`). A second release on the same day gets a `.2` 
 Bumping is manual and belongs in the same commit as the template edit: change the template,
 add an entry here, set `templates/VERSION`. See [MAINTAINER.md](MAINTAINER.md).
 
+## 2026-09-09.2
+
+- **`update` now points at `repair` when it reports "up to date".** The version fast path
+  trusts the stamp, so a managed file edited by hand after install stayed invisible: the wiki
+  read as current while running someone's local copy. Saying `repair` skips the version check
+  and re-diffs all four files against upstream.
+
 ## 2026-09-09
 
 - **New `update-wiki` companion skill.** Every scaffold now installs a third skill next to

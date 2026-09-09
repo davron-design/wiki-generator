@@ -1,6 +1,6 @@
 ---
 name: update-wiki
-description: Update this wiki's own machinery to the latest published wiki-generator templates. Fetches the current CLAUDE.md, raw-compile, audit-wiki and update-wiki files from GitHub, reports what changed since the version this wiki records, and asks before writing anything. Use when the user says "update", "update the wiki", "update the skills", "check for updates", "upgrade the wiki", "am I on the latest version", or runs /update-wiki. Only the managed template files are rewritten; wiki/, raw/ and output/ are never touched.
+description: Update this wiki's own machinery to the latest published wiki-generator templates. Fetches the current CLAUDE.md, raw-compile, audit-wiki and update-wiki files from GitHub, reports what changed since the version this wiki records, and asks before writing anything. Use when the user says "update", "update the wiki", "update the skills", "check for updates", "upgrade the wiki", "am I on the latest version", "repair the skills", "reinstall the skills", or runs /update-wiki. Only the managed template files are rewritten; wiki/, raw/ and output/ are never touched.
 ---
 
 # Update Wiki
@@ -11,6 +11,8 @@ compiled article, raw source and audit report exactly as it is.
 
 ## When to invoke
 - User says "update", "update the wiki", "update the skills", or "upgrade the wiki"
+- User says "repair", "reinstall the skills", or "force update", which skips the version fast
+  path in step 5 and re-diffs every managed file against upstream
 - User asks which version this wiki is on, or whether it is behind
 - User says the compile or audit rules changed and this wiki should pick them up
 - User runs `/update-wiki`
@@ -96,6 +98,11 @@ Upstream base URL: `https://raw.githubusercontent.com/davron-design/wiki-generat
    and `.wiki-version` carries no `held-back:` line, report "up to date" with the version
    number and stop. Continue anyway if the user asked to force, reinstall, or repair.
 
+   This fast path trusts the stamp, so it cannot see a managed file that was edited locally
+   after it was installed: the wiki reports current while `raw-compile` quietly runs someone's
+   hand-tweaked copy. **Say so in the up-to-date report**, and tell the user that `repair`
+   re-fetches and diffs all four files regardless of the version match.
+
 6. **Fetch the four templates.** Into `$TMP`, then check every one of them before considering
    any write:
 
@@ -170,7 +177,8 @@ From then on the skill updates itself along with everything else.
 ## Output to the user
 
 After the run, report:
-- The version move (`<before>` to `<after>`), or "already on `<version>`"
+- The version move (`<before>` to `<after>`), or "already on `<version>`", and on that
+  already-current path, that `repair` re-checks the files themselves rather than the stamp
 - Each managed file: written, already current, or skipped at the user's request
 - Whether the companion skills are project-scoped or global, and if global, that every wiki on
   the machine just changed
