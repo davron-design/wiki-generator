@@ -47,7 +47,7 @@ Recommend a full sweep — in the report summary and as an option in the closing
    - **Inconsistencies / contradictions** — claims that conflict across articles, or within one article. Note file:line. `raw-compile` defers every overwrite/supersede decision to audit, so each row in `wiki/_pending-reconciliation.md` (plus any `⚠️` source-conflict callouts) is a first-class finding here — reconcile it against the live article and decide which claim wins, don't merely re-note it. When deciding, weigh each side's provenance from the articles' `Sources:` footers against the raw source named in the queue row — recency of ingest alone is not evidence.
    - **Missing cross-links** — concepts mentioned in prose that have (or should have) their own article but aren't linked with `[[wiki links]]`.
    - **Gaps in coverage** — topics referenced but never articled; obvious sibling concepts missing from a topic folder.
-   - **Stale or structural issues** — outdated indexes, orphaned articles, broken `[[links]]`.
+   - **Stale or structural issues** — outdated indexes, orphaned articles, broken `[[links]]`, and `Sources:` lines that resolve to no file. A footer's compile date names the folder its source was archived into, so check both `raw/_<date>-compiled/<path>` and `raw/_archive/_<date>-compiled/<path>` before calling a citation dangling.
    - **Needs consolidation** — articles that append-only ingest has made incoherent: redundant bullets saying the same thing twice, appended sections sitting awkwardly against older text, takeaways buried mid-list, or a structure that reads as a chronological log rather than a synthesis. Propose a supervised rewrite in the report — never perform it during this pass.
    - **Index format drift** — `_master-index.md` and every topic `_index.md` must be markdown tables (`| Topic | Description |` / `| Article | Description |`), with `##` section groupings once a topic exceeds ~5 articles. Flag any index still in bullet-list form, missing descriptions, or with a description so thin it doesn't help navigation.
 5. **Suggest 3–5 new articles** that would strengthen the knowledge base. These are forward-looking proposals (not gap-fills for things already mentioned in prose — those go under Gaps in Coverage). Rank each by value-add impact:
@@ -130,7 +130,7 @@ Compute it as `score = max(0, 100 − Σ penalties)`, one penalty per *open* iss
 | Article needs consolidation | −3 | −9 |
 | Missing cross-link | −2 | −10 |
 | Coverage gap (a concept referenced in prose but never articled) | −2 | −10 |
-| Convention nit (missing `## Key Takeaways` or `Sources:` footer, threadbare index description, off-convention filename) | −1 | −5 |
+| Convention nit (missing `## Key Takeaways` or `Sources:` footer, a `Sources:` line that resolves to no archived file, threadbare index description, off-convention filename) | −1 | −5 |
 
 The caps exist because the capped categories are judgment calls with no natural bound — an eager round finds thirty missing cross-links, a lazy one four, and without caps that detection variance would swamp the real trend. The objective, high-stakes categories stay uncapped: every contradiction and broken link genuinely weighs.
 

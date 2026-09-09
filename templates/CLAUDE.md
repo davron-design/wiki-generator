@@ -33,4 +33,4 @@ When the user says "audit" or "lint", use the `audit-wiki` skill. Auditing is a 
 - Keep articles concise — bullet points over paragraphs
 - Indexes (`_master-index.md` and every topic `_index.md`) are markdown tables, not bullet lists — group large topic indexes into `##` sections
 - Always include a ## Key Takeaways section in wiki articles
-- Every article ends with a `Sources:` footer (raw filename + compile date, one line per source) — provenance is what conflict resolution relies on
+- Every article ends with a `Sources:` footer (source path relative to `raw/` + compile date, one line per source) — provenance is what conflict resolution relies on; the compile date is what locates the source in `raw/_<date>-compiled/` after archiving
