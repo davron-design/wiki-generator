@@ -1991,13 +1991,15 @@
         <h3 id="start-build">Build your wiki project</h3>
         <p>In Claude Code, type:</p>
         <pre><code class="skill">/wiki-generator</code></pre>
+        <p class="caption">If Claude doesn't recognize it, start a new session in the same folder and type it again. A skills folder created during a session loads in the next one.</p>
         <p>Claude will create three folders for you:</p>
         <ul>
           <li><code class="folder">raw/</code> — where you drop source files (articles, notes, research)</li>
           <li><code class="folder">wiki/</code> — where the polished knowledge base lives</li>
           <li><code class="folder">output/</code> — where reports and query results show up</li>
         </ul>
-        <p>It also installs three companion skills automatically: <code class="skill">/raw-compile</code>, <code class="skill">/audit-wiki</code> and <code class="skill">/update-wiki</code>.</p>
+        <p>It also installs three companion skills inside your wiki folder: <code class="skill">/raw-compile</code>, <code class="skill">/audit-wiki</code> and <code class="skill">/update-wiki</code>. Each wiki keeps its own copies, so updating one wiki leaves the others as they are.</p>
+        <p>When it's done, start a new session in the same folder before your first <code class="cmd">compile</code>. Claude Code reads the wiki's <code class="literal">CLAUDE.md</code> only when a session starts.</p>
 
         <details class="glossary">
           <summary>
@@ -2016,7 +2018,8 @@
       <div class="step-num">6</div>
       <div class="step-content">
         <h3 id="start-raw">Add files to <code class="folder">raw/</code></h3>
-        <p>This is where you feed your wiki. Open the <code class="folder">raw/</code> folder and drop in any files you want included — articles, notes, research clippings, transcripts.</p>
+        <p>This is where you feed your wiki. Open the <code class="folder">raw/</code> folder and drop in any files you want included: articles, notes, research clippings, transcripts, PDFs, images, PowerPoint decks, Word documents and Excel spreadsheets.</p>
+        <p>Optional: install the free <a href="https://www.libreoffice.org" target="_blank" rel="noopener">LibreOffice</a>. When it's installed, Claude renders each slide and page of a deck or document and reads the pictures and charts on it. Claude reports anything in a file it couldn't open.</p>
         <p>Add as many files as you want. Don't worry about organizing them — that's Claude's job.</p>
       </div>
     </div>
@@ -2050,7 +2053,7 @@
         <p>The compile and audit rules improve over time. Your wiki carries its own copy of them, so it runs whatever version it was built with until you refresh it. In Claude Code, say:</p>
         <pre><code class="cmd">update</code></pre>
         <p>Claude checks the version your wiki is on against the latest published one, shows you what changed since then, and asks before writing anything. It only ever rewrites four files: <code class="literal">CLAUDE.md</code> and the three skills. Your articles, your raw sources and your audit reports are never touched.</p>
-        <p>Restart Claude Code afterwards. Skills are read when a session starts, so the new rules apply from the next session on.</p>
+        <p>The new compile and audit rules apply right away. If the update rewrote <code class="literal">CLAUDE.md</code>, start a new session in the folder, because Claude Code reads that file only when a session starts. <code class="cmd">update</code> tells you when this applies.</p>
 
         <details class="glossary">
           <summary>
@@ -2060,13 +2063,29 @@
           <div class="glossary-body">
             <p>Wikis built before this feature existed have no <code class="skill">/update-wiki</code> skill to run. Paste this into Claude Code once, from inside your wiki folder:</p>
             <div class="quote has-copy">
-              <span class="quote-text">Download templates/update-wiki.SKILL.md from https://github.com/davron-design/wiki-generator and save it as .claude/skills/update-wiki/SKILL.md in this folder. Then tell me to restart the session and say update.</span>
+              <span class="quote-text">Run this exact command with Bash in this folder, and do not use WebFetch: `curl -fsSL --create-dirs -o .claude/<wbr>skills/<wbr>update-wiki/<wbr>SKILL.md https://<wbr>raw.<wbr>githubusercontent.<wbr>com/<wbr>davron-design/<wbr>wiki-generator/<wbr>main/<wbr>templates/<wbr>update-wiki.SKILL.md` Then tell me to start a new Claude Code session here and say `update`.</span>
               <button class="copy-btn" type="button" aria-label="Copy prompt" title="Copy prompt">
                 <svg class="icon-copy" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                 <svg class="icon-check" viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
               </button>
             </div>
             <p>After that one paste, the skill keeps itself current along with everything else.</p>
+          </div>
+        </details>
+
+        <details class="glossary">
+          <summary>
+            <span>My wiki was set up with the old <strong>global</strong> option</span>
+            <svg class="glossary-chevron" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg>
+          </summary>
+          <div class="glossary-body">
+            <p>Earlier versions could install the skills once for every project, in your home folder's <code class="folder">~/.claude/skills/</code>. Claude Code runs those copies ahead of each wiki's own, so updates inside a wiki never reached them.</p>
+            <p>Say <code class="cmd">update</code> inside the wiki, then say it once more after it finishes. The second run offers to move the global copies into a backup folder. If it reports "up to date" while the global copies are still there, do it by hand:</p>
+            <ol>
+              <li>In every other wiki without its own <code class="folder">.claude/skills/</code> folder, say <code class="cmd">update</code>, twice if needed, until that wiki has its own copies.</li>
+              <li>Inside <code class="folder">~/.claude/</code>, create a backup folder, for example <code class="folder">wiki-skills-backup</code> plus today's date, and move <code class="folder">raw-compile</code>, <code class="folder">audit-wiki</code>, <code class="folder">update-wiki</code> and <code class="literal">.wiki-version</code> from <code class="folder">~/.claude/skills/</code> into it. Renaming them inside <code class="folder">skills/</code> leaves them active.</li>
+              <li>In any wiki still without its own copies, paste the prompt above, start a new session there, and say <code class="cmd">update</code>.</li>
+            </ol>
           </div>
         </details>
       </div>

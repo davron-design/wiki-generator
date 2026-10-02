@@ -1,0 +1,125 @@
+name: Release tag
+
+# Tags every template release as v<VERSION>. update-wiki reads only VERSION
+# from main and fetches the templates and CHANGELOG.md from that tag, so a
+# release without its tag can't be installed, and a tag that moves makes every
+# wiki on it report false local edits. Tags are created once and never moved.
+#
+# The release job runs only on main. It fails, and creates no tag, when:
+#   - templates/VERSION is not YYYY-MM-DD or YYYY-MM-DD.N
+#   - templates/VERSION is older than the newest v* tag (a reverted release
+#     would make every wiki already on the newer one stop with older-than-local)
+#   - CHANGELOG.md has no "## <VERSION>" heading
+#   - the tag already exists and the managed templates differ from it, which
+#     means a template edit shipped without a version bump
+# A separate job checks that the update-wiki bootstrap prompt is word for word
+# the same in templates/update-wiki.SKILL.md, README.md and the guide. It never
+# blocks a tag; a red prompt check means the docs need a fix.
+#
+# To retry after a fix, push the fix or use "Run workflow" on the Actions tab.
+# "Re-run" replays the old commit.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'templates/VERSION'
+      - 'templates/CLAUDE.md'
+      - 'templates/raw-compile.SKILL.md'
+      - 'templates/audit-wiki.SKILL.md'
+      - 'templates/update-wiki.SKILL.md'
+      - 'CHANGELOG.md'
+      - 'README.md'
+      - 'docs/index.html'
+  workflow_dispatch: {}   # allow manual runs from the Actions tab
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-tag
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Check VERSION, CHANGELOG and any existing tag
+        id: check
+        run: |
+          set -euo pipefail
+          v=$(tr -d '[:space:]' < templates/VERSION)
+          if ! [[ "$v" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}(\.[0-9]+)?$ ]]; then
+            echo "::error file=templates/VERSION::'$v' is not YYYY-MM-DD or YYYY-MM-DD.N"
+            exit 1
+          fi
+          if ! grep -qxF "## $v" CHANGELOG.md; then
+            echo "::error file=CHANGELOG.md::no '## $v' heading. Add the release notes, then push again."
+            exit 1
+          fi
+          if [ "$(grep -m1 '^## ' CHANGELOG.md)" != "## $v" ]; then
+            echo "::warning file=CHANGELOG.md::'## $v' is not the first entry"
+          fi
+          newest=$(git tag -l 'v*' | sed 's/^v//' | grep -Ex '[0-9]{4}-[0-9]{2}-[0-9]{2}(\.[0-9]+)?' | sort -V | tail -n 1 || true)
+          if [ -n "$newest" ] && [ "$(printf '%s\n' "$newest" "$v" | sort -V | tail -n 1)" != "$v" ]; then
+            echo "::error file=templates/VERSION::'$v' is older than the newest release v$newest. A fix after a bad release gets a new, higher version."
+            exit 1
+          fi
+          echo "tag=v$v" >> "$GITHUB_OUTPUT"
+          if git rev-parse -q --verify "refs/tags/v$v" >/dev/null; then
+            managed="templates/VERSION templates/CLAUDE.md templates/raw-compile.SKILL.md templates/audit-wiki.SKILL.md templates/update-wiki.SKILL.md"
+            if ! git diff --quiet "v$v" HEAD -- $managed; then
+              echo "::error::managed templates differ from the released v$v. Bump templates/VERSION and add a CHANGELOG entry."
+              git diff --stat "v$v" HEAD -- $managed
+              exit 1
+            fi
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "v$v already exists and matches. Nothing to tag."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create the release tag
+        if: steps.check.outputs.exists == 'false'
+        env:
+          TAG: ${{ steps.check.outputs.tag }}
+        run: |
+          set -euo pipefail
+          git tag "$TAG" "$GITHUB_SHA"
+          git push origin "refs/tags/$TAG"
+          echo "Tagged $GITHUB_SHA as $TAG"
+
+  bootstrap-prompt:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Check the bootstrap prompt is identical in all three places
+        run: |
+          set -euo pipefail
+          prompt=$(grep -m1 '^> Run this exact command' templates/update-wiki.SKILL.md | sed 's/^> //')
+          if [ -z "$prompt" ]; then
+            echo "::error file=templates/update-wiki.SKILL.md::bootstrap prompt not found"
+            exit 1
+          fi
+          if ! grep -qxF "> $prompt" README.md; then
+            echo "::error file=README.md::the bootstrap prompt differs from templates/update-wiki.SKILL.md"
+            exit 1
+          fi
+          # The guide's copy button copies the text content, so <wbr> line-break hints don't count.
+          # grep without -q reads all of its input; with -q, sed can die of SIGPIPE under pipefail.
+          if ! sed 's/<wbr>//g' docs/index.html | grep -F "<span class=\"quote-text\">$prompt</span>" >/dev/null; then
+            echo "::error file=docs/index.html::the bootstrap prompt differs from templates/update-wiki.SKILL.md"
+            exit 1
+          fi
+          echo "Bootstrap prompt matches in all three places."
