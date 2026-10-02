@@ -12,6 +12,8 @@ name: Release tag
 #   - CHANGELOG.md has no "## <VERSION>" heading
 #   - the tag already exists and the managed templates differ from it, which
 #     means a template edit shipped without a version bump
+# After tagging, the release job creates the GitHub release v<VERSION> with the
+# CHANGELOG entry as its notes, unless that release already exists.
 # A separate job checks that the update-wiki bootstrap prompt is word for word
 # the same in templates/update-wiki.SKILL.md, README.md and the guide. It never
 # blocks a tag; a red prompt check means the docs need a fix.
@@ -95,6 +97,21 @@ jobs:
           git tag "$TAG" "$GITHUB_SHA"
           git push origin "refs/tags/$TAG"
           echo "Tagged $GITHUB_SHA as $TAG"
+
+      - name: Create the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.check.outputs.tag }}
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $TAG already exists. Nothing to do."
+            exit 0
+          fi
+          # The notes are the CHANGELOG entry: its "## <VERSION>" heading up to the next "## " heading.
+          awk -v h="## ${TAG#v}" '$0 == h { f = 1; print; next } f && /^## / { exit } f { print }' CHANGELOG.md > "$RUNNER_TEMP/notes.md"
+          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --verify-tag --title "$TAG" --notes-file "$RUNNER_TEMP/notes.md" --latest
+          echo "Created release $TAG"
 
   bootstrap-prompt:
     runs-on: ubuntu-latest
