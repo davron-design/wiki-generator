@@ -58,8 +58,7 @@ If you ever add a fifth template, these places have to learn about it in the sam
 
 1. `SKILL.md`: the write list in the Procedure, the template-integrity check, and the `held-back:` names in step 7
 2. `templates/update-wiki.SKILL.md`: the *What this skill owns* table, the stamp names, the `FILES` list in step 4, and a `classify` call in step 7. `AskUserQuestion` takes at most four questions per call, so step 9's one-question-per-file call needs a second call for a fifth file.
-3. `.github/workflows/sync-ws-templates.yml`: the file list, so `master-wiki-generator` mirrors it
-4. `.github/workflows/release-tag.yml`: the trigger paths and the `managed` list in the tag check
+3. `.github/workflows/release-tag.yml`: the trigger paths and the `managed` list in the tag check
 
 ## Direction of truth
 
