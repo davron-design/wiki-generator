@@ -353,13 +353,27 @@
         radial-gradient(780px 560px ellipse at 76% 24%,
           color-mix(in srgb, var(--accent) 18%, transparent), transparent 60%);
     }
+    /* With the docs sidebar showing, keep the glow inside the content column
+       so it never paints under the sidebar. */
+    @media (min-width: 1240px) {
+      .hero::before {
+        left: calc(50% - 50vw + 140px);
+        right: calc(50% - 50vw + 140px);
+      }
+    }
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px 20px;
+      margin-bottom: 32px;
+    }
     .hero-label {
       font-size: 12px;
       font-weight: 600;
       color: var(--accent);
       letter-spacing: 0.16em;
       text-transform: uppercase;
-      margin-bottom: 32px;
       display: flex;
       align-items: center;
       gap: 12px;
@@ -371,6 +385,88 @@
       background: var(--accent);
       display: inline-block;
     }
+    /* Latest-release pill: green reads as "live". The link always targets
+       /releases/latest; the script below only refreshes the visible tag.
+       --live-ink keeps AA text contrast on the tinted pill in each theme
+       (about 5.1:1 light, 9.7:1 dark). */
+    .release-pill {
+      --live: #16a34a;
+      --live-ink: #157a3f;
+      display: inline-flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 4px 8px;
+      max-width: 100%;
+      padding: 5px 12px 5px 9px;
+      border: 1px solid color-mix(in srgb, var(--live) 30%, var(--line));
+      border-radius: 100px;
+      background: color-mix(in srgb, var(--live) 6%, var(--bg));
+      color: var(--ink-soft);
+      font-size: 12.5px;
+      font-weight: 500;
+      line-height: 1.4;
+      transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+    }
+    [data-theme="dark"] .release-pill {
+      --live: #3ed68a;
+      --live-ink: #3ed68a;
+    }
+    .release-pill:hover {
+      color: var(--ink);
+      border-color: color-mix(in srgb, var(--live) 60%, var(--line));
+      background: color-mix(in srgb, var(--live) 11%, var(--bg));
+    }
+    .release-pill:focus-visible {
+      outline: 2px solid var(--live-ink);
+      outline-offset: 3px;
+    }
+    .release-dot {
+      position: relative;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--live);
+      flex-shrink: 0;
+    }
+    /* Soft "live" ring; paused while the hero is off screen or the tab is hidden. */
+    .release-dot::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: var(--live);
+      opacity: 0;
+      animation: release-ping 2.8s cubic-bezier(0, 0, 0.2, 1) 1.2s infinite;
+    }
+    @keyframes release-ping {
+      0%        { opacity: 0.45; transform: scale(1); }
+      70%, 100% { opacity: 0; transform: scale(2.8); }
+    }
+    .hero.is-idle .release-dot::after { animation-play-state: paused; }
+    .release-tag {
+      font-family: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--ink);
+    }
+    .release-sep {
+      width: 1px;
+      height: 12px;
+      background: currentColor;
+      opacity: 0.25;
+    }
+    .release-cta { color: var(--live-ink); }
+    .release-arrow {
+      display: inline-block;
+      margin-left: 2px;
+      transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .release-pill:hover .release-arrow { transform: translateX(2px); }
+    /* Narrow phones: tighter spacing keeps the pill on one line at 360px. */
+    @media (max-width: 380px) {
+      .release-pill { gap: 4px 6px; padding: 4px 10px 4px 8px; font-size: 12px; }
+      .release-tag { font-size: 11.5px; }
+    }
     .hero h1 {
       font-size: clamp(46px, 7.4vw, 72px);
       font-weight: 600;
@@ -378,22 +474,59 @@
       line-height: 1.0;
       max-width: 920px;
       margin-bottom: 28px;
+      text-wrap: balance;
     }
     .hero h1 .punch {
       color: var(--accent);
     }
+    .hero h1 .w { display: inline-block; }
+    .hero h1 .punct { display: inline-block; transform-origin: 30% 85%; }
+    /* Text column keeps a ~70-character measure; the graph motif sits beside it. */
     .hero-sub {
       font-size: clamp(17px, 1.6vw, 19px);
       color: var(--ink-soft);
-      max-width: none;
+      max-width: 646px;
       line-height: 1.55;
       margin-bottom: 48px;
     }
+    .hero .glossary { max-width: 646px; }
     .hero-ctas {
       display: flex;
       gap: 12px;
       flex-wrap: wrap;
       align-items: center;
+    }
+    /* Load entrance: the h1 words rise first (legible by ~300ms), the rest
+       follows, and all of it is settled by ~0.9s.
+       Only opacity and transform move, so nothing shifts the layout. */
+    @keyframes hero-in {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: none; }
+    }
+    @keyframes hero-word {
+      from { opacity: 0; transform: translateY(0.3em); }
+      to   { opacity: 1; transform: none; }
+    }
+    @keyframes hero-pop {
+      from { opacity: 0; transform: scale(0.2); }
+      to   { opacity: 1; transform: none; }
+    }
+    .hero-meta { animation: hero-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+    .hero h1 .w {
+      animation: hero-word 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+      animation-delay: calc(var(--i, 0) * 40ms);
+    }
+    .hero h1 .punct { animation: hero-pop 0.45s cubic-bezier(0.22, 1, 0.36, 1) 0.36s both; }
+    .hero-sub { animation: hero-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.16s both; }
+    .hero .glossary { animation: hero-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.24s both; }
+    /* Scoped to the hero: #master reuses .hero-ctas for its GitHub button. */
+    .hero .hero-ctas { animation: hero-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.32s both; }
+    @media (prefers-reduced-motion: reduce) {
+      .hero-meta, .hero h1 .w, .hero h1 .punct, .hero-sub, .hero .glossary,
+      .hero .hero-ctas { animation: none !important; }
+      .release-dot::after { animation: none; opacity: 0.22; transform: scale(2); }
+      .release-arrow { transition: none; }
+      .release-pill:hover .release-arrow { transform: none; }
     }
 
     .btn {
@@ -489,19 +622,31 @@
       margin-bottom: 72px;
     }
 
-    /* ───── Reveal animation ───── */
-    .reveal {
+    /* ───── Reveal animation ─────
+       Content is visible by default. The scroll-reveal script marks the pieces
+       inside each .reveal section (marker, label, h2, intro, each block or
+       step) with .rv, then sets .js-reveal on <html>; only then do those
+       pieces start hidden. A failed script leaves everything visible. The
+       script drops .rv once a piece has faded in, so each element's own
+       transitions (hover states, theme changes) come back afterwards. */
+    .js-reveal .rv {
+      transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1) var(--rv-d, 0ms),
+                  transform 0.7s cubic-bezier(0.22, 1, 0.36, 1) var(--rv-d, 0ms);
+    }
+    .js-reveal .rv:not(.in-view) {
       opacity: 0;
-      transform: translateY(20px);
-      transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
-                  transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+      transform: translateY(16px);
     }
-    .reveal.in-view {
-      opacity: 1;
-      transform: translateY(0);
+    /* After an anchor jump: one quick fade, no stagger. */
+    .js-reveal .rv.rv-fast {
+      transition-duration: 0.25s;
+      transition-delay: 0ms;
     }
+    /* Content already above the viewport: shown at once. */
+    .js-reveal .rv.rv-now { transition: none; }
     @media (prefers-reduced-motion: reduce) {
-      .reveal { opacity: 1; transform: none; transition: none; }
+      .js-reveal .rv { transition: none; }
+      .js-reveal .rv:not(.in-view) { opacity: 1; transform: none; }
     }
 
     /* ───── Steps ───── */
@@ -1540,20 +1685,235 @@
       .cli-clip-rect, .cli-caret { animation: none; }
     }
 
-    /* ───── Master-wiki diagram (inline SVG, theme-independent colors) ───── */
+    /* ───── Master-wiki diagram (inline SVG, colors from the theme tokens) ─────
+       Default styles are the finished picture. JS adds .is-armed (rewind to the
+       empty start) and .is-playing (run once) when the diagram scrolls into view. */
+    .mw-stage {
+      position: relative;
+      max-width: none;
+      margin: 36px 0 6px;
+    }
+    /* The panel is the master wiki itself: titled master-wiki/ in the SVG, with
+       its raw/ and wiki/ folders drawn as thin dashed outlines inside it. */
     .mw-demo {
       display: block;
-      max-width: 940px;
-      margin: 36px auto 6px;
       width: 100%;
+      background: var(--bg-soft);
+      border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line));
+      border-radius: 14px;
     }
     .mw-svg {
       display: block;
       width: 100%;
       height: auto;
     }
+    .mw-svg--tall { display: none; }
     .mw-svg text {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    .mw-svg .mw-mono {
+      font-family: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+      font-weight: 500;
+    }
+    .mw-svg .mw-strong { font-weight: 600; }
+    .mw-svg .mw-master-title { fill: var(--accent); font-weight: 600; }
+    .mw-region {
+      fill: none;
+      stroke: color-mix(in srgb, var(--accent) 36%, var(--line));
+      stroke-width: 1.25;
+      stroke-dasharray: 5 4;
+      vector-effect: non-scaling-stroke;
+    }
+    /* Landing cue: the master's wiki/ outline turns solid and stays that way. */
+    .mw-region-hl {
+      fill: color-mix(in srgb, var(--accent) 4%, transparent);
+      stroke: var(--accent);
+      stroke-width: 1.5;
+      vector-effect: non-scaling-stroke;
+    }
+    .mw-ink { fill: var(--ink); }
+    .mw-soft { fill: var(--ink-soft); }
+    .mw-cmd { fill: var(--code-skill-ink); }
+    .mw-folder-ink { fill: var(--code-ink); }
+    .mw-rail { stroke-width: 2; opacity: 0.45; }
+    /* An accent copy of the wiki/ title flashes once as the synthesis lands. */
+    .mw-label-hl { fill: var(--accent); }
+    .mw-flash { opacity: 0; }
+    .mw-junction { fill: var(--accent); }
+    .mw-card {
+      fill: var(--bg);
+      stroke: var(--line);
+      stroke-width: 1;
+      vector-effect: non-scaling-stroke;
+    }
+    .mw-box { fill: var(--code-bg); }
+    .mw-box-hl {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 1.5;
+    }
+    .mw-file { fill: var(--code-ink); fill-opacity: 0.72; }
+    .mw-art, .mw-tart { fill: var(--bg); stroke-width: 1.2; }
+    .mw-art { stroke: var(--code-ink); }
+    .mw-tart { stroke: var(--accent); }
+    .mw-art-lines, .mw-tart-lines {
+      fill: none;
+      stroke-width: 1.2;
+      stroke-linecap: round;
+    }
+    .mw-art-lines { stroke: var(--code-ink); }
+    .mw-tart-lines { stroke: var(--accent); }
+    .mw-arrow {
+      fill: none;
+      stroke: var(--ink-muted);
+      stroke-width: 1.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .mw-arrow--cmd { stroke: var(--code-skill-ink); }
+    .mw-link {
+      fill: none;
+      stroke: color-mix(in srgb, var(--accent) 55%, var(--bg));
+      stroke-width: 1.5;
+      stroke-linejoin: round;
+      stroke-dasharray: 101 101;
+    }
+    .mw-link--out { stroke: var(--accent); }
+    .mw-pulse {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 3.5;
+      stroke-linecap: round;
+      stroke-dasharray: 3 97;
+      opacity: 0;
+    }
+    .mw-pill {
+      fill: var(--bg);
+      stroke: color-mix(in srgb, var(--code-skill-ink) 45%, transparent);
+      stroke-width: 1;
+      vector-effect: non-scaling-stroke;
+    }
+    .mw-pill-hl { fill: var(--code-skill-bg); }
+    .mw-theme {
+      fill: var(--bg);
+      stroke: color-mix(in srgb, var(--accent) 26%, var(--line));
+      stroke-width: 1;
+      vector-effect: non-scaling-stroke;
+    }
+    .mw-src { fill: var(--code-literal-bg); }
+    .mw-src-ink { fill: var(--code-literal-ink); }
+    .mw-tag-muted {
+      fill: none;
+      stroke: color-mix(in srgb, var(--ink-muted) 50%, transparent);
+      stroke-width: 1;
+      vector-effect: non-scaling-stroke;
+    }
+    /* Finished state: folders the master never reads stay faded, archived files too. */
+    .mw-dim { opacity: var(--o, 0.4); }
+
+    /* Story, in order: files land in each workstream raw/ (0.3s), each workstream
+       compiles into its wiki/ (2.3s), master-compile reads only those wiki/
+       folders and the loose files (4.2s), writes the synthesis (5.9s), lands
+       in master-wiki/wiki/ (6.25s), theme articles appear there (6.5s), and the
+       loose files are archived (8.0s). Per-element delays live in --d. */
+    @keyframes mw-in {
+      from { opacity: 0; transform: translateY(var(--dy, 6px)); }
+      to   { opacity: 1; transform: none; }
+    }
+    @keyframes mw-fade {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    @keyframes mw-dim {
+      from { opacity: 1; }
+      to   { opacity: var(--o, 0.4); }
+    }
+    @keyframes mw-draw {
+      from { stroke-dashoffset: 101; }
+      to   { stroke-dashoffset: 0; }
+    }
+    @keyframes mw-flash {
+      0%   { opacity: 0; }
+      25%  { opacity: 1; }
+      100% { opacity: 0; }
+    }
+    @keyframes mw-pulse {
+      0%   { opacity: 0; stroke-dashoffset: 3; }
+      12%  { opacity: 1; }
+      82%  { opacity: 1; }
+      100% { opacity: 0; stroke-dashoffset: -97; }
+    }
+    .mw-demo.is-armed .mw-in {
+      animation: mw-in var(--t, 0.5s) cubic-bezier(0.22, 1, 0.36, 1) var(--d, 0s) both paused;
+    }
+    .mw-demo.is-armed .mw-fade {
+      animation: mw-fade var(--t, 0.4s) ease var(--d, 0s) both paused;
+    }
+    .mw-demo.is-armed .mw-dim {
+      animation: mw-dim var(--t, 0.45s) ease var(--d, 0s) both paused;
+    }
+    .mw-demo.is-armed .mw-draw {
+      animation: mw-draw var(--t, 0.9s) cubic-bezier(0.45, 0, 0.2, 1) var(--d, 0s) both paused;
+    }
+    .mw-demo.is-armed .mw-flash {
+      animation: mw-flash 1.2s ease var(--d, 0s) both paused;
+    }
+    .mw-demo.is-armed .mw-pulse {
+      animation: mw-pulse 0.9s cubic-bezier(0.45, 0, 0.55, 1) var(--d, 0s) both paused;
+    }
+    .mw-demo.is-playing:not(.is-offscreen) :is(.mw-in, .mw-fade, .mw-dim, .mw-draw, .mw-pulse, .mw-flash) {
+      animation-play-state: running;
+    }
+
+    .mw-replay {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 30px;
+      padding: 0 12px 0 10px;
+      font: 500 13px/1 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: var(--ink-soft);
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: 100px;
+      cursor: pointer;
+      opacity: 0;
+      -webkit-tap-highlight-color: transparent;
+      transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), color 0.15s ease, border-color 0.15s ease;
+    }
+    .mw-replay[hidden] { display: none; }
+    .mw-demo.in-view + .mw-replay { opacity: 1; }
+    .mw-replay:hover { color: var(--accent); border-color: var(--accent); }
+    .mw-replay:focus-visible { opacity: 1; outline: 2px solid var(--accent); outline-offset: 2px; }
+    .mw-replay svg {
+      width: 14px;
+      height: 14px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .mw-replay:active svg { transform: rotate(-45deg); }
+
+    /* Below 840px the wide layout's labels get too small, so a stacked layout takes over. */
+    @media (max-width: 840px) {
+      .mw-stage { max-width: 380px; margin-left: auto; margin-right: auto; }
+      .mw-svg--wide { display: none; }
+      .mw-svg--tall { display: block; }
+      .mw-replay { top: 7px; right: 8px; height: 28px; padding: 0 10px 0 9px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .mw-demo :is(.mw-in, .mw-fade, .mw-dim, .mw-draw, .mw-pulse, .mw-flash) { animation: none !important; }
+      .mw-replay { display: none !important; }
+    }
+    @media print {
+      .mw-demo :is(.mw-in, .mw-fade, .mw-dim, .mw-draw, .mw-pulse, .mw-flash) { animation: none !important; }
+      .mw-replay { display: none !important; }
     }
 
     /* ───── Responsive ───── */
@@ -1868,6 +2228,7 @@
         <li><a href="#master-structure">How the levels fit</a></li>
         <li><a href="#master-flow">The compile flow</a></li>
         <li><a href="#master-honest">Keep the master honest</a></li>
+        <li><a href="#master-update">Keep the master current</a></li>
       </ul>
     </div>
   </nav>
@@ -1887,9 +2248,12 @@
 </aside>
 
 <header class="hero" id="top">
-  <div class="hero-label">Beginner's Guide</div>
-  <h1>Building the <span class="punch">Agentic Mind<span class="punct">.</span></span></h1>
-  <p class="hero-sub">A friendly walkthrough for setting up an AI-powered knowledge base with Claude Code — and collaborating on it with your team. No terminal. No coding.</p>
+  <div class="hero-meta">
+    <div class="hero-label">Beginner's Guide</div>
+    <a class="release-pill" href="https://github.com/davron-design/wiki-generator/releases/latest" target="_blank" rel="noopener" data-release="v2026-10-02" aria-label="Latest release v2026-10-02, what's new, opens in a new tab"><span class="release-dot" aria-hidden="true"></span><span>Latest release</span> <span class="release-tag">v2026-10-02</span> <span class="release-sep" aria-hidden="true"></span> <span class="release-cta">What's new<span class="release-arrow" aria-hidden="true">→</span></span></a>
+  </div>
+  <h1><span class="w" style="--i:0">Building</span> <span class="w" style="--i:1">the</span> <span class="punch"><span class="w" style="--i:2">Agentic</span> <span class="w" style="--i:3">Mind<span class="punct">.</span></span></span></h1>
+  <p class="hero-sub">A friendly walkthrough for setting up an AI-powered knowledge base with Claude Code, and for collaborating on it with your team. No terminal. No coding.</p>
 
   <details class="glossary">
     <summary>
@@ -2758,118 +3122,21 @@
       <li><strong>Timeline interlocks</strong> — milestones that have to line up across workstreams.</li>
       <li><strong>Conflicting approaches</strong> — two teams solving the same problem two different ways.</li>
     </ul>
-    <p>Every claim it makes links straight back to the source article in the workstream wiki it came from, so the synthesis stays auditable. The <a href="https://github.com/davron-design/master-wiki-generator" target="_blank" rel="noopener">master-wiki-generator</a> skill packages this whole flow — installed the same way Section 01 installs <code class="skill">/wiki-generator</code>.</p>
+    <p>Every claim it makes links straight back to the source article in the workstream wiki it came from, so the synthesis stays auditable. The <a href="https://github.com/davron-design/master-wiki-generator" target="_blank" rel="noopener">master-wiki-generator</a> skill packages this whole flow. It sets up the master and, by default, a ready-to-use wiki for each workstream inside it. You install it the same way Section 01 installs <code class="skill">/wiki-generator</code>.</p>
 
-    <div class="mw-demo reveal" role="img" aria-label="Diagram of a multi-level wiki. Three colored workstream wikis — WS1, WS2 and WS3 — each run their own raw, wiki and output folders fed by their own files. Each workstream lead pushes its compiled wiki up into the master wiki's raw folder. The master maintainer then compiles raw into wiki into output, and a separate stack of cross-workstream files also feeds the master's raw folder.">
-      <svg class="mw-svg" viewBox="0 0 1000 510" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <symbol id="mw-folder" viewBox="0 0 96 78">
-            <path d="M5 21a8 8 0 0 1 8-8h21l9 9h40a8 8 0 0 1 8 8v32a8 8 0 0 1-8 8H13a8 8 0 0 1-8-8z" fill="currentColor"/>
-          </symbol>
-          <symbol id="mw-docs" viewBox="0 0 84 96">
-            <rect x="24" y="8" width="50" height="64" rx="8" fill="currentColor" fill-opacity="0.45"/>
-            <path d="M16 20h38a8 8 0 0 1 8 8v52a8 8 0 0 1-8 8H42l-7-7-7 7H16a8 8 0 0 1-8-8V28a8 8 0 0 1 8-8z" fill="currentColor"/>
-          </symbol>
-        </defs>
-
-        <!-- push-up flows (dashed) -->
-        <g fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 6">
-          <path d="M178 378V312Q178 300 190 300H448Q464 300 464 288V170" stroke="#DA2C95"/>
-          <path d="M500 378C500 330 483 330 483 288V170" stroke="#EC9A2D"/>
-          <path d="M822 378V312Q822 300 810 300H518Q502 300 502 288V170" stroke="#E9512F"/>
-        </g>
-
-        <!-- master wiki -->
-        <rect x="232" y="78" width="648" height="128" rx="14" fill="none" stroke="#8FC4EF" stroke-width="2"/>
-        <text x="262" y="148" font-size="25" font-weight="700" fill="#2E9BE6">Master Wiki</text>
-        <use href="#mw-folder" x="446" y="104" width="74" height="60" style="color:#4AA3E8"/>
-        <use href="#mw-folder" x="636" y="104" width="74" height="60" style="color:#4AA3E8"/>
-        <use href="#mw-folder" x="776" y="104" width="74" height="60" style="color:#4AA3E8"/>
-        <text x="483" y="141" font-size="11.5" font-weight="600" fill="#FFFFFF" text-anchor="middle">raw/</text>
-        <text x="673" y="141" font-size="11.5" font-weight="600" fill="#FFFFFF" text-anchor="middle">wiki/</text>
-        <text x="813" y="141" font-size="11.5" font-weight="600" fill="#FFFFFF" text-anchor="middle">output/</text>
-        <path d="M524 136H630" stroke="#2E9BE6" stroke-width="2" stroke-linecap="round"/>
-        <text x="577" y="129" font-size="9" font-weight="600" fill="#2E9BE6" text-anchor="middle">Maintainer compiles</text>
-        <path d="M636 136l-7-4v8z" fill="#2E9BE6"/>
-        <path d="M714 136H770" stroke="#2E9BE6" stroke-width="2" stroke-linecap="round"/>
-        <path d="M776 136l-7-4v8z" fill="#2E9BE6"/>
-
-        <!-- cross-workstream files -->
-        <use href="#mw-docs" x="404" y="2" width="52" height="60" style="color:#CFE6FA"/>
-        <text x="466" y="24" font-size="11.5" font-weight="600" fill="#2E9BE6">Cross-WS</text>
-        <text x="466" y="39" font-size="11.5" font-weight="600" fill="#2E9BE6">files</text>
-        <path d="M430 58C432 84 454 82 483 112" fill="none" stroke="#6FB4ED" stroke-width="2"/>
-
-        <!-- WS1 -->
-        <g>
-          <use href="#mw-folder" x="73" y="372" width="58" height="46" style="color:#E12E9C"/>
-          <use href="#mw-folder" x="149" y="372" width="58" height="46" style="color:#E12E9C"/>
-          <use href="#mw-folder" x="225" y="372" width="58" height="46" style="color:#E12E9C"/>
-          <text x="102" y="400" font-size="9" font-weight="600" fill="#FFFFFF" text-anchor="middle">raw/</text>
-          <text x="178" y="400" font-size="9" font-weight="600" fill="#FFFFFF" text-anchor="middle">wiki/</text>
-          <text x="254" y="400" font-size="9" font-weight="600" fill="#FFFFFF" text-anchor="middle">output/</text>
-          <path d="M138 391l5 5l-5 5" fill="none" stroke="#E12E9C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M214 391l5 5l-5 5" fill="none" stroke="#E12E9C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <use href="#mw-docs" x="14" y="388" width="40" height="48" style="color:#F8C9E5"/>
-          <path d="M46 410C58 410 60 396 76 396" fill="none" stroke="#E12E9C" stroke-width="1.5"/>
-          <text x="31" y="449" font-size="9.5" font-weight="600" fill="#C42A86" text-anchor="middle">WS files</text>
-          <text x="178" y="450" font-size="15" font-weight="700" fill="#C42A86" text-anchor="middle">WS1 Wiki</text>
-        </g>
-
-        <!-- WS2 -->
-        <g>
-          <use href="#mw-folder" x="395" y="372" width="58" height="46" style="color:#EE9F38"/>
-          <use href="#mw-folder" x="471" y="372" width="58" height="46" style="color:#EE9F38"/>
-          <use href="#mw-folder" x="547" y="372" width="58" height="46" style="color:#EE9F38"/>
-          <text x="424" y="400" font-size="9" font-weight="600" fill="#FFFFFF" text-anchor="middle">raw/</text>
-          <text x="500" y="400" font-size="9" font-weight="600" fill="#FFFFFF" text-anchor="middle">wiki/</text>
-          <text x="576" y="400" font-size="9" font-weight="600" fill="#FFFFFF" text-anchor="middle">output/</text>
-          <path d="M460 391l5 5l-5 5" fill="none" stroke="#EE9F38" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M536 391l5 5l-5 5" fill="none" stroke="#EE9F38" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <use href="#mw-docs" x="336" y="388" width="40" height="48" style="color:#FBE2BE"/>
-          <path d="M368 410C380 410 382 396 398 396" fill="none" stroke="#EE9F38" stroke-width="1.5"/>
-          <text x="353" y="449" font-size="9.5" font-weight="600" fill="#B9791C" text-anchor="middle">WS files</text>
-          <text x="500" y="450" font-size="15" font-weight="700" fill="#B9791C" text-anchor="middle">WS2 Wiki</text>
-        </g>
-
-        <!-- WS3 -->
-        <g>
-          <use href="#mw-folder" x="717" y="372" width="58" height="46" style="color:#EC5A41"/>
-          <use href="#mw-folder" x="793" y="372" width="58" height="46" style="color:#EC5A41"/>
-          <use href="#mw-folder" x="869" y="372" width="58" height="46" style="color:#EC5A41"/>
-          <text x="746" y="400" font-size="9" font-weight="600" fill="#FFFFFF" text-anchor="middle">raw/</text>
-          <text x="822" y="400" font-size="9" font-weight="600" fill="#FFFFFF" text-anchor="middle">wiki/</text>
-          <text x="898" y="400" font-size="9" font-weight="600" fill="#FFFFFF" text-anchor="middle">output/</text>
-          <path d="M782 391l5 5l-5 5" fill="none" stroke="#EC5A41" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M858 391l5 5l-5 5" fill="none" stroke="#EC5A41" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <use href="#mw-docs" x="658" y="388" width="40" height="48" style="color:#F9CDC2"/>
-          <path d="M690 410C702 410 704 396 720 396" fill="none" stroke="#EC5A41" stroke-width="1.5"/>
-          <text x="675" y="449" font-size="9.5" font-weight="600" fill="#C4452C" text-anchor="middle">WS files</text>
-          <text x="822" y="450" font-size="15" font-weight="700" fill="#C4452C" text-anchor="middle">WS3 Wiki</text>
-        </g>
-
-        <!-- push arrowheads -->
-        <path d="M464 159l-6 10h12z" fill="#DA2C95"/>
-        <path d="M483 159l-6 10h12z" fill="#EC9A2D"/>
-        <path d="M502 159l-6 10h12z" fill="#E9512F"/>
-
-        <!-- push labels -->
-        <g font-size="9" font-weight="600" text-anchor="middle">
-          <rect x="270" y="286" width="96" height="28" rx="8" fill="#F8C9E5"/>
-          <text fill="#C42A86"><tspan x="318" y="298">WS1 lead</tspan><tspan x="318" y="309">pushes updates</tspan></text>
-          <rect x="518" y="236" width="96" height="28" rx="8" fill="#FBE2BE"/>
-          <text fill="#B9791C"><tspan x="566" y="248">WS2 lead</tspan><tspan x="566" y="259">pushes updates</tspan></text>
-          <rect x="640" y="286" width="96" height="28" rx="8" fill="#F9CDC2"/>
-          <text fill="#C4452C"><tspan x="688" y="298">WS3 lead</tspan><tspan x="688" y="309">pushes updates</tspan></text>
-        </g>
-      </svg>
+    <div class="mw-stage">
+      <div class="mw-demo reveal" role="img" aria-label="A master wiki (master-wiki/) holds two folders. Its raw/ folder holds three workstream wikis (ws1-wiki, ws2-wiki and ws3-wiki) and loose cross-workstream files, and each workstream wiki compiles its own raw files into its own wiki folder. master-compile reads those wiki folders and the loose files and writes one article per theme (Risks, Decisions, Dependencies, Timeline, Open Questions) into the master's own wiki/ folder, each tagged with the workstreams it came from.">
+        <svg class="mw-svg mw-svg--wide" viewBox="0 0 900 506" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><text class="mw-mono mw-master-title" x="24" y="30" font-size="14">master-wiki/</text><rect class="mw-region" x="16" y="46" width="312" height="444" rx="10"/><text class="mw-mono mw-ink" x="30" y="68" font-size="13">raw/</text><g class="mw-ws"><rect class="mw-card" x="32" y="80" width="280" height="104" rx="8"/><text class="mw-mono mw-ink" x="44" y="101" font-size="13">ws1-wiki/</text><g class="mw-dim" style="--d:4.2s;--o:0.45"><path class="mw-box" d="M44 130A6 6 0 0 1 50 124H66L71 129H110A6 6 0 0 1 116 135V166A6 6 0 0 1 110 172H50A6 6 0 0 1 44 166Z"/><text class="mw-mono mw-folder-ink" x="54" y="144" font-size="12">raw/</text><g class="mw-in" style="--d:0.3s;--dy:-14px"><g class="mw-dim" style="--d:2.45s;--o:0.35"><path class="mw-file" d="M56 150H62L66 154V164Q66 166 64 166H56Q54 166 54 164V152Q54 150 56 150Z"/></g></g><g class="mw-in" style="--d:0.4s;--dy:-14px"><g class="mw-dim" style="--d:2.5s;--o:0.35"><path class="mw-file" d="M71 150H77L81 154V164Q81 166 79 166H71Q69 166 69 164V152Q69 150 71 150Z"/></g></g><g class="mw-in" style="--d:0.5s;--dy:-14px"><g class="mw-dim" style="--d:2.55s;--o:0.35"><path class="mw-file" d="M86 150H92L96 154V164Q96 166 94 166H86Q84 166 84 164V152Q84 150 86 150Z"/></g></g></g><path class="mw-arrow" d="M119 151H133M129.5 147.5L133 151L129.5 154.5"/><g class="mw-fade" style="--d:2.3s"><path class="mw-arrow mw-arrow--cmd" d="M119 151H133M129.5 147.5L133 151L129.5 154.5"/><text class="mw-mono mw-cmd" x="126" y="118" font-size="12" text-anchor="middle">compile</text></g><path class="mw-box" d="M136 130A6 6 0 0 1 142 124H158L163 129H202A6 6 0 0 1 208 135V166A6 6 0 0 1 202 172H142A6 6 0 0 1 136 166Z"/><path class="mw-box-hl mw-fade" style="--d:4.2s" d="M136 130A6 6 0 0 1 142 124H158L163 129H202A6 6 0 0 1 208 135V166A6 6 0 0 1 202 172H142A6 6 0 0 1 136 166Z"/><text class="mw-mono mw-folder-ink" x="146" y="144" font-size="12">wiki/</text><g class="mw-in" style="--d:2.6s;--dy:5px"><rect class="mw-art" x="146" y="149" width="13" height="16" rx="2"/><path class="mw-art-lines" d="M149 154.12H156M149 157.32H156M149 160.52H153.5"/></g><g class="mw-in" style="--d:2.72s;--dy:5px"><rect class="mw-art" x="163" y="149" width="13" height="16" rx="2"/><path class="mw-art-lines" d="M166 154.12H173M166 157.32H173M166 160.52H170.5"/></g><g class="mw-dim" style="--d:4.2s;--o:0.45"><path class="mw-arrow" d="M211 151H225M221.5 147.5L225 151L221.5 154.5"/><path class="mw-box" d="M228 130A6 6 0 0 1 234 124H250L255 129H294A6 6 0 0 1 300 135V166A6 6 0 0 1 294 172H234A6 6 0 0 1 228 166Z"/><text class="mw-mono mw-folder-ink" x="238" y="144" font-size="12">output/</text></g></g><g class="mw-ws"><rect class="mw-card" x="32" y="194" width="280" height="104" rx="8"/><text class="mw-mono mw-ink" x="44" y="215" font-size="13">ws2-wiki/</text><g class="mw-dim" style="--d:4.28s;--o:0.45"><path class="mw-box" d="M44 244A6 6 0 0 1 50 238H66L71 243H110A6 6 0 0 1 116 249V280A6 6 0 0 1 110 286H50A6 6 0 0 1 44 280Z"/><text class="mw-mono mw-folder-ink" x="54" y="258" font-size="12">raw/</text><g class="mw-in" style="--d:0.6s;--dy:-14px"><g class="mw-dim" style="--d:2.8s;--o:0.35"><path class="mw-file" d="M56 264H62L66 268V278Q66 280 64 280H56Q54 280 54 278V266Q54 264 56 264Z"/></g></g><g class="mw-in" style="--d:0.7s;--dy:-14px"><g class="mw-dim" style="--d:2.85s;--o:0.35"><path class="mw-file" d="M71 264H77L81 268V278Q81 280 79 280H71Q69 280 69 278V266Q69 264 71 264Z"/></g></g><g class="mw-in" style="--d:0.8s;--dy:-14px"><g class="mw-dim" style="--d:2.9s;--o:0.35"><path class="mw-file" d="M86 264H92L96 268V278Q96 280 94 280H86Q84 280 84 278V266Q84 264 86 264Z"/></g></g></g><path class="mw-arrow" d="M119 265H133M129.5 261.5L133 265L129.5 268.5"/><g class="mw-fade" style="--d:2.65s"><path class="mw-arrow mw-arrow--cmd" d="M119 265H133M129.5 261.5L133 265L129.5 268.5"/><text class="mw-mono mw-cmd" x="126" y="232" font-size="12" text-anchor="middle">compile</text></g><path class="mw-box" d="M136 244A6 6 0 0 1 142 238H158L163 243H202A6 6 0 0 1 208 249V280A6 6 0 0 1 202 286H142A6 6 0 0 1 136 280Z"/><path class="mw-box-hl mw-fade" style="--d:4.28s" d="M136 244A6 6 0 0 1 142 238H158L163 243H202A6 6 0 0 1 208 249V280A6 6 0 0 1 202 286H142A6 6 0 0 1 136 280Z"/><text class="mw-mono mw-folder-ink" x="146" y="258" font-size="12">wiki/</text><g class="mw-in" style="--d:2.95s;--dy:5px"><rect class="mw-art" x="146" y="263" width="13" height="16" rx="2"/><path class="mw-art-lines" d="M149 268.12H156M149 271.32H156M149 274.52H153.5"/></g><g class="mw-in" style="--d:3.07s;--dy:5px"><rect class="mw-art" x="163" y="263" width="13" height="16" rx="2"/><path class="mw-art-lines" d="M166 268.12H173M166 271.32H173M166 274.52H170.5"/></g><g class="mw-dim" style="--d:4.28s;--o:0.45"><path class="mw-arrow" d="M211 265H225M221.5 261.5L225 265L221.5 268.5"/><path class="mw-box" d="M228 244A6 6 0 0 1 234 238H250L255 243H294A6 6 0 0 1 300 249V280A6 6 0 0 1 294 286H234A6 6 0 0 1 228 280Z"/><text class="mw-mono mw-folder-ink" x="238" y="258" font-size="12">output/</text></g></g><g class="mw-ws"><rect class="mw-card" x="32" y="308" width="280" height="104" rx="8"/><text class="mw-mono mw-ink" x="44" y="329" font-size="13">ws3-wiki/</text><text class="mw-soft" x="300" y="329" font-size="12" text-anchor="end">synced from its own repo</text><g class="mw-dim" style="--d:4.36s;--o:0.45"><path class="mw-box" d="M44 358A6 6 0 0 1 50 352H66L71 357H110A6 6 0 0 1 116 363V394A6 6 0 0 1 110 400H50A6 6 0 0 1 44 394Z"/><text class="mw-mono mw-folder-ink" x="54" y="372" font-size="12">raw/</text><g class="mw-in" style="--d:0.9s;--dy:-14px"><g class="mw-dim" style="--d:3.15s;--o:0.35"><path class="mw-file" d="M56 378H62L66 382V392Q66 394 64 394H56Q54 394 54 392V380Q54 378 56 378Z"/></g></g><g class="mw-in" style="--d:1s;--dy:-14px"><g class="mw-dim" style="--d:3.2s;--o:0.35"><path class="mw-file" d="M71 378H77L81 382V392Q81 394 79 394H71Q69 394 69 392V380Q69 378 71 378Z"/></g></g><g class="mw-in" style="--d:1.1s;--dy:-14px"><g class="mw-dim" style="--d:3.25s;--o:0.35"><path class="mw-file" d="M86 378H92L96 382V392Q96 394 94 394H86Q84 394 84 392V380Q84 378 86 378Z"/></g></g></g><path class="mw-arrow" d="M119 379H133M129.5 375.5L133 379L129.5 382.5"/><g class="mw-fade" style="--d:3s"><path class="mw-arrow mw-arrow--cmd" d="M119 379H133M129.5 375.5L133 379L129.5 382.5"/><text class="mw-mono mw-cmd" x="126" y="346" font-size="12" text-anchor="middle">compile</text></g><path class="mw-box" d="M136 358A6 6 0 0 1 142 352H158L163 357H202A6 6 0 0 1 208 363V394A6 6 0 0 1 202 400H142A6 6 0 0 1 136 394Z"/><path class="mw-box-hl mw-fade" style="--d:4.36s" d="M136 358A6 6 0 0 1 142 352H158L163 357H202A6 6 0 0 1 208 363V394A6 6 0 0 1 202 400H142A6 6 0 0 1 136 394Z"/><text class="mw-mono mw-folder-ink" x="146" y="372" font-size="12">wiki/</text><g class="mw-in" style="--d:3.3s;--dy:5px"><rect class="mw-art" x="146" y="377" width="13" height="16" rx="2"/><path class="mw-art-lines" d="M149 382.12H156M149 385.32H156M149 388.52H153.5"/></g><g class="mw-in" style="--d:3.42s;--dy:5px"><rect class="mw-art" x="163" y="377" width="13" height="16" rx="2"/><path class="mw-art-lines" d="M166 382.12H173M166 385.32H173M166 388.52H170.5"/></g><g class="mw-dim" style="--d:4.36s;--o:0.45"><path class="mw-arrow" d="M211 379H225M221.5 375.5L225 379L221.5 382.5"/><path class="mw-box" d="M228 358A6 6 0 0 1 234 352H250L255 357H294A6 6 0 0 1 300 363V394A6 6 0 0 1 294 400H234A6 6 0 0 1 228 394Z"/><text class="mw-mono mw-folder-ink" x="238" y="372" font-size="12">output/</text></g></g><g class="mw-loose"><text class="mw-ink mw-strong" x="32" y="440" font-size="13">Cross-workstream files</text><text class="mw-soft" x="32" y="458" font-size="12.5">steering notes, decisions</text><g class="mw-dim" style="--d:8s;--o:0.35"><g class="mw-in" style="--d:1.5s;--dy:-14px"><path class="mw-file mw-file--loose" d="M236 432H244L248 436V448Q248 450 246 450H236Q234 450 234 448V434Q234 432 236 432Z"/></g><g class="mw-in" style="--d:1.62s;--dy:-14px"><path class="mw-file mw-file--loose" d="M250 428H258L262 432V444Q262 446 260 446H250Q248 446 248 444V430Q248 428 250 428Z"/></g></g><g class="mw-in mw-last" style="--d:8.15s;--dy:4px"><rect class="mw-tag-muted" x="218" y="455" width="62" height="19" rx="9.5"/><text class="mw-soft" x="249" y="468.5" font-size="12" text-anchor="middle">archived</text></g></g><g class="mw-links"><path class="mw-link mw-draw" pathLength="100" style="--d:4.35s" d="M172 172V179Q172 189 182 189H340Q350 189 350 199V258Q350 268 360 268H385"/><path class="mw-link mw-draw" pathLength="100" style="--d:4.47s" d="M172 286V293Q172 303 182 303H340Q350 303 350 293V278Q350 268 360 268H385"/><path class="mw-link mw-draw" pathLength="100" style="--d:4.59s" d="M172 400V407Q172 417 182 417H340Q350 417 350 407V278Q350 268 360 268H385"/><path class="mw-link mw-draw" pathLength="100" style="--d:4.71s" d="M266 437H340Q350 437 350 427V278Q350 268 360 268H385"/><path class="mw-pulse" pathLength="100" style="--d:5s" d="M172 172V179Q172 189 182 189H340Q350 189 350 199V258Q350 268 360 268H385"/><path class="mw-pulse" pathLength="100" style="--d:5.1s" d="M172 286V293Q172 303 182 303H340Q350 303 350 293V278Q350 268 360 268H385"/><path class="mw-pulse" pathLength="100" style="--d:5.2s" d="M172 400V407Q172 417 182 417H340Q350 417 350 407V278Q350 268 360 268H385"/><path class="mw-pulse" pathLength="100" style="--d:5.3s" d="M266 437H340Q350 437 350 427V278Q350 268 360 268H385"/></g><rect class="mw-pill" x="385" y="253" width="128" height="30" rx="15"/><rect class="mw-pill-hl mw-fade" style="--d:5.7s" x="385" y="253" width="128" height="30" rx="15"/><text class="mw-mono mw-cmd" x="449" y="272.4" font-size="12.5" text-anchor="middle">master-compile</text><g class="mw-fade" style="--d:4.4s"><text class="mw-soft" font-size="12.5" text-anchor="middle"><tspan x="449" y="224">reads each wiki/</tspan><tspan x="449" y="240">and the loose files</tspan></text></g><g class="mw-fade" style="--d:5.9s"><text class="mw-soft" font-size="12.5" text-anchor="middle"><tspan x="449" y="307">writes the synthesis</tspan></text></g><rect class="mw-region" x="552" y="46" width="332" height="444" rx="10"/><rect class="mw-region-hl mw-fade" style="--d:6.25s;--t:.5s" x="552" y="46" width="332" height="444" rx="10"/><text class="mw-mono mw-ink" x="566" y="68" font-size="13">wiki/</text><text class="mw-mono mw-label-hl mw-flash" style="--d:6.25s" x="566" y="68" font-size="13">wiki/</text><path class="mw-link mw-link--out mw-draw" pathLength="100" style="--d:5.9s;--t:.35s" d="M513 268H572"/><path class="mw-link mw-link--out mw-rail mw-draw" pathLength="100" style="--d:6.25s;--t:.45s" d="M572 268V80"/><path class="mw-link mw-link--out mw-rail mw-draw" pathLength="100" style="--d:6.25s;--t:.45s" d="M572 268V462"/><g class="mw-fade" style="--d:6.2s"><circle class="mw-junction" cx="572" cy="268" r="4"/></g><g class="mw-in" style="--d:6.5s;--dy:6px"><rect class="mw-theme" x="584" y="80" width="284" height="62" rx="8"/><rect class="mw-tart" x="600" y="95" width="16" height="20" rx="2"/><path class="mw-tart-lines" d="M603 101.4H613M603 105.4H613M603 109.4H610.5"/><text class="mw-ink mw-strong" x="628" y="109" font-size="15">Risks</text><rect class="mw-src" x="628" y="116" width="38" height="18" rx="9"/><text class="mw-mono mw-src-ink" x="647" y="129" font-size="12" text-anchor="middle">ws1</text><rect class="mw-src" x="672" y="116" width="38" height="18" rx="9"/><text class="mw-mono mw-src-ink" x="691" y="129" font-size="12" text-anchor="middle">ws3</text></g><g class="mw-in" style="--d:6.66s;--dy:6px"><rect class="mw-theme" x="584" y="160" width="284" height="62" rx="8"/><rect class="mw-tart" x="600" y="175" width="16" height="20" rx="2"/><path class="mw-tart-lines" d="M603 181.4H613M603 185.4H613M603 189.4H610.5"/><text class="mw-ink mw-strong" x="628" y="189" font-size="15">Decisions</text><rect class="mw-src" x="628" y="196" width="38" height="18" rx="9"/><text class="mw-mono mw-src-ink" x="647" y="209" font-size="12" text-anchor="middle">ws2</text><rect class="mw-src" x="672" y="196" width="38" height="18" rx="9"/><text class="mw-mono mw-src-ink" x="691" y="209" font-size="12" text-anchor="middle">ws3</text></g><g class="mw-in" style="--d:6.82s;--dy:6px"><rect class="mw-theme" x="584" y="240" width="284" height="62" rx="8"/><rect class="mw-tart" x="600" y="255" width="16" height="20" rx="2"/><path class="mw-tart-lines" d="M603 261.4H613M603 265.4H613M603 269.4H610.5"/><text class="mw-ink mw-strong" x="628" y="269" font-size="15">Dependencies</text><rect class="mw-src" x="628" y="276" width="38" height="18" rx="9"/><text class="mw-mono mw-src-ink" x="647" y="289" font-size="12" text-anchor="middle">ws1</text><rect class="mw-src" x="672" y="276" width="38" height="18" rx="9"/><text class="mw-mono mw-src-ink" x="691" y="289" font-size="12" text-anchor="middle">ws2</text></g><g class="mw-in" style="--d:6.98s;--dy:6px"><rect class="mw-theme" x="584" y="320" width="284" height="62" rx="8"/><rect class="mw-tart" x="600" y="335" width="16" height="20" rx="2"/><path class="mw-tart-lines" d="M603 341.4H613M603 345.4H613M603 349.4H610.5"/><text class="mw-ink mw-strong" x="628" y="349" font-size="15">Timeline</text><rect class="mw-src" x="628" y="356" width="38" height="18" rx="9"/><text class="mw-mono mw-src-ink" x="647" y="369" font-size="12" text-anchor="middle">ws1</text><rect class="mw-src" x="672" y="356" width="38" height="18" rx="9"/><text class="mw-mono mw-src-ink" x="691" y="369" font-size="12" text-anchor="middle">ws2</text><rect class="mw-src" x="716" y="356" width="38" height="18" rx="9"/><text class="mw-mono mw-src-ink" x="735" y="369" font-size="12" text-anchor="middle">ws3</text></g><g class="mw-in" style="--d:7.14s;--dy:6px"><rect class="mw-theme" x="584" y="400" width="284" height="62" rx="8"/><rect class="mw-tart" x="600" y="415" width="16" height="20" rx="2"/><path class="mw-tart-lines" d="M603 421.4H613M603 425.4H613M603 429.4H610.5"/><text class="mw-ink mw-strong" x="628" y="429" font-size="15">Open Questions</text><rect class="mw-src" x="628" y="436" width="38" height="18" rx="9"/><text class="mw-mono mw-src-ink" x="647" y="449" font-size="12" text-anchor="middle">ws2</text></g></svg>
+        <svg class="mw-svg mw-svg--tall" viewBox="0 0 340 918" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><text class="mw-mono mw-master-title" x="16" y="27" font-size="14">master-wiki/</text><rect class="mw-region" x="8" y="40" width="324" height="444" rx="10"/><text class="mw-mono mw-ink" x="22" y="62" font-size="13">raw/</text><g class="mw-ws"><rect class="mw-card" x="22" y="72" width="280" height="104" rx="8"/><text class="mw-mono mw-ink" x="34" y="93" font-size="13">ws1-wiki/</text><g class="mw-dim" style="--d:4.2s;--o:0.45"><path class="mw-box" d="M34 122A6 6 0 0 1 40 116H56L61 121H100A6 6 0 0 1 106 127V158A6 6 0 0 1 100 164H40A6 6 0 0 1 34 158Z"/><text class="mw-mono mw-folder-ink" x="44" y="136" font-size="12">raw/</text><g class="mw-in" style="--d:0.3s;--dy:-14px"><g class="mw-dim" style="--d:2.45s;--o:0.35"><path class="mw-file" d="M46 142H52L56 146V156Q56 158 54 158H46Q44 158 44 156V144Q44 142 46 142Z"/></g></g><g class="mw-in" style="--d:0.4s;--dy:-14px"><g class="mw-dim" style="--d:2.5s;--o:0.35"><path class="mw-file" d="M61 142H67L71 146V156Q71 158 69 158H61Q59 158 59 156V144Q59 142 61 142Z"/></g></g><g class="mw-in" style="--d:0.5s;--dy:-14px"><g class="mw-dim" style="--d:2.55s;--o:0.35"><path class="mw-file" d="M76 142H82L86 146V156Q86 158 84 158H76Q74 158 74 156V144Q74 142 76 142Z"/></g></g></g><path class="mw-arrow" d="M109 143H123M119.5 139.5L123 143L119.5 146.5"/><g class="mw-fade" style="--d:2.3s"><path class="mw-arrow mw-arrow--cmd" d="M109 143H123M119.5 139.5L123 143L119.5 146.5"/><text class="mw-mono mw-cmd" x="116" y="110" font-size="12" text-anchor="middle">compile</text></g><path class="mw-box" d="M126 122A6 6 0 0 1 132 116H148L153 121H192A6 6 0 0 1 198 127V158A6 6 0 0 1 192 164H132A6 6 0 0 1 126 158Z"/><path class="mw-box-hl mw-fade" style="--d:4.2s" d="M126 122A6 6 0 0 1 132 116H148L153 121H192A6 6 0 0 1 198 127V158A6 6 0 0 1 192 164H132A6 6 0 0 1 126 158Z"/><text class="mw-mono mw-folder-ink" x="136" y="136" font-size="12">wiki/</text><g class="mw-in" style="--d:2.6s;--dy:5px"><rect class="mw-art" x="136" y="141" width="13" height="16" rx="2"/><path class="mw-art-lines" d="M139 146.12H146M139 149.32H146M139 152.52H143.5"/></g><g class="mw-in" style="--d:2.72s;--dy:5px"><rect class="mw-art" x="153" y="141" width="13" height="16" rx="2"/><path class="mw-art-lines" d="M156 146.12H163M156 149.32H163M156 152.52H160.5"/></g><g class="mw-dim" style="--d:4.2s;--o:0.45"><path class="mw-arrow" d="M201 143H215M211.5 139.5L215 143L211.5 146.5"/><path class="mw-box" d="M218 122A6 6 0 0 1 224 116H240L245 121H284A6 6 0 0 1 290 127V158A6 6 0 0 1 284 164H224A6 6 0 0 1 218 158Z"/><text class="mw-mono mw-folder-ink" x="228" y="136" font-size="12">output/</text></g></g><g class="mw-ws"><rect class="mw-card" x="22" y="186" width="280" height="104" rx="8"/><text class="mw-mono mw-ink" x="34" y="207" font-size="13">ws2-wiki/</text><g class="mw-dim" style="--d:4.28s;--o:0.45"><path class="mw-box" d="M34 236A6 6 0 0 1 40 230H56L61 235H100A6 6 0 0 1 106 241V272A6 6 0 0 1 100 278H40A6 6 0 0 1 34 272Z"/><text class="mw-mono mw-folder-ink" x="44" y="250" font-size="12">raw/</text><g class="mw-in" style="--d:0.6s;--dy:-14px"><g class="mw-dim" style="--d:2.8s;--o:0.35"><path class="mw-file" d="M46 256H52L56 260V270Q56 272 54 272H46Q44 272 44 270V258Q44 256 46 256Z"/></g></g><g class="mw-in" style="--d:0.7s;--dy:-14px"><g class="mw-dim" style="--d:2.85s;--o:0.35"><path class="mw-file" d="M61 256H67L71 260V270Q71 272 69 272H61Q59 272 59 270V258Q59 256 61 256Z"/></g></g><g class="mw-in" style="--d:0.8s;--dy:-14px"><g class="mw-dim" style="--d:2.9s;--o:0.35"><path class="mw-file" d="M76 256H82L86 260V270Q86 272 84 272H76Q74 272 74 270V258Q74 256 76 256Z"/></g></g></g><path class="mw-arrow" d="M109 257H123M119.5 253.5L123 257L119.5 260.5"/><g class="mw-fade" style="--d:2.65s"><path class="mw-arrow mw-arrow--cmd" d="M109 257H123M119.5 253.5L123 257L119.5 260.5"/><text class="mw-mono mw-cmd" x="116" y="224" font-size="12" text-anchor="middle">compile</text></g><path class="mw-box" d="M126 236A6 6 0 0 1 132 230H148L153 235H192A6 6 0 0 1 198 241V272A6 6 0 0 1 192 278H132A6 6 0 0 1 126 272Z"/><path class="mw-box-hl mw-fade" style="--d:4.28s" d="M126 236A6 6 0 0 1 132 230H148L153 235H192A6 6 0 0 1 198 241V272A6 6 0 0 1 192 278H132A6 6 0 0 1 126 272Z"/><text class="mw-mono mw-folder-ink" x="136" y="250" font-size="12">wiki/</text><g class="mw-in" style="--d:2.95s;--dy:5px"><rect class="mw-art" x="136" y="255" width="13" height="16" rx="2"/><path class="mw-art-lines" d="M139 260.12H146M139 263.32H146M139 266.52H143.5"/></g><g class="mw-in" style="--d:3.07s;--dy:5px"><rect class="mw-art" x="153" y="255" width="13" height="16" rx="2"/><path class="mw-art-lines" d="M156 260.12H163M156 263.32H163M156 266.52H160.5"/></g><g class="mw-dim" style="--d:4.28s;--o:0.45"><path class="mw-arrow" d="M201 257H215M211.5 253.5L215 257L211.5 260.5"/><path class="mw-box" d="M218 236A6 6 0 0 1 224 230H240L245 235H284A6 6 0 0 1 290 241V272A6 6 0 0 1 284 278H224A6 6 0 0 1 218 272Z"/><text class="mw-mono mw-folder-ink" x="228" y="250" font-size="12">output/</text></g></g><g class="mw-ws"><rect class="mw-card" x="22" y="300" width="280" height="104" rx="8"/><text class="mw-mono mw-ink" x="34" y="321" font-size="13">ws3-wiki/</text><text class="mw-soft" x="290" y="321" font-size="12" text-anchor="end">synced from its own repo</text><g class="mw-dim" style="--d:4.36s;--o:0.45"><path class="mw-box" d="M34 350A6 6 0 0 1 40 344H56L61 349H100A6 6 0 0 1 106 355V386A6 6 0 0 1 100 392H40A6 6 0 0 1 34 386Z"/><text class="mw-mono mw-folder-ink" x="44" y="364" font-size="12">raw/</text><g class="mw-in" style="--d:0.9s;--dy:-14px"><g class="mw-dim" style="--d:3.15s;--o:0.35"><path class="mw-file" d="M46 370H52L56 374V384Q56 386 54 386H46Q44 386 44 384V372Q44 370 46 370Z"/></g></g><g class="mw-in" style="--d:1s;--dy:-14px"><g class="mw-dim" style="--d:3.2s;--o:0.35"><path class="mw-file" d="M61 370H67L71 374V384Q71 386 69 386H61Q59 386 59 384V372Q59 370 61 370Z"/></g></g><g class="mw-in" style="--d:1.1s;--dy:-14px"><g class="mw-dim" style="--d:3.25s;--o:0.35"><path class="mw-file" d="M76 370H82L86 374V384Q86 386 84 386H76Q74 386 74 384V372Q74 370 76 370Z"/></g></g></g><path class="mw-arrow" d="M109 371H123M119.5 367.5L123 371L119.5 374.5"/><g class="mw-fade" style="--d:3s"><path class="mw-arrow mw-arrow--cmd" d="M109 371H123M119.5 367.5L123 371L119.5 374.5"/><text class="mw-mono mw-cmd" x="116" y="338" font-size="12" text-anchor="middle">compile</text></g><path class="mw-box" d="M126 350A6 6 0 0 1 132 344H148L153 349H192A6 6 0 0 1 198 355V386A6 6 0 0 1 192 392H132A6 6 0 0 1 126 386Z"/><path class="mw-box-hl mw-fade" style="--d:4.36s" d="M126 350A6 6 0 0 1 132 344H148L153 349H192A6 6 0 0 1 198 355V386A6 6 0 0 1 192 392H132A6 6 0 0 1 126 386Z"/><text class="mw-mono mw-folder-ink" x="136" y="364" font-size="12">wiki/</text><g class="mw-in" style="--d:3.3s;--dy:5px"><rect class="mw-art" x="136" y="369" width="13" height="16" rx="2"/><path class="mw-art-lines" d="M139 374.12H146M139 377.32H146M139 380.52H143.5"/></g><g class="mw-in" style="--d:3.42s;--dy:5px"><rect class="mw-art" x="153" y="369" width="13" height="16" rx="2"/><path class="mw-art-lines" d="M156 374.12H163M156 377.32H163M156 380.52H160.5"/></g><g class="mw-dim" style="--d:4.36s;--o:0.45"><path class="mw-arrow" d="M201 371H215M211.5 367.5L215 371L211.5 374.5"/><path class="mw-box" d="M218 350A6 6 0 0 1 224 344H240L245 349H284A6 6 0 0 1 290 355V386A6 6 0 0 1 284 392H224A6 6 0 0 1 218 386Z"/><text class="mw-mono mw-folder-ink" x="228" y="364" font-size="12">output/</text></g></g><g class="mw-loose"><text class="mw-ink mw-strong" x="22" y="430" font-size="13">Cross-workstream files</text><text class="mw-soft" x="22" y="448" font-size="12.5">steering notes, decisions</text><g class="mw-dim" style="--d:8s;--o:0.35"><g class="mw-in" style="--d:1.5s;--dy:-14px"><path class="mw-file mw-file--loose" d="M226 422H234L238 426V438Q238 440 236 440H226Q224 440 224 438V424Q224 422 226 422Z"/></g><g class="mw-in" style="--d:1.62s;--dy:-14px"><path class="mw-file mw-file--loose" d="M240 418H248L252 422V434Q252 436 250 436H240Q238 436 238 434V420Q238 418 240 418Z"/></g></g><g class="mw-in mw-last" style="--d:8.15s;--dy:4px"><rect class="mw-tag-muted" x="208" y="445" width="62" height="19" rx="9.5"/><text class="mw-soft" x="239" y="458.5" font-size="12" text-anchor="middle">archived</text></g></g><g class="mw-links"><path class="mw-link mw-draw" pathLength="100" style="--d:4.35s" d="M162 164V171Q162 181 172 181H302Q312 181 312 191V490Q312 500 302 500H180Q170 500 170 510V520"/><path class="mw-link mw-draw" pathLength="100" style="--d:4.47s" d="M162 278V285Q162 295 172 295H302Q312 295 312 305V490Q312 500 302 500H180Q170 500 170 510V520"/><path class="mw-link mw-draw" pathLength="100" style="--d:4.59s" d="M162 392V399Q162 409 172 409H302Q312 409 312 419V490Q312 500 302 500H180Q170 500 170 510V520"/><path class="mw-link mw-draw" pathLength="100" style="--d:4.71s" d="M256 427H302Q312 427 312 437V490Q312 500 302 500H180Q170 500 170 510V520"/><path class="mw-pulse" pathLength="100" style="--d:5s" d="M162 164V171Q162 181 172 181H302Q312 181 312 191V490Q312 500 302 500H180Q170 500 170 510V520"/><path class="mw-pulse" pathLength="100" style="--d:5.1s" d="M162 278V285Q162 295 172 295H302Q312 295 312 305V490Q312 500 302 500H180Q170 500 170 510V520"/><path class="mw-pulse" pathLength="100" style="--d:5.2s" d="M162 392V399Q162 409 172 409H302Q312 409 312 419V490Q312 500 302 500H180Q170 500 170 510V520"/><path class="mw-pulse" pathLength="100" style="--d:5.3s" d="M256 427H302Q312 427 312 437V490Q312 500 302 500H180Q170 500 170 510V520"/></g><rect class="mw-pill" x="106" y="520" width="128" height="28" rx="14"/><rect class="mw-pill-hl mw-fade" style="--d:5.7s" x="106" y="520" width="128" height="28" rx="14"/><text class="mw-mono mw-cmd" x="170" y="538.4" font-size="12.5" text-anchor="middle">master-compile</text><g class="mw-fade" style="--d:4.4s"><text class="mw-soft" font-size="12"><tspan x="184" y="570">reads each wiki/</tspan><tspan x="184" y="585">and the loose files</tspan></text></g><g class="mw-fade" style="--d:5.9s"><text class="mw-soft" font-size="12"><tspan x="184" y="606">writes the synthesis</tspan></text></g><rect class="mw-region" x="8" y="630" width="324" height="274" rx="10"/><rect class="mw-region-hl mw-fade" style="--d:6.25s;--t:.5s" x="8" y="630" width="324" height="274" rx="10"/><text class="mw-mono mw-ink" x="22" y="652" font-size="13">wiki/</text><text class="mw-mono mw-label-hl mw-flash" style="--d:6.25s" x="22" y="652" font-size="13">wiki/</text><path class="mw-link mw-link--out mw-draw" pathLength="100" style="--d:5.9s;--t:.35s" d="M170 548V666"/><path class="mw-link mw-link--out mw-rail mw-draw" pathLength="100" style="--d:6.25s;--t:.45s" d="M170 666H22"/><path class="mw-link mw-link--out mw-rail mw-draw" pathLength="100" style="--d:6.25s;--t:.45s" d="M170 666H318"/><g class="mw-fade" style="--d:6.2s"><circle class="mw-junction" cx="170" cy="666" r="4"/></g><g class="mw-in" style="--d:6.5s;--dy:6px"><rect class="mw-theme" x="22" y="678" width="296" height="36" rx="8"/><rect class="mw-tart" x="34" y="687" width="14" height="18" rx="2"/><path class="mw-tart-lines" d="M37 692.76H45M37 696.36H45M37 699.96H42.5"/><text class="mw-ink mw-strong" x="58" y="701" font-size="14.5">Risks</text><rect class="mw-src" x="225" y="687" width="38" height="18" rx="9"/><text class="mw-mono mw-src-ink" x="244" y="700" font-size="12" text-anchor="middle">ws1</text><rect class="mw-src" x="268" y="687" width="38" height="18" rx="9"/><text class="mw-mono mw-src-ink" x="287" y="700" font-size="12" text-anchor="middle">ws3</text></g><g class="mw-in" style="--d:6.66s;--dy:6px"><rect class="mw-theme" x="22" y="722" width="296" height="36" rx="8"/><rect class="mw-tart" x="34" y="731" width="14" height="18" rx="2"/><path class="mw-tart-lines" d="M37 736.76H45M37 740.36H45M37 743.96H42.5"/><text class="mw-ink mw-strong" x="58" y="745" font-size="14.5">Decisions</text><rect class="mw-src" x="225" y="731" width="38" height="18" rx="9"/><text class="mw-mono mw-src-ink" x="244" y="744" font-size="12" text-anchor="middle">ws2</text><rect class="mw-src" x="268" y="731" width="38" height="18" rx="9"/><text class="mw-mono mw-src-ink" x="287" y="744" font-size="12" text-anchor="middle">ws3</text></g><g class="mw-in" style="--d:6.82s;--dy:6px"><rect class="mw-theme" x="22" y="766" width="296" height="36" rx="8"/><rect class="mw-tart" x="34" y="775" width="14" height="18" rx="2"/><path class="mw-tart-lines" d="M37 780.76H45M37 784.36H45M37 787.96H42.5"/><text class="mw-ink mw-strong" x="58" y="789" font-size="14.5">Dependencies</text><rect class="mw-src" x="225" y="775" width="38" height="18" rx="9"/><text class="mw-mono mw-src-ink" x="244" y="788" font-size="12" text-anchor="middle">ws1</text><rect class="mw-src" x="268" y="775" width="38" height="18" rx="9"/><text class="mw-mono mw-src-ink" x="287" y="788" font-size="12" text-anchor="middle">ws2</text></g><g class="mw-in" style="--d:6.98s;--dy:6px"><rect class="mw-theme" x="22" y="810" width="296" height="36" rx="8"/><rect class="mw-tart" x="34" y="819" width="14" height="18" rx="2"/><path class="mw-tart-lines" d="M37 824.76H45M37 828.36H45M37 831.96H42.5"/><text class="mw-ink mw-strong" x="58" y="833" font-size="14.5">Timeline</text><rect class="mw-src" x="182" y="819" width="38" height="18" rx="9"/><text class="mw-mono mw-src-ink" x="201" y="832" font-size="12" text-anchor="middle">ws1</text><rect class="mw-src" x="225" y="819" width="38" height="18" rx="9"/><text class="mw-mono mw-src-ink" x="244" y="832" font-size="12" text-anchor="middle">ws2</text><rect class="mw-src" x="268" y="819" width="38" height="18" rx="9"/><text class="mw-mono mw-src-ink" x="287" y="832" font-size="12" text-anchor="middle">ws3</text></g><g class="mw-in" style="--d:7.14s;--dy:6px"><rect class="mw-theme" x="22" y="854" width="296" height="36" rx="8"/><rect class="mw-tart" x="34" y="863" width="14" height="18" rx="2"/><path class="mw-tart-lines" d="M37 868.76H45M37 872.36H45M37 875.96H42.5"/><text class="mw-ink mw-strong" x="58" y="877" font-size="14.5">Open Questions</text><rect class="mw-src" x="268" y="863" width="38" height="18" rx="9"/><text class="mw-mono mw-src-ink" x="287" y="876" font-size="12" text-anchor="middle">ws2</text></g></svg>
+      </div>
+      <button class="mw-replay" type="button" aria-label="Replay the diagram animation" hidden><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 12a9 9 0 1 0 2.64-6.36L3 8.27"/><path d="M3 3v5.27h5.27"/></svg>Replay</button>
     </div>
-    <p class="caption">Each workstream runs its own <code class="folder">raw/</code> → <code class="folder">wiki/</code> → <code class="folder">output/</code> pipeline. Leads push their compiled wikis up into the master's <code class="folder">raw/</code>, where the maintainer compiles everything into one cross-cutting view.</p>
+    <p class="caption">Each workstream wiki runs its own <code class="folder">raw/</code> → <code class="folder">wiki/</code> → <code class="folder">output/</code> pipeline and sits in <code class="folder">master-wiki/raw/</code>, created there by the generator or synced in from its own repository. <code class="cmd">master-compile</code> reads each workstream's <code class="folder">wiki/</code> plus the cross-workstream files, and writes the synthesis into <code class="folder">master-wiki/wiki/</code>, one article per theme.</p>
   </div>
 
   <div class="block">
     <h3 id="master-structure">How the levels fit</h3>
-    <p>The master is itself a wiki-generator project — same <code class="folder">raw/</code>, <code class="folder">wiki/</code>, <code class="folder">output/</code> layout, same <code class="cmd">compile</code> and <code class="cmd">audit</code> skills. What differs is <em>what lands in <code class="folder">raw/</code></em>:</p>
+    <p>The master has the same <code class="folder">raw/</code>, <code class="folder">wiki/</code>, <code class="folder">output/</code> layout as any wiki and answers the same commands (<code class="cmd">compile</code>, <code class="cmd">audit</code>, <code class="cmd">update</code>), through its own master skills. What differs is <em>what lands in <code class="folder">raw/</code></em>:</p>
     <div class="table-wrap">
       <table>
         <thead>
@@ -2877,11 +3144,11 @@
         </thead>
         <tbody>
           <tr><td>Cross-workstream files</td><td>A loose file in the master's <code class="folder">raw/</code></td><td>Archived after each compile, like any source</td></tr>
-          <tr><td>A whole workstream wiki</td><td><code class="folder">raw/&lt;ws-slug&gt;-wiki/</code></td><td>Stays live — a synced copy, never archived</td></tr>
+          <tr><td>A whole workstream wiki</td><td><code class="folder">raw/&lt;ws-slug&gt;-wiki/</code></td><td>Stays live and is never archived: created there by the generator, or a synced copy of a wiki kept in its own repository</td></tr>
         </tbody>
       </table>
     </div>
-    <p>The distinction matters: loose files are one-time source material, but workstream folders are living inputs that re-sync as each team updates its own wiki. Program-wide decisions, steering notes, and RFCs that touch multiple teams are the loose files; everything a single team owns stays in that team's wiki.</p>
+    <p>The distinction matters. Loose files are one-time source material. Workstream folders are living inputs that change each time a team compiles its own wiki. Program-wide decisions, steering notes, and RFCs that touch multiple teams are the loose files; everything a single team owns stays in that team's wiki.</p>
   </div>
 
   <div class="block">
@@ -2893,8 +3160,8 @@
           <tr><th>Who</th><th>What they do</th></tr>
         </thead>
         <tbody>
-          <tr><td>Workstream lead</td><td>Compiles their own wiki as usual, then pushes the polished <code class="folder">wiki/</code> up into the master's <code class="folder">raw/</code></td></tr>
-          <tr><td>Master maintainer</td><td>Reads every workstream wiki, then runs <code class="cmd">compile</code> at the top level to write the synthesis</td></tr>
+          <tr><td>Workstream lead</td><td>Opens their workstream's folder in its own Claude Code session and compiles as usual. A workstream wiki kept in its own repository gets synced into the master's <code class="folder">raw/</code> afterwards</td></tr>
+          <tr><td>Master maintainer</td><td>Opens the master folder and runs <code class="cmd">compile</code>. The master reads each workstream's <code class="folder">wiki/</code> and writes the synthesis</td></tr>
         </tbody>
       </table>
     </div>
@@ -2909,7 +3176,14 @@
       <li><strong>Organize by theme, never by team.</strong> A section per workstream just recreates the silos you're trying to see past.</li>
       <li><strong>Cross-WS files stay loose; workstream wikis stay folders.</strong> Loose files get archived after compiling; the <code class="folder">raw/&lt;ws-slug&gt;-wiki/</code> folders stay live, so re-syncing is a copy, not a merge.</li>
       <li><strong>Re-compile when a workstream ships.</strong> The synthesis is only as current as the last time you pulled the workstream wikis in.</li>
+      <li><strong>Open the folder you're working on.</strong> A session opened at the master folder runs the master's skills, and one opened in a workstream's folder runs that workstream's. The master's settings file switches the workstream skills off at its root, so a stray <code class="cmd">compile</code> there can't archive a workstream.</li>
     </ul>
+  </div>
+
+  <div class="block">
+    <h3 id="master-update">Keep the master current</h3>
+    <p>Say <code class="cmd">update</code> in a session opened at the master folder. It pulls the latest master templates, shows what changed, asks before writing anything, and lists the workstream wikis that are behind. Each of those updates with <code class="cmd">update</code> in a session opened in its own folder, just like a standalone wiki.</p>
+    <p>A master set up before the 2026-10-02 release needs a one-line prompt first. It's in the master-wiki-generator <a href="https://github.com/davron-design/master-wiki-generator#if-update-doesnt-do-anything" target="_blank" rel="noopener">README</a>, under "If <code class="cmd">update</code> doesn't do anything".</p>
   </div>
 </section>
 
@@ -2993,22 +3267,121 @@
   })();
 
   // ───── Scroll reveal ─────
+  // Reveals the pieces inside each .reveal section (marker, label, h2,
+  // intro, each block or step), each when its top is 10% above the bottom of
+  // the viewport, with a light stagger for pieces that enter together.
+  // Pieces on screen at load fade in once, two frames in; pieces above the
+  // viewport are never hidden; after an anchor jump, one quick fade.
   (function () {
-    if (!('IntersectionObserver' in window)) {
-      document.querySelectorAll('.reveal').forEach(function (el) {
-        el.classList.add('in-view');
-      });
+    var all = [].slice.call(document.querySelectorAll('.reveal'));
+    function showAll() { all.forEach(function (el) { el.classList.add('in-view'); }); }
+    if (!('IntersectionObserver' in window) ||
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      showAll();
       return;
     }
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('in-view');
-          io.unobserve(entry.target);
-        }
+
+    // Look through wrappers that only group steps, phases or the about card.
+    var WRAPPERS = ['steps', 'phases', 'phase', 'phase-content', 'about-inner'];
+    var pieces = [];
+    function collect(parent) {
+      [].forEach.call(parent.children, function (c) {
+        var wrapper = WRAPPERS.some(function (k) { return c.classList.contains(k); });
+        if (wrapper) collect(c); else pieces.push(c);
       });
-    }, { threshold: 0.08, rootMargin: '0px 0px -60px 0px' });
-    document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
+    }
+    all.forEach(function (el) {
+      // Nested .reveal blocks (the PR and master-wiki diagrams) ride along with
+      // the piece that contains them; they only receive .in-view from it.
+      if (el.parentElement && el.parentElement.closest('.reveal')) return;
+      el.classList.add('in-view');
+      collect(el);
+    });
+
+    var STEP = 70, CAP = 4; // stagger: 0, 70, 140, 210, 280ms at most
+    var fastUntil = 0;
+    var pending = [];
+
+    function finish(el, mode, delay) {
+      el.classList.add('in-view');
+      el.querySelectorAll('.reveal').forEach(function (n) { n.classList.add('in-view'); });
+      setTimeout(function () {
+        el.classList.remove('rv', 'rv-fast', 'rv-now');
+        el.style.removeProperty('--rv-d');
+      }, mode ? 300 : delay + 800);
+    }
+    var io = new IntersectionObserver(function (entries) {
+      var fast = Date.now() < fastUntil;
+      var k = 0;
+      entries
+        .filter(function (e) { return e.isIntersecting; })
+        .sort(function (a, b) { return a.boundingClientRect.top - b.boundingClientRect.top; })
+        .forEach(function (e) { reveal(e.target, fast ? 0 : Math.min(k++, CAP) * STEP, fast ? 'fast' : ''); });
+      entries.forEach(function (e) {
+        if (!e.isIntersecting && e.boundingClientRect.bottom <= 0) reveal(e.target, 0, 'now');
+      });
+    }, { threshold: 0, rootMargin: '0px 0px -10% 0px' });
+    function reveal(el, delay, mode) {
+      if (el._rvDone) return;
+      el._rvDone = true;
+      io.unobserve(el);
+      if (mode) el.classList.add(mode === 'now' ? 'rv-now' : 'rv-fast');
+      else if (delay) el.style.setProperty('--rv-d', delay + 'ms');
+      finish(el, mode, delay);
+    }
+
+    // Measure everything first, then write classes.
+    var vh = window.innerHeight || document.documentElement.clientHeight;
+    var rects = pieces.map(function (el) { return el.getBoundingClientRect(); });
+    var onLoad = [];
+    pieces.forEach(function (el, i) {
+      var r = rects[i];
+      if (r.bottom <= 0) {
+        el._rvDone = true;
+        el.classList.add('in-view');
+        el.querySelectorAll('.reveal').forEach(function (n) { n.classList.add('in-view'); });
+        return;
+      }
+      el.classList.add('rv');
+      if (r.top < vh) onLoad.push(el); else pending.push(el);
+    });
+    document.documentElement.classList.add('js-reveal');
+    pending.forEach(function (el) { io.observe(el); });
+    var loadMode = location.hash ? 'fast' : '';
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        onLoad.forEach(function (el, k) { reveal(el, Math.min(k, CAP) * STEP, loadMode); });
+      });
+    });
+
+    // Safety net after anchor jumps and fast flings: anything above the
+    // viewport shows at once, anything on screen fades in.
+    function sweep() {
+      var h = window.innerHeight;
+      var fast = Date.now() < fastUntil;
+      var open = pending.filter(function (el) { return !el._rvDone; });
+      var boxes = open.map(function (el) { return el.getBoundingClientRect(); });
+      open.forEach(function (el, i) {
+        if (boxes[i].bottom <= 0) reveal(el, 0, 'now');
+        else if (boxes[i].top < h * 0.9) reveal(el, 0, fast ? 'fast' : '');
+      });
+    }
+    function jumped() {
+      fastUntil = Date.now() + 1500;
+      setTimeout(sweep, 700);
+      setTimeout(sweep, 1500);
+    }
+    var idle;
+    window.addEventListener('scroll', function () {
+      clearTimeout(idle);
+      idle = setTimeout(sweep, 150);
+    }, { passive: true });
+    document.addEventListener('click', function (e) {
+      var a = e.target.closest && e.target.closest('a[href^="#"]');
+      if (a) jumped();
+    }, true);
+    window.addEventListener('hashchange', jumped);
+    if (location.hash) jumped();
   })();
 
   // ───── Sidebar: section + sub-section tracking, auto-expand ─────
@@ -3562,6 +3935,78 @@
         });
       });
     });
+  })();
+
+  // ───── Latest-release pill: show the newest tag when GitHub answers ─────
+  // The static tag and data-release stay as the fallback. Any failure
+  // (offline, rate limit, slow answer, bad JSON) leaves the page as it is.
+  (function () {
+    var pill = document.querySelector('.release-pill');
+    var tag = pill && pill.querySelector('.release-tag');
+    if (!tag || !window.fetch) return;
+    var ctrl = window.AbortController ? new AbortController() : null;
+    var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 4000) : 0;
+    try {
+      fetch('https://api.github.com/repos/davron-design/wiki-generator/releases/latest',
+        ctrl ? { signal: ctrl.signal } : {})
+        .then(function (res) { return res.status === 200 ? res.json() : null; })
+        .then(function (data) {
+          var name = data && typeof data.tag_name === 'string' ? data.tag_name : '';
+          if (!/^v\d{4}-\d{2}-\d{2}(\.\d+)?$/.test(name)) return;
+          tag.textContent = name;
+          pill.setAttribute('aria-label', 'Latest release ' + name + ", what's new, opens in a new tab");
+        })
+        .catch(function () {})
+        .then(function () { clearTimeout(timer); });
+    } catch (e) {}
+  })();
+
+  // ───── Hero: pause the release pill's ring while the hero is off screen ─────
+  (function () {
+    var hero = document.querySelector('.hero');
+    if (!hero || !('IntersectionObserver' in window)) return;
+    var onScreen = true;
+    function sync() { hero.classList.toggle('is-idle', !onScreen || document.hidden); }
+    new IntersectionObserver(function (entries) {
+      onScreen = entries[entries.length - 1].isIntersecting;
+      sync();
+    }).observe(hero);
+    document.addEventListener('visibilitychange', sync);
+  })();
+
+  // ───── Master-wiki diagram: play the compile story once it is in view ─────
+  (function () {
+    var demo = document.querySelector('.mw-demo');
+    if (!demo || !('IntersectionObserver' in window)) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var replay = document.querySelector('.mw-replay');
+    var started = false;
+
+    // Rewind to the empty start; the animations wait (paused) until .is-playing.
+    demo.classList.add('is-armed');
+
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        demo.classList.toggle('is-offscreen', !entry.isIntersecting);
+        var enough = entry.intersectionRatio >= 0.45 ||
+          entry.intersectionRect.height >= window.innerHeight * 0.5;
+        if (!started && entry.isIntersecting && enough) {
+          started = true;
+          demo.classList.add('is-playing');
+        }
+      });
+    }, { threshold: [0, 0.15, 0.3, 0.45, 0.6] });
+    io.observe(demo);
+
+    if (replay) {
+      replay.hidden = false;
+      replay.addEventListener('click', function () {
+        started = true;
+        demo.classList.remove('is-armed', 'is-playing');
+        void demo.offsetWidth; // flush styles so the animations restart from zero
+        demo.classList.add('is-armed', 'is-playing');
+      });
+    }
   })();
 </script>
 
