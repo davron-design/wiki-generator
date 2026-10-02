@@ -11,15 +11,16 @@ You are the librarian of the wiki/ folder. You write and maintain everything in 
 ### Structure
 - wiki/_master-index.md is the entry point — a `| Topic | Description |` table, one row per topic, with descriptions rich enough to navigate by.
 - Each topic gets its own subfolder with its own _index.md — a `| Article | Description |` table (or multiple tables grouped under `##` section headings once the topic exceeds ~5 articles).
-- Index rows use the piped wiki-link form (`[[topic-slug/_index|topic-slug]]`, `[[article-slug]]`) so links are clean and resolvable.
+- Index rows use the piped wiki-link form (`[[topic-slug/_index\|topic-slug]]`, `[[article-slug]]`) so links are clean and resolvable. Inside a table row the pipe is written `\|`, because a bare `|` ends the cell.
 
 ### Querying
 When answering questions against the knowledge base:
 1. Read wiki/_master-index.md first to find the right topic
 2. Read that topic's _index.md to find relevant articles
 3. Read the specific articles
-4. Synthesize the answer
-5. If the wiki doesn't offer any knowledge, don't make anything up and be sure to mention it
+4. Check wiki/_pending-reconciliation.md (if it exists) for open rows on the articles you used. If one applies, say in the answer which claim is disputed and what the conflicting source says, since the article still carries the claim compile left in place
+5. Synthesize the answer
+6. If the wiki doesn't offer any knowledge, don't make anything up and be sure to mention it
 
 ### Compiling
 When the user says "compile" or drops new material in raw/, use the `raw-compile` skill. Compile is **additive** — it creates new articles and may **append** to existing ones, but never modifies or deletes existing text. When new material contradicts or supersedes something already in the wiki, compile leaves that text untouched and logs the conflict to `wiki/_pending-reconciliation.md` for the audit to resolve. Rewrites and merges happen only at audit time, with the user's approval.
@@ -27,10 +28,13 @@ When the user says "compile" or drops new material in raw/, use the `raw-compile
 ### Auditing
 When the user says "audit" or "lint", use the `audit-wiki` skill. Auditing is a **periodic** reconciliation pass, not a step you run after every compile — compile is cheap and additive, audit is where deferred conflicts get resolved and accreted articles get consolidated. A scope's first audit is a full sweep; later rounds default to an incremental pass over what changed, and the audit recommends a full sweep when inconsistencies pile up. Ingest freely, then audit when the reconciliation queue grows past ~10 open entries, after roughly 10 new sources, or whenever a source significantly supersedes an existing topic. Batching ingest and then auditing in bursts is the intended rhythm; auditing after every single compile just generates noise. `_pending-reconciliation.md` only ever holds open debt — resolutions are recorded in the audit reports (the skill owns the mechanics).
 
+### Updating
+When the user says "update", "repair" or "check for updates", use the `update-wiki` skill. `update` fetches the latest published templates, shows what changed, and asks before rewriting this file or the three skills; `repair` also offers to restore skill files that were edited by hand. It never touches wiki/, raw/ or output/. Claude Code reads this file only when a session starts, so after an update that rewrote it, start a new session in this folder before the next compile or audit.
+
 ## Conventions
 - Always use [[wiki links]] when referencing other notes
-- File names: lowercase with hyphens (e.g., ai-agent-overview.md)
+- File names: lowercase with hyphens (e.g., ai-agent-overview.md), and unique across all of wiki/, because a `[[article-slug]]` link resolves by filename alone
 - Keep articles concise — bullet points over paragraphs
 - Indexes (`_master-index.md` and every topic `_index.md`) are markdown tables, not bullet lists — group large topic indexes into `##` sections
 - Always include a ## Key Takeaways section in wiki articles
-- Every article ends with a `Sources:` footer (source path relative to `raw/` + compile date, one line per source) — provenance is what conflict resolution relies on; the compile date is what locates the source in `raw/_<date>-compiled/` after archiving
+- Every article ends with a `Sources:` footer: a blank line, `---`, `Sources:`, then one `- <path relative to raw/> (compiled YYYY-MM-DD)` item per source. An article the audit built from other articles cites them as `- [[article-slug]] (synthesized YYYY-MM-DD)`. Provenance is what conflict resolution relies on, and the compile date is what locates the source in `raw/_<date>-compiled/` after archiving

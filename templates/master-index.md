@@ -12,7 +12,7 @@ Format once topics exist — a single markdown table:
 | [[topic-slug/_index\|topic-slug]] | What this topic covers — signature sub-areas, key people/projects, anything that helps the reader decide whether to drill in. Multi-sentence is fine. |
 
 Conventions:
-- Use the piped wiki-link form `[[topic-slug/_index|topic-slug]]` so the row points at the topic's `_index.md` while showing a clean label.
+- Use the piped wiki-link form `[[topic-slug/_index\|topic-slug]]` so the row points at the topic's `_index.md` while showing a clean label. Inside a table row the pipe is written `\|`, because a bare `|` ends the cell.
 - Pack each description with enough context that the table itself is a usable map of the wiki — not just a list of names.
 - Order topics by relevance/weight, not alphabetically.
 -->
