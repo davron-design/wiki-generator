@@ -9,6 +9,14 @@ Versions are dates (`YYYY-MM-DD`). A second release on the same day gets a `.2` 
 Bumping is manual and belongs in the same commit as the template edit: change the template,
 add an entry here, set `templates/VERSION`. See [MAINTAINER.md](MAINTAINER.md).
 
+## 2026-10-14
+
+- **Answers find sources that compile moved into `raw/_archive/`.** Once more than 10 dated
+  `_<date>-compiled/` folders sit in `raw/`, compile moves the older ones into `raw/_archive/`.
+  `CLAUDE.md` named only the first location, so a question that needed the original file
+  behind a `Sources:` line looked in `raw/` and missed it. It now names both locations.
+  Compile and audit already checked both.
+
 ## 2026-10-02
 
 - **Before you update: this update still runs your current `update`**, which shows changes to
